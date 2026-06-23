@@ -2080,7 +2080,7 @@ class WatchOnRepeat {
       
 
       // Handle Skipping/Jumping
-      if (this.player && !isDragging) {
+      if (this.state.currentPlatform && !isDragging) {
         if (source === 'start') {
           this.seekToTime(s);
         } else if (source === 'end') {

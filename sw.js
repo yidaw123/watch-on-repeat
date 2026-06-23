@@ -1,4 +1,4 @@
-const CACHE_NAME = 'watchonrepeat-v4';
+const CACHE_NAME = 'watchonrepeat-v5';
 const urlsToCache = [
   './',
   './index.html',
