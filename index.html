@@ -178,10 +178,6 @@
                   <input type="text" id="ab-end" placeholder="End" style="width: 70px; text-align: center;">
                 </div>
               </div>
-              
-              <div class="timeline-actions">
-                <button class="btn btn-outline btn-sm" id="toggle-ab-loop-btn" onclick="app.toggleABLoop()">Enable Timestamp</button>
-              </div>
 
               <div class="advanced-loop-controls" style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                 <span class="text-xs font-bold text-gray-400" style="margin-right: 4px;">PRO CONTROLS</span>
@@ -226,7 +222,7 @@
             </div>
             
             <div class="playback-controls">
-              <div class="input-group hidden" id="save-loop-group">
+              <div class="input-group" id="save-loop-group">
                 <input type="text" id="loop-name-input" placeholder="Name loop..." style="width: 110px;">
                 <button class="btn btn-primary btn-sm" onclick="app.saveNamedLoop()" title="Save Loop"><i data-lucide="save"></i></button>
               </div>
@@ -361,29 +357,31 @@
           <div class="pricing-card" style="border: 1px solid #333; border-radius: 16px; padding: 32px; text-align: center; background: rgba(255,255,255,0.02);">
             <div class="tier-icon"><i data-lucide="crown" style="color: #FBBF24; width: 48px; height: 48px; margin: 0 auto 16px;"></i></div>
             <h4 class="text-xl font-bold mb-2">Premium</h4>
-            <div class="price text-4xl font-bold mb-6">$5.99<span class="text-lg text-gray-500 font-normal">/mo</span></div>
+            <div class="price text-5xl font-bold mb-2" style="font-size: 3rem; line-height: 1;">$5.99<span class="text-xl text-gray-500 font-normal" style="font-size: 1.25rem;">/mo</span></div>
+            <div class="yearly-price text-base text-gray-400 mb-6 font-medium">or $59.99/year <span style="color: #10B981; font-weight: bold; margin-left: 4px;">(Save 16%)</span></div>
             <ul class="features text-left text-sm text-gray-300 space-y-3 mb-8" style="list-style: none; padding: 0;">
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Ad-free experience</li>
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Multiple loop segments</li>
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Unlimited notes & history</li>
-              <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Cloud sync across devices</li>
+              <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Customizable Hotkeys</li>
             </ul>
-            <button class="btn btn-outline w-full" onclick="app.processUpgrade('premium')" style="justify-content: center;">Upgrade to Premium</button>
+            <button class="btn btn-outline w-full" onclick="app.processUpgrade('premium')" style="justify-content: center; margin-top: 24px;">Upgrade to Premium</button>
           </div>
           
           <!-- Pro Tier -->
-          <div class="pricing-card" style="border: 2px solid var(--primary-color); border-radius: 16px; padding: 32px; text-align: center; position: relative; background: rgba(var(--primary-color-rgb), 0.05);">
-            <div class="best-value" style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--primary-color); color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; letter-spacing: 1px;">BEST FOR TEACHERS</div>
-            <div class="tier-icon"><i data-lucide="zap" style="color: var(--primary-color); width: 48px; height: 48px; margin: 0 auto 16px;"></i></div>
+          <div class="pricing-card" style="border: 1px solid #333; border-radius: 16px; padding: 32px; text-align: center; position: relative; background: rgba(255,255,255,0.02);">
+
+            <div class="tier-icon"><i data-lucide="graduation-cap" style="color: #ec4899; width: 48px; height: 48px; margin: 0 auto 16px;"></i></div>
             <h4 class="text-xl font-bold mb-2">Pro</h4>
-            <div class="price text-4xl font-bold mb-6">$9.99<span class="text-lg text-gray-500 font-normal">/mo</span></div>
+            <div class="price text-5xl font-bold mb-2" style="font-size: 3rem; line-height: 1;">$9.99<span class="text-xl text-gray-500 font-normal" style="font-size: 1.25rem;">/mo</span></div>
+            <div class="yearly-price text-base text-gray-400 mb-6 font-medium">or $99.99/year <span style="color: #10B981; font-weight: bold; margin-left: 4px;">(Save 16%)</span></div>
             <ul class="features text-left text-sm text-gray-300 space-y-3 mb-8" style="list-style: none; padding: 0;">
-              <li><i data-lucide="check" style="color: var(--primary-color); display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Everything in Premium</li>
-              <li><i data-lucide="check" style="color: var(--primary-color); display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Advanced Practice Analytics</li>
-              <li><i data-lucide="check" style="color: var(--primary-color); display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Team & Classroom Features</li>
-              <li><i data-lucide="check" style="color: var(--primary-color); display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> API & Data Export</li>
+              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Everything in Premium</li>
+              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Advanced Practice Analytics</li>
+              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Team & Classroom Features</li>
+              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> API & Data Export</li>
             </ul>
-            <button class="btn btn-primary w-full" onclick="app.processUpgrade('pro')" style="justify-content: center;">Upgrade to Pro</button>
+            <button class="btn btn-primary w-full" onclick="app.processUpgrade('pro')" style="justify-content: center; margin-top: 24px;">Upgrade to Pro</button>
           </div>
         </div>
       </div>
@@ -402,6 +400,17 @@
       <div class="modal-body">
         <div id="playlist-select-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
           <!-- Rendered playlists go here -->
+        </div>
+        <div class="mt-4 pt-4 border-t border-gray-800">
+          <div id="create-playlist-form" class="hidden">
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="new-playlist-name" placeholder="Playlist Name" style="flex: 1; padding: 8px; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white;">
+              <button class="btn btn-primary btn-sm" onclick="app.createNewPlaylistFromModal()">Create</button>
+            </div>
+          </div>
+          <button id="show-create-playlist-btn" class="btn btn-outline w-full" onclick="document.getElementById('create-playlist-form').classList.remove('hidden'); document.getElementById('show-create-playlist-btn').classList.add('hidden'); document.getElementById('new-playlist-name').focus();" style="justify-content: center;">
+            <i data-lucide="plus" style="display:inline; width:16px; height:16px; margin-right: 8px;"></i> Create New Playlist
+          </button>
         </div>
       </div>
     </div>

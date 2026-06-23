@@ -24,7 +24,7 @@ class WatchOnRepeat {
       },
       currentPlatform: null,
       abLoop: {
-        active: false,
+        active: true,
         start: 0,
         end: 0,
         timer: null
@@ -146,7 +146,6 @@ class WatchOnRepeat {
       // Advanced Controls
       abStart: document.getElementById('ab-start'),
       abEnd: document.getElementById('ab-end'),
-      toggleAbLoopBtn: document.getElementById('toggle-ab-loop-btn'),
       playbackSpeed: document.getElementById('playback-speed'),
       saveLoopGroup: document.getElementById('save-loop-group'),
       loopNameInput: document.getElementById('loop-name-input'),
@@ -311,10 +310,6 @@ class WatchOnRepeat {
     }
     if (!isNaN(start) && !isNaN(end) && end > start) {
       this.state.abLoop.active = true;
-      if (this.elements.toggleAbLoopBtn) {
-        this.elements.toggleAbLoopBtn.textContent = 'Disable Timestamp';
-        this.elements.toggleAbLoopBtn.classList.replace('btn-outline', 'btn-primary');
-      }
     }
     if (!isNaN(rate)) {
       this.state.playbackRate = rate;
@@ -652,7 +647,6 @@ class WatchOnRepeat {
     this.incrementGlobalPlayCount(id, platform);
     
     this.startTimer();
-    this.showToast(`Now looping: ${this.truncateString(videoTitle, 35)}`);
   }
 
   updatePlatformBadge(platform) {
@@ -953,9 +947,6 @@ class WatchOnRepeat {
 
     // Refresh UI stats
     this.updateStatsUI();
-
-    // Show looping toast
-    this.showToast(`Loop count: ${this.state.personalLoops}!`, 'refresh-cw');
   }
 
   incrementGlobalPlayCount(id, platform) {
@@ -1381,6 +1372,13 @@ class WatchOnRepeat {
     
     const modal = document.getElementById('playlist-modal');
     const list = document.getElementById('playlist-select-list');
+    
+    const form = document.getElementById('create-playlist-form');
+    const createBtn = document.getElementById('show-create-playlist-btn');
+    if (form && createBtn) {
+      form.classList.add('hidden');
+      createBtn.classList.remove('hidden');
+    }
     if (!modal || !list) return;
     
     const playlists = this.getDb('playlists').filter(p => p.userId === this.state.user.id);
@@ -1401,6 +1399,48 @@ class WatchOnRepeat {
     
     lucide.createIcons();
     modal.classList.remove('hidden');
+  }
+
+  createNewPlaylistFromModal() {
+    if (!this.state.user) {
+      this.openLoginModal();
+      return;
+    }
+    
+    const input = document.getElementById('new-playlist-name');
+    if (!input) return;
+    const name = input.value.trim();
+    if (!name) return;
+
+    const playlists = this.getDb('playlists');
+    const userPlaylists = playlists.filter(p => p.userId === this.state.user.id);
+
+    // Free limit: 5 playlists
+    const tier = this.state.user.tier || 'free';
+    if (tier === 'free' && userPlaylists.length >= 5) {
+      this.closePlaylistModal();
+      this.openUpgradeModal("Free users can create up to 5 playlists. Upgrade to Premium for unlimited playlists!");
+      return;
+    }
+
+    const newPlaylist = {
+      id: 'pl_' + Date.now(),
+      userId: this.state.user.id,
+      name: name,
+      videos: []
+    };
+    playlists.push(newPlaylist);
+
+    this.saveDb('playlists', playlists);
+    input.value = '';
+    
+    // Hide form, show button
+    const form = document.getElementById('create-playlist-form');
+    const btn = document.getElementById('show-create-playlist-btn');
+    if (form) form.classList.add('hidden');
+    if (btn) btn.classList.remove('hidden');
+
+    this.addVideoToPlaylist(newPlaylist.id);
   }
 
   closePlaylistModal() {
@@ -1625,13 +1665,15 @@ class WatchOnRepeat {
         avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80";
       }
 
+      const isPremiumProvider = provider === 'Google';
       const mockUser = {
         id: 'usr_' + provider.toLowerCase() + '_' + Date.now(),
         name: mockName,
         email: mockEmail,
         avatar: avatar,
         provider: provider,
-        tier: 'free'
+        tier: isPremiumProvider ? 'premium' : 'free',
+        isPremium: isPremiumProvider
       };
 
       this.state.user = mockUser;
@@ -2012,6 +2054,34 @@ class WatchOnRepeat {
     return `${m}:${s.toString().padStart(2, '0')}`;
   }
 
+  applyTimeMask(input, onChangeCallback) {
+    input.addEventListener('focus', function() {
+      if (!this.value || this.value === '0' || this.value === '0:00') {
+        this.value = '0:00';
+      }
+      setTimeout(() => this.select(), 10);
+    });
+    
+    input.addEventListener('input', function(e) {
+      let val = this.value.replace(/\D/g, '');
+      if (!val) {
+        this.value = '';
+        return;
+      }
+      if (val.length <= 2) {
+        this.value = val;
+      } else {
+        let m = val.slice(0, -2);
+        let s = val.slice(-2);
+        this.value = `${m}:${s}`;
+      }
+    });
+
+    if (onChangeCallback) {
+      input.addEventListener('change', onChangeCallback);
+    }
+  }
+
   initTimeline() {
     let isDragging = null;
 
@@ -2039,7 +2109,9 @@ class WatchOnRepeat {
       }
       this.state.abLoop.start = s;
       this.state.abLoop.end = e;
+      this.state.abLoop.active = true;
       
+
       // Handle Skipping/Jumping
       if (this.player) {
         if (source === 'start') {
@@ -2100,13 +2172,13 @@ class WatchOnRepeat {
     
     // Bind text inputs
     if (this.elements.abStart) {
-      this.elements.abStart.addEventListener('change', () => {
+      this.applyTimeMask(this.elements.abStart, () => {
         this.elements.abStart.value = this.formatTime(this.parseTime(this.elements.abStart.value));
         updateFromInputs('start');
       });
     }
     if (this.elements.abEnd) {
-      this.elements.abEnd.addEventListener('change', () => {
+      this.applyTimeMask(this.elements.abEnd, () => {
         this.elements.abEnd.value = this.formatTime(this.parseTime(this.elements.abEnd.value));
         updateFromInputs('end');
       });
@@ -2284,36 +2356,7 @@ class WatchOnRepeat {
     }
   }
 
-  toggleABLoop() {
-    this.state.abLoop.active = !this.state.abLoop.active;
-    
-    if (this.state.abLoop.active) {
-      let s = this.parseTime(this.elements.abStart.value);
-      let e = this.parseTime(this.elements.abEnd.value);
-      
-      if (e <= s) {
-        this.showToast("End time must be greater than start time", "alert-circle");
-        this.state.abLoop.active = false;
-        return;
-      }
-      this.state.abLoop.start = s;
-      this.state.abLoop.end = e;
-      this.elements.toggleAbLoopBtn.textContent = 'Disable Timestamp';
-      this.elements.toggleAbLoopBtn.classList.replace('btn-outline', 'btn-primary');
-      if (this.elements.saveLoopGroup) this.elements.saveLoopGroup.classList.remove('hidden');
-      this.showToast(`A/B Loop enabled: ${s}s to ${e}s`);
-      
-      // Auto-seek to start if before start
-      this.getCurrentTime().then(t => {
-        if (t < s || t > e) this.seekToTime(s);
-      });
-    } else {
-      this.elements.toggleAbLoopBtn.textContent = 'Enable Timestamp';
-      this.elements.toggleAbLoopBtn.classList.replace('btn-primary', 'btn-outline');
-      if (this.elements.saveLoopGroup) this.elements.saveLoopGroup.classList.add('hidden');
-      this.showToast("A/B Loop disabled");
-    }
-  }
+  // Removed toggleABLoop function
 
   async checkABLoop() {
     if (!this.state.abLoop.active) return;
@@ -2414,8 +2457,8 @@ class WatchOnRepeat {
     
     // Add event listeners to new inputs
     list.querySelectorAll('.multi-seg-input').forEach(input => {
-      input.addEventListener('change', (e) => {
-        const idx = parseInt(e.target.dataset.index);
+      this.applyTimeMask(input, (e) => {
+        const idx = parseInt(e.target.dataset.index, 10);
         const type = e.target.dataset.type;
         const val = this.parseTime(e.target.value);
         this.state.abLoop.multiSegments[idx][type] = val;
@@ -2723,7 +2766,8 @@ class WatchOnRepeat {
         });
       } else if (key === s.toggleLoop) {
         e.preventDefault();
-        this.toggleABLoop();
+        // Removed explicit toggle
+
       } else if (key === s.focusSpeed) {
         e.preventDefault();
         if (this.elements.playbackSpeed) this.elements.playbackSpeed.focus();
