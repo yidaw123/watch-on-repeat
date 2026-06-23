@@ -1935,18 +1935,7 @@ class WatchOnRepeat {
   // ==========================================
 
   shareVideo() {
-    const video = this.state.currentVideo;
-    if (!video) return;
-
-    // Generate local share link
-    const shareUrl = `${window.location.origin}${window.location.pathname}?v=${video.id}&p=${video.platform}`;
-    
-    // Write to clipboard
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      this.showToast("Copied watch link to clipboard!", "clipboard-check");
-    }).catch(err => {
-      this.showToast("Could not copy link automatically.", "alert-circle");
-    });
+    this.generateShareableClip();
   }
 
   // ==========================================
@@ -2351,6 +2340,13 @@ class WatchOnRepeat {
     const timelineContainer = document.getElementById('timeline-container');
     
     if (e.target.checked) {
+      const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+      if (!isPremium) {
+        e.target.checked = false;
+        this.openUpgradeModal("Multiple loop segments are a Premium feature.");
+        return;
+      }
+      
       wrapperList.classList.remove('hidden');
       addBtn.classList.remove('hidden');
       defaultInputs.forEach(el => el.classList.add('hidden'));
@@ -2564,7 +2560,7 @@ class WatchOnRepeat {
     return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  generateShareableClip() {
+  async generateShareableClip() {
     const video = this.state.currentVideo;
     if (!video) {
       this.showToast("Load a video first!", "alert-circle");
@@ -2587,6 +2583,15 @@ class WatchOnRepeat {
     } else if (this.state.abLoop.active) {
       urlParams.set('start', this.state.abLoop.start);
       urlParams.set('end', this.state.abLoop.end);
+    } else {
+      try {
+        const currentTime = await this.getCurrentTime();
+        if (currentTime > 0) {
+          urlParams.set('start', Math.floor(currentTime));
+        }
+      } catch (err) {
+        console.error("Could not get current time for share link", err);
+      }
     }
     
     if (this.state.playbackRate !== 1) {
