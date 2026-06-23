@@ -1,0 +1,14 @@
+# Operating System Files
+Thumbs.db
+db.json
+*.local
+.DS_Store
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
