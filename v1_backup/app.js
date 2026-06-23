@@ -24,7 +24,7 @@ class WatchOnRepeat {
       },
       currentPlatform: null,
       abLoop: {
-        active: true,
+        active: false,
         start: 0,
         end: 0,
         timer: null
@@ -39,60 +39,12 @@ class WatchOnRepeat {
     this.handleYouTubeStateChange = this.handleYouTubeStateChange.bind(this);
   }
 
-  setUserFromSession(session) {
-    const user = session.user;
-    const tier = user.user_metadata?.tier || 'free';
-    const avatar = user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email);
-    const username = user.user_metadata?.full_name || user.email.split('@')[0];
-    
-    this.state.user = {
-      id: user.id,
-      name: username.charAt(0).toUpperCase() + username.slice(1),
-      email: user.email,
-      avatar: avatar,
-      provider: user.app_metadata?.provider || 'Email',
-      tier: tier,
-      isPremium: tier === 'premium' || tier === 'pro'
-    };
-    
-    // Update DB of registered users locally for reference
-    const users = this.getDb('users');
-    if (!users.some(u => u.email === this.state.user.email)) {
-      users.push(this.state.user);
-      this.saveDb('users', users);
-    }
-    
-    this.updateUserUI();
-    this.closeLoginModal();
-    
-    if (this.state.currentVideo) {
-      this.addToHistory(this.state.currentVideo.id, this.state.currentVideo.platform, this.state.currentVideo.title);
-      this.updateFavoriteButtonUI();
-      this.updateStatsUI();
-    }
-  }
-
-  async init() {
+  init() {
     this.cacheElements();
     this.initDatabase();
-    
-    // Initialize Supabase Auth Session
-    if (supabaseClient) {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        this.setUserFromSession(session);
-      }
-      
-      supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          if (session) this.setUserFromSession(session);
-        } else if (event === 'SIGNED_OUT') {
-          this.state.user = null;
-          this.updateUserUI();
-        }
-      });
+    if (this.state.user) {
+      // Data is handled by LocalStorage fallback right now
     }
-
     this.setupEventListeners();
     this.loadSDKs();
     this.generateBookmarklet();
@@ -194,6 +146,7 @@ class WatchOnRepeat {
       // Advanced Controls
       abStart: document.getElementById('ab-start'),
       abEnd: document.getElementById('ab-end'),
+      toggleAbLoopBtn: document.getElementById('toggle-ab-loop-btn'),
       playbackSpeed: document.getElementById('playback-speed'),
       saveLoopGroup: document.getElementById('save-loop-group'),
       loopNameInput: document.getElementById('loop-name-input'),
@@ -252,7 +205,11 @@ class WatchOnRepeat {
       localStorage.setItem('wor_global_stats', JSON.stringify(defaultGlobalStats));
     }
 
-    // Session is handled by Supabase
+    // Check session
+    const savedSession = localStorage.getItem('wor_session');
+    if (savedSession) {
+      this.state.user = JSON.parse(savedSession);
+    }
   }
 
   getDb(key) {
@@ -354,6 +311,10 @@ class WatchOnRepeat {
     }
     if (!isNaN(start) && !isNaN(end) && end > start) {
       this.state.abLoop.active = true;
+      if (this.elements.toggleAbLoopBtn) {
+        this.elements.toggleAbLoopBtn.textContent = 'Disable Timestamp';
+        this.elements.toggleAbLoopBtn.classList.replace('btn-outline', 'btn-primary');
+      }
     }
     if (!isNaN(rate)) {
       this.state.playbackRate = rate;
@@ -435,8 +396,8 @@ class WatchOnRepeat {
     this.state.currentPlatform = null;
     this.stopTimer();
     
-    this.elements.playerLoaded.classList.remove('hidden');
-    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
+    this.elements.playerLoaded.classList.add('hidden');
+    this.elements.playerEmpty.classList.remove('hidden');
     
     // Clear iframe container
     this.elements.playerContainer.innerHTML = '';
@@ -586,7 +547,7 @@ class WatchOnRepeat {
     // We can use requestAnimationFrame to check time for native video, 
     // or just rely on the existing loop tracker
     
-    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
+    this.elements.playerEmpty.classList.add('hidden');
     this.elements.playerLoaded.classList.remove('hidden');
     
     this.updateVideoInfoUI();
@@ -618,7 +579,7 @@ class WatchOnRepeat {
     this.elements.playerContainer.innerHTML = '';
     
     // Show Loaded State
-    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
+    this.elements.playerEmpty.classList.add('hidden');
     this.elements.playerLoaded.classList.remove('remove'); // make sure
     this.elements.playerLoaded.classList.remove('hidden');
     
@@ -691,6 +652,7 @@ class WatchOnRepeat {
     this.incrementGlobalPlayCount(id, platform);
     
     this.startTimer();
+    this.showToast(`Now looping: ${this.truncateString(videoTitle, 35)}`);
   }
 
   updatePlatformBadge(platform) {
@@ -991,6 +953,9 @@ class WatchOnRepeat {
 
     // Refresh UI stats
     this.updateStatsUI();
+
+    // Show looping toast
+    this.showToast(`Loop count: ${this.state.personalLoops}!`, 'refresh-cw');
   }
 
   incrementGlobalPlayCount(id, platform) {
@@ -1416,13 +1381,6 @@ class WatchOnRepeat {
     
     const modal = document.getElementById('playlist-modal');
     const list = document.getElementById('playlist-select-list');
-    
-    const form = document.getElementById('create-playlist-form');
-    const createBtn = document.getElementById('show-create-playlist-btn');
-    if (form && createBtn) {
-      form.classList.add('hidden');
-      createBtn.classList.remove('hidden');
-    }
     if (!modal || !list) return;
     
     const playlists = this.getDb('playlists').filter(p => p.userId === this.state.user.id);
@@ -1443,48 +1401,6 @@ class WatchOnRepeat {
     
     lucide.createIcons();
     modal.classList.remove('hidden');
-  }
-
-  createNewPlaylistFromModal() {
-    if (!this.state.user) {
-      this.openLoginModal();
-      return;
-    }
-    
-    const input = document.getElementById('new-playlist-name');
-    if (!input) return;
-    const name = input.value.trim();
-    if (!name) return;
-
-    const playlists = this.getDb('playlists');
-    const userPlaylists = playlists.filter(p => p.userId === this.state.user.id);
-
-    // Free limit: 5 playlists
-    const tier = this.state.user.tier || 'free';
-    if (tier === 'free' && userPlaylists.length >= 5) {
-      this.closePlaylistModal();
-      this.openUpgradeModal("Free users can create up to 5 playlists. Upgrade to Premium for unlimited playlists!");
-      return;
-    }
-
-    const newPlaylist = {
-      id: 'pl_' + Date.now(),
-      userId: this.state.user.id,
-      name: name,
-      videos: []
-    };
-    playlists.push(newPlaylist);
-
-    this.saveDb('playlists', playlists);
-    input.value = '';
-    
-    // Hide form, show button
-    const form = document.getElementById('create-playlist-form');
-    const btn = document.getElementById('show-create-playlist-btn');
-    if (form) form.classList.add('hidden');
-    if (btn) btn.classList.remove('hidden');
-
-    this.addVideoToPlaylist(newPlaylist.id);
   }
 
   closePlaylistModal() {
@@ -1679,28 +1595,71 @@ class WatchOnRepeat {
     this.elements.userMenu.classList.toggle('hidden');
   }
 
-  async handleSocialLogin(provider) {
-    if (!supabaseClient) {
-      this.showToast("Supabase not initialized", "alert-circle");
-      return;
-    }
-
+  handleSocialLogin(provider) {
     this.elements.authOptions.classList.add('hidden');
     this.elements.authLoading.classList.remove('hidden');
-    this.elements.authLoadingText.textContent = `Redirecting to ${provider}...`;
+    this.elements.authLoadingText.textContent = `Connecting to ${provider}...`;
     
-    const { data, error } = await supabaseClient.auth.signInWithOAuth({
-      provider: provider.toLowerCase(),
-      options: {
-        redirectTo: window.location.origin
-      }
-    });
+    // Simulate API calls
+    setTimeout(() => {
+      this.elements.authLoadingText.textContent = `Authenticating your account...`;
+    }, 800);
 
-    if (error) {
-      this.showToast(error.message, 'alert-circle');
-      this.elements.authLoading.classList.add('hidden');
-      this.elements.authOptions.classList.remove('hidden');
-    }
+    setTimeout(() => {
+      // Mock user generation
+      let mockName = "Guest User";
+      let mockEmail = "guest@example.com";
+      let avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"; // sleek mock face
+      
+      if (provider === 'Google') {
+        mockName = "Alex Mercer";
+        mockEmail = "alex.mercer@gmail.com";
+        avatar = "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&auto=format&fit=crop&q=80";
+      } else if (provider === 'Facebook') {
+        mockName = "Sarah Jenkins";
+        mockEmail = "sarah.j@facebook.com";
+        avatar = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80";
+      } else if (provider === 'GitHub') {
+        mockName = "code_ninja";
+        mockEmail = "ninja@github.com";
+        avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80";
+      }
+
+      const mockUser = {
+        id: 'usr_' + provider.toLowerCase() + '_' + Date.now(),
+        name: mockName,
+        email: mockEmail,
+        avatar: avatar,
+        provider: provider,
+        tier: 'free'
+      };
+
+      this.state.user = mockUser;
+      localStorage.setItem('wor_session', JSON.stringify(mockUser));
+      
+      // Update DB of registered users
+      const users = this.getDb('users');
+      if (!users.some(u => u.email === mockUser.email)) {
+        users.push(mockUser);
+        this.saveDb('users', users);
+      }
+
+      // Close modal & notify
+      this.closeLoginModal();
+      this.updateUserUI();
+      this.showToast(`Logged in successfully via ${provider}! Welcome, ${mockName}.`, 'shield-check');
+      
+      // Reload video if loaded to sync favorite UI and create user record in history
+      if (this.state.currentVideo) {
+        this.addToHistory(this.state.currentVideo.id, this.state.currentVideo.platform, this.state.currentVideo.title);
+        this.updateFavoriteButtonUI();
+        this.updateStatsUI();
+      }
+
+      // Switch to discover
+      this.switchTab(this.state.activeTab);
+
+    }, 2000);
   }
 
   async handleEmailLogin(e) {
@@ -1726,10 +1685,42 @@ class WatchOnRepeat {
       
       if (error) throw error;
 
+      let username = email.split('@')[0];
+      username = username.charAt(0).toUpperCase() + username.slice(1);
+
+      // Check tier from custom table
+      const { data: userData } = await supabaseClient.from('users').select('tier').eq('id', data.user.id).single();
+      const tier = userData ? userData.tier : 'free';
+
+      const mockUser = {
+        id: data.user.id,
+        name: username,
+        email: email,
+        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80",
+        provider: 'Email',
+        tier: tier,
+        isPremium: tier === 'premium' || tier === 'pro'
+      };
+
+      this.state.user = mockUser;
+      localStorage.setItem('wor_session', JSON.stringify(mockUser));
+
       emailInput.value = '';
       passwordInput.value = '';
-      
-      this.showToast(`Logged in successfully!`, 'shield-check');
+
+      // Render state
+      this.renderHistoryTab();
+      this.renderFavoritesTab();
+      this.closeLoginModal();
+      this.updateUserUI();
+      this.showToast(`Logged in successfully! Welcome, ${username}.`, 'shield-check');
+
+      if (this.state.currentVideo) {
+        this.addToHistory(this.state.currentVideo.id, this.state.currentVideo.platform, this.state.currentVideo.title);
+        this.updateFavoriteButtonUI();
+        this.updateStatsUI();
+      }
+
       this.switchTab(this.state.activeTab);
 
     } catch (err) {
@@ -1780,7 +1771,25 @@ class WatchOnRepeat {
           tier: 'free'
         });
 
-        this.showToast(`Account created successfully!`, 'shield-check');
+        let username = email.split('@')[0];
+        username = username.charAt(0).toUpperCase() + username.slice(1);
+
+        const mockUser = {
+          id: data.user.id,
+          name: username,
+          email: email,
+          avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80",
+          provider: 'Email',
+          tier: 'free',
+          isPremium: false
+        };
+
+        this.state.user = mockUser;
+        localStorage.setItem('wor_session', JSON.stringify(mockUser));
+
+        this.closeLoginModal();
+        this.updateUserUI();
+        this.showToast(`Account created successfully! Welcome, ${username}.`, 'shield-check');
       }
 
     } catch (err) {
@@ -1831,6 +1840,7 @@ class WatchOnRepeat {
 
   async handleLogout() {
     if (supabaseClient) await supabaseClient.auth.signOut();
+    localStorage.removeItem('wor_session');
     this.state.user = null;
     
     this.updateUserUI();
@@ -2002,34 +2012,6 @@ class WatchOnRepeat {
     return `${m}:${s.toString().padStart(2, '0')}`;
   }
 
-  applyTimeMask(input, onChangeCallback) {
-    input.addEventListener('focus', function() {
-      if (!this.value || this.value === '0' || this.value === '0:00') {
-        this.value = '0:00';
-      }
-      setTimeout(() => this.select(), 10);
-    });
-    
-    input.addEventListener('input', function(e) {
-      let val = this.value.replace(/\D/g, '');
-      if (!val) {
-        this.value = '';
-        return;
-      }
-      if (val.length <= 2) {
-        this.value = val;
-      } else {
-        let m = val.slice(0, -2);
-        let s = val.slice(-2);
-        this.value = `${m}:${s}`;
-      }
-    });
-
-    if (onChangeCallback) {
-      input.addEventListener('change', onChangeCallback);
-    }
-  }
-
   initTimeline() {
     let isDragging = null;
 
@@ -2057,9 +2039,7 @@ class WatchOnRepeat {
       }
       this.state.abLoop.start = s;
       this.state.abLoop.end = e;
-      this.state.abLoop.active = true;
       
-
       // Handle Skipping/Jumping
       if (this.player) {
         if (source === 'start') {
@@ -2120,13 +2100,13 @@ class WatchOnRepeat {
     
     // Bind text inputs
     if (this.elements.abStart) {
-      this.applyTimeMask(this.elements.abStart, () => {
+      this.elements.abStart.addEventListener('change', () => {
         this.elements.abStart.value = this.formatTime(this.parseTime(this.elements.abStart.value));
         updateFromInputs('start');
       });
     }
     if (this.elements.abEnd) {
-      this.applyTimeMask(this.elements.abEnd, () => {
+      this.elements.abEnd.addEventListener('change', () => {
         this.elements.abEnd.value = this.formatTime(this.parseTime(this.elements.abEnd.value));
         updateFromInputs('end');
       });
@@ -2304,7 +2284,36 @@ class WatchOnRepeat {
     }
   }
 
-  // Removed toggleABLoop function
+  toggleABLoop() {
+    this.state.abLoop.active = !this.state.abLoop.active;
+    
+    if (this.state.abLoop.active) {
+      let s = this.parseTime(this.elements.abStart.value);
+      let e = this.parseTime(this.elements.abEnd.value);
+      
+      if (e <= s) {
+        this.showToast("End time must be greater than start time", "alert-circle");
+        this.state.abLoop.active = false;
+        return;
+      }
+      this.state.abLoop.start = s;
+      this.state.abLoop.end = e;
+      this.elements.toggleAbLoopBtn.textContent = 'Disable Timestamp';
+      this.elements.toggleAbLoopBtn.classList.replace('btn-outline', 'btn-primary');
+      if (this.elements.saveLoopGroup) this.elements.saveLoopGroup.classList.remove('hidden');
+      this.showToast(`A/B Loop enabled: ${s}s to ${e}s`);
+      
+      // Auto-seek to start if before start
+      this.getCurrentTime().then(t => {
+        if (t < s || t > e) this.seekToTime(s);
+      });
+    } else {
+      this.elements.toggleAbLoopBtn.textContent = 'Enable Timestamp';
+      this.elements.toggleAbLoopBtn.classList.replace('btn-primary', 'btn-outline');
+      if (this.elements.saveLoopGroup) this.elements.saveLoopGroup.classList.add('hidden');
+      this.showToast("A/B Loop disabled");
+    }
+  }
 
   async checkABLoop() {
     if (!this.state.abLoop.active) return;
@@ -2405,8 +2414,8 @@ class WatchOnRepeat {
     
     // Add event listeners to new inputs
     list.querySelectorAll('.multi-seg-input').forEach(input => {
-      this.applyTimeMask(input, (e) => {
-        const idx = parseInt(e.target.dataset.index, 10);
+      input.addEventListener('change', (e) => {
+        const idx = parseInt(e.target.dataset.index);
         const type = e.target.dataset.type;
         const val = this.parseTime(e.target.value);
         this.state.abLoop.multiSegments[idx][type] = val;
@@ -2714,8 +2723,7 @@ class WatchOnRepeat {
         });
       } else if (key === s.toggleLoop) {
         e.preventDefault();
-        // Removed explicit toggle
-
+        this.toggleABLoop();
       } else if (key === s.focusSpeed) {
         e.preventDefault();
         if (this.elements.playbackSpeed) this.elements.playbackSpeed.focus();
