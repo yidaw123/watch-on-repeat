@@ -732,6 +732,29 @@ class WatchOnRepeat {
   }
 
   async fetchVideoTitleMock(id, platform) {
+    try {
+      let videoUrl = '';
+      if (platform === 'youtube') {
+        videoUrl = `https://www.youtube.com/watch?v=${id}`;
+      } else if (platform === 'vimeo') {
+        videoUrl = `https://vimeo.com/${id}`;
+      } else if (platform === 'dailymotion') {
+        videoUrl = `https://www.dailymotion.com/video/${id}`;
+      }
+
+      if (videoUrl) {
+        const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(videoUrl)}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.title) {
+            return data.title;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("noembed proxy failed", err);
+    }
+    
     // Generate an appealing fake title for unrecognized videos based on the ID to make it look realistic
     const prefixes = ["Chill Beats", "Synthwave Session", "Ambient Relaxation", "Nature Sounds", "Epic Orchestral", "Developer Focus", "Cozy Coffee Shop", "Live Music Session"];
     const index = id.charCodeAt(0) % prefixes.length;
@@ -2057,7 +2080,7 @@ class WatchOnRepeat {
       
 
       // Handle Skipping/Jumping
-      if (this.player) {
+      if (this.player && !isDragging) {
         if (source === 'start') {
           this.seekToTime(s);
         } else if (source === 'end') {
@@ -2073,16 +2096,21 @@ class WatchOnRepeat {
     this.updateTimelineUI = updateFromInputs;
 
     const handlePointerDown = (e, handleType) => {
-      e.preventDefault();
+      if (e.cancelable) e.preventDefault();
       isDragging = handleType;
-      document.addEventListener('mousemove', handlePointerMove);
+      document.addEventListener('mousemove', handlePointerMove, {passive: false});
       document.addEventListener('mouseup', handlePointerUp);
+      document.addEventListener('touchmove', handlePointerMove, {passive: false});
+      document.addEventListener('touchend', handlePointerUp);
     };
 
     const handlePointerMove = (e) => {
       if (!isDragging) return;
+      if (e.cancelable) e.preventDefault();
+      
+      const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
       const rect = this.elements.timelineContainer.getBoundingClientRect();
-      let x = e.clientX - rect.left;
+      let x = clientX - rect.left;
       if (x < 0) x = 0;
       if (x > rect.width) x = rect.width;
       
@@ -2102,16 +2130,25 @@ class WatchOnRepeat {
     };
 
     const handlePointerUp = () => {
+      const draggedHandle = isDragging;
       isDragging = null;
       document.removeEventListener('mousemove', handlePointerMove);
       document.removeEventListener('mouseup', handlePointerUp);
+      document.removeEventListener('touchmove', handlePointerMove);
+      document.removeEventListener('touchend', handlePointerUp);
+      
+      if (draggedHandle) {
+        updateFromInputs(draggedHandle);
+      }
     };
 
     if (this.elements.timelineHandleStart) {
       this.elements.timelineHandleStart.addEventListener('mousedown', (e) => handlePointerDown(e, 'start'));
+      this.elements.timelineHandleStart.addEventListener('touchstart', (e) => handlePointerDown(e, 'start'), {passive: false});
     }
     if (this.elements.timelineHandleEnd) {
       this.elements.timelineHandleEnd.addEventListener('mousedown', (e) => handlePointerDown(e, 'end'));
+      this.elements.timelineHandleEnd.addEventListener('touchstart', (e) => handlePointerDown(e, 'end'), {passive: false});
     }
     
     // Bind text inputs
