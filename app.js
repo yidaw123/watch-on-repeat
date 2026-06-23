@@ -2116,15 +2116,11 @@ class WatchOnRepeat {
 
       // Handle Skipping/Jumping
       if (this.state.currentPlatform && !isDragging) {
-        if (source === 'start') {
-          this.seekToTime(s);
-        } else if (source === 'end') {
-          this.getCurrentTime().then(t => {
-            if (t > e || t < s) {
-              this.seekToTime(s);
-            }
-          });
-        }
+        this.getCurrentTime().then(t => {
+          if (t < s || t > e) {
+            this.seekToTime(s);
+          }
+        });
       }
     };
 
