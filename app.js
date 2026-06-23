@@ -585,7 +585,9 @@ class WatchOnRepeat {
     
     this.updateVideoInfoUI();
     this.updateNotesUI();
-    this.loadAbLoopData();
+    if (this.state.currentVideo) {
+      this.loadLoopData(this.state.currentVideo.id);
+    }
   }
 
   // ==========================================
@@ -701,6 +703,45 @@ class WatchOnRepeat {
     lucide.createIcons();
   }
 
+  saveLoopData() {
+    if (!this.state.currentVideo || !this.state.currentVideo.id) return;
+    const id = this.state.currentVideo.id;
+    const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+    
+    savedLoops[id] = {
+      start: this.state.abLoop.start,
+      end: this.state.abLoop.end,
+      multiSegments: this.state.abLoop.multiSegments || [],
+      enabled: this.state.abLoop.active
+    };
+    
+    localStorage.setItem('wor_saved_loops', JSON.stringify(savedLoops));
+  }
+
+  loadLoopData(id) {
+    if (!id) return;
+    const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+    const data = savedLoops[id];
+    
+    if (data) {
+      this.state.abLoop.start = data.start || 0;
+      this.state.abLoop.end = data.end || this.state.currentVideoDuration;
+      if (this.state.abLoop.end > this.state.currentVideoDuration && this.state.currentVideoDuration > 0) {
+        this.state.abLoop.end = this.state.currentVideoDuration;
+      }
+      this.state.abLoop.multiSegments = data.multiSegments || [];
+      this.state.abLoop.active = data.enabled !== false;
+      
+      if (this.elements.abStart) this.elements.abStart.value = this.formatTime(this.state.abLoop.start);
+      if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(this.state.abLoop.end);
+      
+      if (this.updateTimelineUI) {
+        this.updateTimelineUI();
+      }
+      this.renderMultiSegments();
+    }
+  }
+
   setVideoDuration(duration) {
     this.state.currentVideoDuration = duration;
     
@@ -713,6 +754,10 @@ class WatchOnRepeat {
       } else {
         this.elements.abEnd.value = "End";
       }
+    }
+    
+    if (this.state.currentVideo && this.state.currentVideo.id) {
+      this.loadLoopData(this.state.currentVideo.id);
     }
     
     if (this.updateTimelineUI) {
@@ -2066,6 +2111,7 @@ class WatchOnRepeat {
       this.state.abLoop.start = s;
       this.state.abLoop.end = e;
       this.state.abLoop.active = true;
+      this.saveLoopData();
       
 
       // Handle Skipping/Jumping
@@ -2400,6 +2446,7 @@ class WatchOnRepeat {
   addLoopSegment() {
     if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
     this.state.abLoop.multiSegments.push({ start: 0, end: this.state.currentVideoDuration || 10 });
+    this.saveLoopData();
     this.renderMultiSegments();
   }
 
@@ -2408,6 +2455,7 @@ class WatchOnRepeat {
     if (this.state.abLoop.currentSegmentIndex >= this.state.abLoop.multiSegments.length) {
       this.state.abLoop.currentSegmentIndex = 0;
     }
+    this.saveLoopData();
     this.renderMultiSegments();
   }
 
@@ -2442,6 +2490,7 @@ class WatchOnRepeat {
         e.target.value = this.formatTime(val);
         // Force loop restart at new segment if we edit it
         this.state.abLoop.currentSegmentIndex = idx;
+        this.saveLoopData();
       });
     });
     
