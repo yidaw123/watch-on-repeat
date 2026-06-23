@@ -615,14 +615,14 @@ h1, h2, h3, h4, .brand-name {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--text-muted);
 }
 
 .platform-indicator i {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
 }
 
 .platform-indicator.youtube { color: #ef4444; }

@@ -735,7 +735,7 @@ class WatchOnRepeat {
     // Generate an appealing fake title for unrecognized videos based on the ID to make it look realistic
     const prefixes = ["Chill Beats", "Synthwave Session", "Ambient Relaxation", "Nature Sounds", "Epic Orchestral", "Developer Focus", "Cozy Coffee Shop", "Live Music Session"];
     const index = id.charCodeAt(0) % prefixes.length;
-    return `${prefixes[index]} (Looped Version - ID: ${id})`;
+    return `${prefixes[index]}`;
   }
 
   // --- YouTube Iframe Controller ---
