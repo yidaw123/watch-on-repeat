@@ -756,6 +756,23 @@
     </div>
   </footer>
 
-  <script src="app.js?v=3"></script>
+  <script>
+    // SELF DESTRUCT OLD SERVICE WORKERS & CACHES
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        for (let name of names) {
+          caches.delete(name);
+        }
+      });
+    }
+  </script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
