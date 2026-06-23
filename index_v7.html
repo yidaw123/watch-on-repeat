@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WatchOnRepeat - Infinite Video Looper</title>
+  <meta name="description" content="Repeat your favorite videos from YouTube, Dailymotion, and Vimeo infinitely. Track personal and global loop counts.">
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts: Outfit and Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Background decorative glowing blobs -->
+  <div class="glow-bg">
+    <div class="blob blob-purple"></div>
+    <div class="blob blob-blue"></div>
+  </div>
+
+  <div id="app-shell">
+    
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <div class="brand" id="brand-logo" onclick="app.loadHome()">
+        <div class="brand-icon">
+          <i data-lucide="repeat"></i>
+        </div>
+        <span class="brand-name">Watch<span>On</span>Repeat</span>
+      </div>
+      
+      <!-- Center Search/URL Input Bar -->
+      <div class="search-container">
+        <!-- Row 1: Direct Link Paste -->
+        <form id="paste-form" onsubmit="app.handleSearchSubmit(event)">
+          <div class="search-wrapper">
+            <i data-lucide="link-2" class="search-icon"></i>
+            <input type="text" id="video-url-input" placeholder="Paste direct link (YouTube, Vimeo, Dailymotion, adult sites, etc.)..." autocomplete="off">
+            <button type="submit" class="search-btn">
+              <span>Loop It</span>
+              <i data-lucide="play"></i>
+            </button>
+            <button type="button" class="search-btn" style="background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);" onclick="app.triggerLocalVideo()" title="Load Local Video (Offline Mode)">
+              <i data-lucide="folder-open"></i>
+            </button>
+            <input type="file" id="local-video-input" accept="video/mp4,video/webm,video/ogg" class="hidden" onchange="app.loadLocalVideo(event)">
+          </div>
+        </form>
+        <!-- Row 2: Native Platform Search -->
+        <form id="native-search-form" onsubmit="app.handleNativeSearch(event)">
+          <div class="search-wrapper native-search-wrapper">
+            <select id="native-search-platform" class="platform-select">
+              <option value="youtube">YouTube</option>
+              <option value="vimeo">Vimeo</option>
+              <option value="dailymotion">Dailymotion</option>
+            </select>
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="native-search-input" placeholder="Search videos natively..." autocomplete="off">
+            <button type="submit" class="search-btn native-search-btn">
+              <span>Search</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- User Auth Section -->
+      <div class="auth-section">
+        <div id="auth-logged-out">
+          <button class="btn btn-primary" onclick="app.openLoginModal()">
+            <i data-lucide="log-in"></i>
+            <span>Sign In</span>
+          </button>
+        </div>
+        <div id="auth-logged-in" class="hidden">
+          <div class="user-profile" onclick="app.toggleUserMenu(event)">
+            <img id="user-avatar" src="" alt="User Avatar">
+            <span id="user-name">User</span>
+            <i data-lucide="chevron-down" class="chevron-icon"></i>
+            
+            <div id="user-menu" class="dropdown-menu hidden">
+              <div class="dropdown-header">
+                <p class="dropdown-email" id="user-email">user@example.com</p>
+              </div>
+              <hr>
+              <a href="#" onclick="app.showTab('favorites')"><i data-lucide="heart"></i> My Favorites</a>
+              <a href="#" onclick="app.showTab('history')"><i data-lucide="history"></i> Loop History</a>
+              <a href="#" onclick="app.openShortcutsModal()"><i data-lucide="keyboard"></i> Shortcuts Setting</a>
+              <hr>
+              <a href="#" onclick="app.handleLogout()"><i data-lucide="log-out"></i> Sign Out</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area Wrapper -->
+    <div class="content-wrapper">
+      
+      <!-- Left Gutter Ad Space -->
+      <aside class="ad-slot ad-gutter ad-gutter-left" id="ad-gutter-left">
+        <span class="ad-label">ADVERTISEMENT</span>
+        <div class="ad-placeholder">
+          <div class="ad-skyscraper-sim">
+            <p class="ad-sky-title">Sponsor Ad</p>
+            <p class="ad-sky-desc">Remove all ads instantly.</p>
+            <button class="btn btn-outline btn-sm ad-buy-btn" onclick="app.simulateBuyPremium()" style="margin-top: 10px; width: 100%;">
+              <i data-lucide="crown" style="width:12px; height:12px; margin-right:4px;"></i> Premium
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="main-container">
+      
+      <!-- Video Player Column -->
+      <section class="player-column">
+        
+        <!-- Empty State (No video loaded) -->
+        <div id="player-empty-state" class="player-card empty-state">
+          <div class="empty-icon">
+            <i data-lucide="tv-2"></i>
+          </div>
+          <h2>Ready to Loop?</h2>
+          <p>Paste a video URL above, click "Loop It", and enjoy infinite replays with automatic counters.</p>
+          
+          <div class="shortcut-tip">
+            <h3><i data-lucide="sparkles"></i> The URL Trick</h3>
+            <p>You can replace <code>youtube.com</code> in any YouTube URL with <code>repeatyoutube.com</code> in your browser search bar to instantly load and loop it here!</p>
+            <div class="hosts-helper">
+              <span class="badge">Local testing</span>
+              <code>repeatyoutube.com:8000/watch?v=VIDEO_ID</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Player Display -->
+        <div id="player-loaded-state" class="player-card hidden">
+          <!-- The Iframe Wrapper -->
+          <div class="video-wrapper">
+            <div id="player-iframe-container">
+              <!-- Player SDKs will mount their iframes here -->
+            </div>
+          </div>
+
+          <!-- Video Details & Controls -->
+          <div class="video-info-bar">
+            <div class="title-section">
+              <div class="platform-indicator" id="platform-badge">
+                <i data-lucide="play-circle"></i>
+                <span id="platform-text">YouTube</span>
+              </div>
+              <h1 id="video-title">Loading video title...</h1>
+            </div>
+            <div class="action-buttons">
+              <button id="favorite-btn" class="btn-icon" onclick="app.toggleFavorite()" title="Favorite Video">
+                <i data-lucide="heart"></i>
+              </button>
+              <button id="add-playlist-btn" class="btn-icon" onclick="app.openPlaylistModal()" title="Add to Playlist">
+                <i data-lucide="list-plus"></i>
+              </button>
+              <button class="btn-icon" onclick="app.shareVideo()" title="Share Link">
+                <i data-lucide="share-2"></i>
+              </button>
+          </div>
+          
+          <!-- Stats Dashboard -->
+          <div class="stats-dashboard">
+            <div class="stat-card personal-stats">
+              <div class="stat-icon purple">
+                <i data-lucide="user"></i>
+              </div>
+              <div class="stat-details">
+                <div class="stat-value" id="personal-loop-count">0</div>
+                <div class="stat-label">Your Loops (Session)</div>
+              </div>
+              <div class="stat-sub">
+                Lifetime: <span id="personal-lifetime-count">0</span>
+              </div>
+            </div>
+
+            <div class="stat-card global-stats">
+              <div class="stat-icon pink">
+                <i data-lucide="globe"></i>
+              </div>
+              <div class="stat-details">
+                <div class="stat-value" id="global-loop-count">0</div>
+                <div class="stat-label">Global Loops</div>
+              </div>
+              <div class="stat-sub">
+                Total Plays: <span id="global-play-count">0</span>
+              </div>
+            </div>
+
+
+            <div class="stat-card loop-status">
+              <div class="stat-icon green">
+                <i data-lucide="refresh-cw" class="spinning-icon"></i>
+              </div>
+              <div class="stat-details">
+                <div class="stat-value text-green" id="loop-state-text">Looping</div>
+                <div class="stat-label">Playback State</div>
+              </div>
+              <div class="stat-sub" id="loop-timer">
+                Session time: 00:00
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Sidebar Tabs Column -->
+      <aside class="sidebar-column">
+        <div class="sidebar-card">
+          <!-- Sidebar Tabs Header -->
+          <div class="sidebar-tabs">
+            <button class="tab-btn active" onclick="app.switchTab('discover')" id="tab-discover-btn">
+              <i data-lucide="compass"></i>
+              <span>Discover</span>
+            </button>
+            <button class="tab-btn" onclick="app.switchTab('favorites')" id="tab-favorites-btn">
+              <i data-lucide="heart"></i>
+              <span>Favorites</span>
+            </button>
+            <button class="tab-btn" onclick="app.switchTab('history')" id="tab-history-btn">
+              <i data-lucide="history"></i>
+              <span>History</span>
+            </button>
+
+          </div>
+
+          <!-- Sidebar Tabs Content -->
+          <div class="tab-content-container">
+            
+            <!-- Discover Tab -->
+            <div id="tab-discover" class="tab-panel active">
+              
+              <!-- Resume Learning Section -->
+              <div id="resume-learning-section" class="hidden">
+                <h3 class="netflix-style-header">Resume Learning</h3>
+                <div class="resume-card" id="resume-card">
+                  <!-- Loaded dynamically via app.js -->
+                </div>
+              </div>
+
+              <h3>Popular Videos to Loop</h3>
+              <div class="video-grid" id="discover-list">
+                <!-- Will be loaded dynamically -->
+              </div>
+              
+              <!-- Bookmark Shortcut -->
+              <div class="bookmarklet-box">
+                <h4><i data-lucide="bookmark"></i> WatchOnRepeat Bookmark</h4>
+                <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Vimeo, Dailymotion, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
+                <a id="bookmarklet-btn" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;">
+                  <i data-lucide="repeat"></i>
+                  <span>Loop on WatchOnRepeat</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Favorites Tab -->
+            <div id="tab-favorites" class="tab-panel">
+              <div class="tab-header">
+                <h3>My Favorites</h3>
+                <span class="badge" id="favorites-count-badge">0</span>
+              </div>
+              <div class="auth-required-view" id="fav-auth-required">
+                <i data-lucide="lock" class="lock-icon"></i>
+                <p>Please sign in to save and view your favorite videos.</p>
+                <button class="btn btn-outline" onclick="app.openLoginModal()">Sign In</button>
+              </div>
+              <div class="video-list hidden" id="favorites-list">
+                <!-- Loaded dynamically -->
+              </div>
+              <div class="empty-state-list hidden" id="favorites-empty">
+                <i data-lucide="heart-off"></i>
+                <p>No favorites saved yet.</p>
+              </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="tab-history" class="tab-panel">
+              <div class="tab-header">
+                <h3>Loop History</h3>
+                <button class="btn-text" id="clear-history-btn" onclick="app.clearHistory()">Clear All</button>
+              </div>
+              <div class="auth-required-view id-history-auth" id="history-auth-required">
+                <i data-lucide="lock" class="lock-icon"></i>
+                <p>Please sign in to keep track of your loop history across devices.</p>
+                <button class="btn btn-outline" onclick="app.openLoginModal()">Sign In</button>
+              </div>
+              <div class="video-list hidden" id="history-list">
+                <!-- Loaded dynamically -->
+              </div>
+              <div class="empty-state-list hidden" id="history-empty">
+                <i data-lucide="clock"></i>
+                <p>Your history is currently empty.</p>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+
+      </aside>
+
+    </main>
+
+    <!-- Right Gutter Ad Space -->
+    <aside class="ad-slot ad-gutter ad-gutter-right" id="ad-gutter-right">
+      <span class="ad-label">ADVERTISEMENT</span>
+      <div class="ad-placeholder">
+        <div class="ad-skyscraper-sim">
+          <p class="ad-sky-title">Sponsor Ad</p>
+          <p class="ad-sky-desc">Remove all ads instantly.</p>
+          <button class="btn btn-outline btn-sm ad-buy-btn" onclick="app.simulateBuyPremium()" style="margin-top: 10px; width: 100%;">
+            <i data-lucide="crown" style="width:12px; height:12px; margin-right:4px;"></i> Premium
+          </button>
+        </div>
+      </div>
+    </aside>
+
+  </div> <!-- End content-wrapper -->
+
+    <!-- Social Sign In Modal -->
+    <div id="login-modal" class="modal-overlay hidden" onclick="app.closeLoginModal()">
+      <div class="modal-card" onclick="event.stopPropagation()">
+        <button class="modal-close-btn" onclick="app.closeLoginModal()">
+          <i data-lucide="x"></i>
+        </button>
+        <div class="modal-header">
+          <div class="modal-logo">
+            <i data-lucide="repeat"></i>
+          </div>
+          <h2>Join WatchOnRepeat</h2>
+          <p>Sync your loop counts, save favorites, and access your history anywhere.</p>
+        </div>
+        
+        <div class="modal-body" id="modal-auth-options">
+          <!-- Standard Account Form -->
+          <form id="email-login-form" onsubmit="app.handleEmailLogin(event)">
+            <div class="form-group">
+              <label for="login-email">Email Address</label>
+              <input type="email" id="login-email" placeholder="name@example.com" required autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+              <span>Sign In / Register</span>
+            </button>
+          </form>
+
+          <div class="auth-divider">
+            <span>OR</span>
+          </div>
+
+          <button class="btn-social google" onclick="app.handleSocialLogin('Google')">
+            <svg class="social-icon" viewBox="0 0 24 24" width="18" height="18">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69c-.29 1.5-.1.84-2.47 2.4l3.12 2.42c1.83-1.69 2.88-4.18 2.88-6.67z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.12-2.42c-.87.58-1.97.93-3.12.93-3.05 0-5.63-2.06-6.55-4.83l-3.23 2.5C5.87 21.14 8.7 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.45 14.77a7.148 7.148 0 0 1-.37-2.3c0-.8.13-1.57.37-2.3l-3.23-2.5C1.46 9.27 1 10.59 1 12s.46 2.73 1.22 4.27l3.23-2.5z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 8.7 0 5.87 2.86 3.97 6.33l3.23 2.5c.92-2.77 3.5-4.83 6.55-4.83z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+          
+          <button class="btn-social facebook" onclick="app.handleSocialLogin('Facebook')">
+            <svg class="social-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <span>Continue with Facebook</span>
+          </button>
+        </div>
+
+        <div class="modal-body hidden" id="modal-auth-loading">
+          <div class="loading-spinner"></div>
+          <p id="auth-loading-text">Connecting to social provider...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+      <i data-lucide="info" id="toast-icon"></i>
+      <span id="toast-message">Notification message here</span>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

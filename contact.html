@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - WatchOnRepeat</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    .contact-container { max-width: 600px; margin: 60px auto; padding: 40px; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0,0,0,0.2); backdrop-filter: blur(12px); width: 90%; }
+    .contact-header { text-align: center; margin-bottom: 32px; }
+    .contact-header h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; margin-bottom: 12px; }
+    .contact-header p { color: var(--text-muted); }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-family: 'Inter', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; }
+    .form-group select option { background-color: #1e1e2d; color: white; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent-color); }
+    .btn-submit { width: 100%; padding: 14px; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-submit:hover { background: var(--accent-hover); }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+    .back-btn { position: absolute; top: 20px; left: 20px; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 500; transition: color 0.2s; }
+    .back-btn:hover { color: var(--text-primary); }
+    #success-message { display: none; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); color: #4ade80; padding: 16px; border-radius: 8px; margin-top: 20px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="glow-bg">
+    <div class="blob blob-purple"></div>
+    <div class="blob blob-blue"></div>
+  </div>
+
+  <a href="index.html" class="back-btn">
+    <i data-lucide="arrow-left"></i> Back to Home
+  </a>
+
+  <div class="contact-container">
+    <div class="contact-header">
+      <h1>Contact Support</h1>
+      <p>Having trouble? Found a bug? Let us know!</p>
+    </div>
+    
+    <form id="contact-form">
+      <div class="form-group">
+        <label for="contact-name">Name</label>
+        <input type="text" id="contact-name" placeholder="Your name" required>
+      </div>
+      <div class="form-group">
+        <label for="contact-email">Email Address</label>
+        <input type="email" id="contact-email" placeholder="name@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="contact-category">What can we help you with?</label>
+        <select id="contact-category" required>
+          <option value="" disabled selected>Select an option</option>
+          <option value="Login Issues">Login Issues</option>
+          <option value="Billing Issues/Refund">Billing Issues/Refund</option>
+          <option value="Bugs/Issues">Bugs/Issues</option>
+          <option value="Suggestions/Improvements">Suggestions/Improvements</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="contact-message">Message</label>
+        <textarea id="contact-message" rows="6" maxlength="1000" placeholder="Please describe your issue in detail..." style="resize: vertical;" required></textarea>
+        <div style="text-align: right; margin-top: 8px; color: var(--text-muted); font-size: 13px;">
+          <span id="char-count">0</span> / 1000
+        </div>
+      </div>
+      <button type="submit" class="btn-submit" id="submit-btn">
+        <i data-lucide="send"></i> Send Message
+      </button>
+      <div id="success-message">
+        <i data-lucide="check-circle" style="display: inline-block; vertical-align: middle; margin-right: 8px;"></i>
+        Message sent successfully! We will get back to you soon.
+      </div>
+    </form>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    
+    const SUPABASE_URL = 'https://golkbcdlxpojjwqtyuzn.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_e1gQuU0n8FofmTkitqTEQQ_pi1g8fqD';
+    let supabase = null;
+    try {
+      if (window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch(e) {}
+
+    const form = document.getElementById('contact-form');
+    const msgInput = document.getElementById('contact-message');
+    const countDisplay = document.getElementById('char-count');
+    const submitBtn = document.getElementById('submit-btn');
+    const successMsg = document.getElementById('success-message');
+
+    msgInput.addEventListener('input', () => {
+      countDisplay.textContent = msgInput.value.length;
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('contact-name').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const category = document.getElementById('contact-category').value;
+      const message = document.getElementById('contact-message').value.trim();
+      
+      if (!name || !email || !category || !message) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Sending...';
+      lucide.createIcons();
+
+      try {
+        if (supabase) {
+          const { error } = await supabase.from('support_tickets').insert({
+            user_id: null,
+            name,
+            email,
+            category,
+            message
+          });
+          if (error) {
+             console.error("Supabase Error:", error);
+          }
+        }
+        
+        await new Promise(r => setTimeout(r, 600));
+        
+        form.reset();
+        countDisplay.textContent = '0';
+        successMsg.style.display = 'block';
+        submitBtn.style.display = 'none';
+        
+      } catch (err) {
+        console.error(err);
+        alert("Failed to send message.");
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="send"></i> Send Message';
+        lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
