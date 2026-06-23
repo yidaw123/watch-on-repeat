@@ -2034,7 +2034,7 @@ class WatchOnRepeat {
     let isDragging = null;
 
     const updateFromInputs = (source) => {
-      const duration = this.state.currentVideoDuration || 1;
+      const duration = this.state.currentVideoDuration || 3600;
       let s = this.parseTime(this.elements.abStart.value);
       let e = this.elements.abEnd.value ? this.parseTime(this.elements.abEnd.value) : duration;
       
@@ -2091,7 +2091,7 @@ class WatchOnRepeat {
       if (x > rect.width) x = rect.width;
       
       const pct = x / rect.width;
-      const duration = this.state.currentVideoDuration || 1;
+      const duration = this.state.currentVideoDuration || 3600;
       const val = Math.floor(pct * duration);
 
       if (isDragging === 'start') {
