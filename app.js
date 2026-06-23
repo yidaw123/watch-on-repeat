@@ -879,65 +879,67 @@ class WatchOnRepeat {
 
   // --- Dailymotion Player Controller ---
   initDailymotionPlayer(id) {
-    // Dailymotion loads through an iframe or DM.player.
-    // Using their standard embedding with message listener for ended events, or DM.player SDK if available
     const playerDiv = document.createElement('div');
     playerDiv.id = 'dm-player-target';
+    playerDiv.style.width = '100%';
+    playerDiv.style.height = '100%';
     this.elements.playerContainer.appendChild(playerDiv);
 
+    const createFallback = () => {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1`;
+      iframe.width = "100%";
+      iframe.height = "100%";
+      iframe.allow = "autoplay; fullscreen";
+      this.elements.playerContainer.innerHTML = '';
+      this.elements.playerContainer.appendChild(iframe);
+      console.warn("Dailymotion SDK failed, using fallback iframe embedding.");
+    };
+
     const setupPlayer = () => {
-      // Dailymotion Player SDK
       if (window.DM && typeof window.DM.player === 'function') {
-        const player = DM.player(playerDiv, {
-          video: id,
-          width: '100%',
-          height: '100%',
-          params: {
-            autoplay: true,
-            controls: true,
-            'queue-autoplay-next': false,
-            'queue-enable': false,
-            mute: false
-          }
-        });
-        
-        this.state.players.dailymotion = player;
+        try {
+          const player = DM.player(playerDiv.id, {
+            video: id,
+            width: '100%',
+            height: '100%',
+            params: {
+              autoplay: true,
+              controls: true,
+              'queue-autoplay-next': false,
+              'queue-enable': false,
+              mute: false
+            }
+          });
+          
+          this.state.players.dailymotion = player;
 
-        player.addEventListener('apiready', () => {
-          console.log("Dailymotion API Ready");
-        });
+          player.addEventListener('apiready', () => {
+            console.log("Dailymotion API Ready");
+          });
 
-        player.addEventListener('end', () => {
-          this.incrementLoops();
-          // Loop
-          player.play();
-        });
+          player.addEventListener('end', () => {
+            this.incrementLoops();
+            player.play();
+          });
 
-        player.addEventListener('playing', () => {
-          this.elements.loopStateText.textContent = "Looping";
-          this.elements.loopStateText.className = "stat-value text-green";
-          if (!this.state.currentVideoDuration && player.duration) {
-            this.setVideoDuration(player.duration);
-          }
-        });
+          player.addEventListener('playing', () => {
+            this.elements.loopStateText.textContent = "Looping";
+            this.elements.loopStateText.className = "stat-value text-green";
+            if (!this.state.currentVideoDuration && player.duration) {
+              this.setVideoDuration(player.duration);
+            }
+          });
 
-        player.addEventListener('pause', () => {
-          this.elements.loopStateText.textContent = "Paused";
-          this.elements.loopStateText.className = "stat-value text-muted";
-        });
+          player.addEventListener('pause', () => {
+            this.elements.loopStateText.textContent = "Paused";
+            this.elements.loopStateText.className = "stat-value text-muted";
+          });
+        } catch (e) {
+          createFallback();
+        }
       } else {
-        // Fallback: standard iframe
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1`;
-        iframe.width = "100%";
-        iframe.height = "100%";
-        iframe.allow = "autoplay; fullscreen";
-        this.elements.playerContainer.innerHTML = '';
-        this.elements.playerContainer.appendChild(iframe);
-        
-        // Since we are falling back to basic iframe without API (due to network or blocked SDK),
-        // we show a notice that looping will be simulated or recommend using SDK.
-        console.warn("Dailymotion SDK not loaded, using fallback iframe embedding.");
+        createFallback();
       }
     };
 
