@@ -39,12 +39,60 @@ class WatchOnRepeat {
     this.handleYouTubeStateChange = this.handleYouTubeStateChange.bind(this);
   }
 
-  init() {
+  setUserFromSession(session) {
+    const user = session.user;
+    const tier = user.user_metadata?.tier || 'free';
+    const avatar = user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email);
+    const username = user.user_metadata?.full_name || user.email.split('@')[0];
+    
+    this.state.user = {
+      id: user.id,
+      name: username.charAt(0).toUpperCase() + username.slice(1),
+      email: user.email,
+      avatar: avatar,
+      provider: user.app_metadata?.provider || 'Email',
+      tier: tier,
+      isPremium: tier === 'premium' || tier === 'pro'
+    };
+    
+    // Update DB of registered users locally for reference
+    const users = this.getDb('users');
+    if (!users.some(u => u.email === this.state.user.email)) {
+      users.push(this.state.user);
+      this.saveDb('users', users);
+    }
+    
+    this.updateUserUI();
+    this.closeLoginModal();
+    
+    if (this.state.currentVideo) {
+      this.addToHistory(this.state.currentVideo.id, this.state.currentVideo.platform, this.state.currentVideo.title);
+      this.updateFavoriteButtonUI();
+      this.updateStatsUI();
+    }
+  }
+
+  async init() {
     this.cacheElements();
     this.initDatabase();
-    if (this.state.user) {
-      // Data is handled by LocalStorage fallback right now
+    
+    // Initialize Supabase Auth Session
+    if (supabaseClient) {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        this.setUserFromSession(session);
+      }
+      
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          if (session) this.setUserFromSession(session);
+        } else if (event === 'SIGNED_OUT') {
+          this.state.user = null;
+          this.updateUserUI();
+        }
+      });
     }
+
     this.setupEventListeners();
     this.loadSDKs();
     this.generateBookmarklet();
@@ -1635,73 +1683,28 @@ class WatchOnRepeat {
     this.elements.userMenu.classList.toggle('hidden');
   }
 
-  handleSocialLogin(provider) {
+  async handleSocialLogin(provider) {
+    if (!supabaseClient) {
+      this.showToast("Supabase not initialized", "alert-circle");
+      return;
+    }
+
     this.elements.authOptions.classList.add('hidden');
     this.elements.authLoading.classList.remove('hidden');
-    this.elements.authLoadingText.textContent = `Connecting to ${provider}...`;
+    this.elements.authLoadingText.textContent = `Redirecting to ${provider}...`;
     
-    // Simulate API calls
-    setTimeout(() => {
-      this.elements.authLoadingText.textContent = `Authenticating your account...`;
-    }, 800);
-
-    setTimeout(() => {
-      // Mock user generation
-      let mockName = "Guest User";
-      let mockEmail = "guest@example.com";
-      let avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"; // sleek mock face
-      
-      if (provider === 'Google') {
-        mockName = "Alex Mercer";
-        mockEmail = "alex.mercer@gmail.com";
-        avatar = "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&auto=format&fit=crop&q=80";
-      } else if (provider === 'Facebook') {
-        mockName = "Sarah Jenkins";
-        mockEmail = "sarah.j@facebook.com";
-        avatar = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80";
-      } else if (provider === 'GitHub') {
-        mockName = "code_ninja";
-        mockEmail = "ninja@github.com";
-        avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80";
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: provider.toLowerCase(),
+      options: {
+        redirectTo: window.location.origin
       }
+    });
 
-      const isPremiumProvider = provider === 'Google';
-      const mockUser = {
-        id: 'usr_' + provider.toLowerCase() + '_' + Date.now(),
-        name: mockName,
-        email: mockEmail,
-        avatar: avatar,
-        provider: provider,
-        tier: isPremiumProvider ? 'premium' : 'free',
-        isPremium: isPremiumProvider
-      };
-
-      this.state.user = mockUser;
-      localStorage.setItem('wor_session', JSON.stringify(mockUser));
-      
-      // Update DB of registered users
-      const users = this.getDb('users');
-      if (!users.some(u => u.email === mockUser.email)) {
-        users.push(mockUser);
-        this.saveDb('users', users);
-      }
-
-      // Close modal & notify
-      this.closeLoginModal();
-      this.updateUserUI();
-      this.showToast(`Logged in successfully via ${provider}! Welcome, ${mockName}.`, 'shield-check');
-      
-      // Reload video if loaded to sync favorite UI and create user record in history
-      if (this.state.currentVideo) {
-        this.addToHistory(this.state.currentVideo.id, this.state.currentVideo.platform, this.state.currentVideo.title);
-        this.updateFavoriteButtonUI();
-        this.updateStatsUI();
-      }
-
-      // Switch to discover
-      this.switchTab(this.state.activeTab);
-
-    }, 2000);
+    if (error) {
+      this.showToast(error.message, 'alert-circle');
+      this.elements.authLoading.classList.add('hidden');
+      this.elements.authOptions.classList.remove('hidden');
+    }
   }
 
   async handleEmailLogin(e) {
@@ -1727,42 +1730,10 @@ class WatchOnRepeat {
       
       if (error) throw error;
 
-      let username = email.split('@')[0];
-      username = username.charAt(0).toUpperCase() + username.slice(1);
-
-      // Check tier from custom table
-      const { data: userData } = await supabaseClient.from('users').select('tier').eq('id', data.user.id).single();
-      const tier = userData ? userData.tier : 'free';
-
-      const mockUser = {
-        id: data.user.id,
-        name: username,
-        email: email,
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80",
-        provider: 'Email',
-        tier: tier,
-        isPremium: tier === 'premium' || tier === 'pro'
-      };
-
-      this.state.user = mockUser;
-      localStorage.setItem('wor_session', JSON.stringify(mockUser));
-
       emailInput.value = '';
       passwordInput.value = '';
-
-      // Render state
-      this.renderHistoryTab();
-      this.renderFavoritesTab();
-      this.closeLoginModal();
-      this.updateUserUI();
-      this.showToast(`Logged in successfully! Welcome, ${username}.`, 'shield-check');
-
-      if (this.state.currentVideo) {
-        this.addToHistory(this.state.currentVideo.id, this.state.currentVideo.platform, this.state.currentVideo.title);
-        this.updateFavoriteButtonUI();
-        this.updateStatsUI();
-      }
-
+      
+      this.showToast(`Logged in successfully!`, 'shield-check');
       this.switchTab(this.state.activeTab);
 
     } catch (err) {
@@ -1813,25 +1784,7 @@ class WatchOnRepeat {
           tier: 'free'
         });
 
-        let username = email.split('@')[0];
-        username = username.charAt(0).toUpperCase() + username.slice(1);
-
-        const mockUser = {
-          id: data.user.id,
-          name: username,
-          email: email,
-          avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80",
-          provider: 'Email',
-          tier: 'free',
-          isPremium: false
-        };
-
-        this.state.user = mockUser;
-        localStorage.setItem('wor_session', JSON.stringify(mockUser));
-
-        this.closeLoginModal();
-        this.updateUserUI();
-        this.showToast(`Account created successfully! Welcome, ${username}.`, 'shield-check');
+        this.showToast(`Account created successfully!`, 'shield-check');
       }
 
     } catch (err) {
