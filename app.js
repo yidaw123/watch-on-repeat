@@ -98,6 +98,11 @@ class WatchOnRepeat {
     this.generateBookmarklet();
     this.initHotkeys();
     
+    if (!this.timelineInitialized) {
+      this.initTimeline();
+      this.timelineInitialized = true;
+    }
+    
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
