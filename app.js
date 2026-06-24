@@ -1489,6 +1489,10 @@ class WatchOnRepeat {
 
     this.saveDb('favorites', favorites);
     this.updateFavoriteButtonUI();
+    if (this.state.activeTab === 'favorites') this.renderFavoritesTab();
+
+    this.saveDb('favorites', favorites);
+    this.updateFavoriteButtonUI();
     this.renderFavoritesTab();
   }
 
@@ -3136,7 +3140,13 @@ class WatchOnRepeat {
   }
 
   escapeHtml(unsafe) {
-    return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe)
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
   }
 
   async generateShareableClip() {
