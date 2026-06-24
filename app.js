@@ -970,7 +970,10 @@ class WatchOnRepeat {
       if (this.state.abLoop.end > this.state.currentVideoDuration && this.state.currentVideoDuration > 0) {
         this.state.abLoop.end = this.state.currentVideoDuration;
       }
-      this.state.abLoop.multiSegments = data.multiSegments || [];
+      
+      const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+      this.state.abLoop.multiSegments = isPremium ? (data.multiSegments || []) : [];
+      
       this.state.abLoop.active = data.enabled !== false;
       
       if (this.elements.abStart) this.elements.abStart.value = this.formatTime(this.state.abLoop.start);
