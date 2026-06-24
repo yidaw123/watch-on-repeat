@@ -1773,6 +1773,55 @@ class WatchOnRepeat {
     this.elements.authOptions.classList.remove('hidden');
     this.elements.authLoading.classList.add('hidden');
     this.switchAuthView('welcome');
+    
+    // Try to render the Google button when modal opens
+    this.renderGoogleButton();
+  }
+
+  renderGoogleButton() {
+    if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+      // If script hasn't loaded yet, try again in 500ms
+      setTimeout(() => this.renderGoogleButton(), 500);
+      return;
+    }
+    
+    // Initialize Google Identity Services
+    google.accounts.id.initialize({
+      client_id: "YOUR_GOOGLE_CLIENT_ID_HERE", // IMPORTANT: User must replace this!
+      callback: this.handleGoogleCredentialResponse.bind(this)
+    });
+
+    const btnContainer = document.getElementById('google-btn-container');
+    if (btnContainer) {
+      google.accounts.id.renderButton(
+        btnContainer,
+        { theme: "outline", size: "large", width: '100%', text: "continue_with" }
+      );
+    }
+  }
+
+  async handleGoogleCredentialResponse(response) {
+    if (!supabaseClient) {
+      this.showToast("Supabase not initialized", "alert-circle");
+      return;
+    }
+    
+    this.elements.authOptions.classList.add('hidden');
+    this.elements.authLoading.classList.remove('hidden');
+    this.elements.authLoadingText.textContent = `Signing in securely...`;
+
+    const { data, error } = await supabaseClient.auth.signInWithIdToken({
+      provider: 'google',
+      token: response.credential
+    });
+
+    if (error) {
+      this.showToast(error.message, "alert-circle");
+      this.elements.authOptions.classList.remove('hidden');
+      this.elements.authLoading.classList.add('hidden');
+    } else {
+      this.closeLoginModal();
+    }
   }
 
   switchAuthView(viewName) {

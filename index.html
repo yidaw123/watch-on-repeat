@@ -27,6 +27,7 @@
   <meta name="theme-color" content="#4f46e5">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <!-- Video Player APIs -->
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="https://player.vimeo.com/api/player.js"></script>
@@ -663,15 +664,8 @@
           
           <!-- 1. Welcome View (Decluttered) -->
           <div id="auth-welcome-view">
-            <button class="btn-social google" onclick="app.handleSocialLogin('Google')" style="margin-bottom: 12px;">
-              <svg class="social-icon" viewBox="0 0 24 24" width="18" height="18">
-                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69c-.29 1.5-.1.84-2.47 2.4l3.12 2.42c1.83-1.69 2.88-4.18 2.88-6.67z"/>
-                <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.12-2.42c-.87.58-1.97.93-3.12.93-3.05 0-5.63-2.06-6.55-4.83l-3.23 2.5C5.87 21.14 8.7 24 12 24z"/>
-                <path fill="#FBBC05" d="M5.45 14.77a7.148 7.148 0 0 1-.37-2.3c0-.8.13-1.57.37-2.3l-3.23-2.5C1.46 9.27 1 10.59 1 12s.46 2.73 1.22 4.27l3.23-2.5z"/>
-                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 8.7 0 5.87 2.86 3.97 6.33l3.23 2.5c.92-2.77 3.5-4.83 6.55-4.83z"/>
-              </svg>
-              <span>Continue with Google</span>
-            </button>
+            <!-- Native Google Identity Services Button Container -->
+            <div id="google-btn-container" style="display: flex; justify-content: center; margin-bottom: 16px;"></div>
             
             <button class="btn btn-primary w-full" style="justify-content: center; margin-bottom: 24px;" onclick="app.switchAuthView('signup')">
               <i data-lucide="mail" style="width: 18px; height: 18px; margin-right: 8px;"></i> Sign Up with Email
