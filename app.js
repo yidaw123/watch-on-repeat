@@ -2929,7 +2929,11 @@ class WatchOnRepeat {
 
   fineTuneLoop(point, amount) {
     if (!this.enforcePremiumFeature()) return;
-    if (!this.state.abLoop.active) return;
+    if (!this.state.abLoop.active) {
+      this.state.abLoop.active = true;
+      this.state.abLoop.start = 0;
+      this.state.abLoop.end = this.state.currentVideoDuration || 10;
+    }
     
     let newStart = this.state.abLoop.start;
     let newEnd = this.state.abLoop.end;
@@ -2954,7 +2958,11 @@ class WatchOnRepeat {
 
   shiftLoop(direction) {
     if (!this.enforcePremiumFeature()) return;
-    if (!this.state.abLoop.active) return;
+    if (!this.state.abLoop.active) {
+      this.state.abLoop.active = true;
+      this.state.abLoop.start = 0;
+      this.state.abLoop.end = this.state.currentVideoDuration || 10;
+    }
     
     const duration = this.state.abLoop.end - this.state.abLoop.start;
     let newStart = this.state.abLoop.start + (duration * direction);
@@ -2981,7 +2989,11 @@ class WatchOnRepeat {
 
   scaleLoop(multiplier) {
     if (!this.enforcePremiumFeature()) return;
-    if (!this.state.abLoop.active) return;
+    if (!this.state.abLoop.active) {
+      this.state.abLoop.active = true;
+      this.state.abLoop.start = 0;
+      this.state.abLoop.end = this.state.currentVideoDuration || 10;
+    }
     
     const duration = this.state.abLoop.end - this.state.abLoop.start;
     const newDuration = duration * multiplier;
