@@ -1630,57 +1630,7 @@ class WatchOnRepeat {
     return '';
   }
 
-  async renderResumeLearning() {
-    if (!this.state.user) {
-      if (this.elements.resumeLearningSection) this.elements.resumeLearningSection.classList.add('hidden');
-      return;
-    }
-
-    let recent = null;
-    if (window.supabaseClient) {
-      const { data } = await supabaseClient.from('user_history').select('*').eq('user_id', this.state.user.id).order('last_played', { ascending: false }).limit(1).single();
-      if (data) {
-        recent = { videoId: data.video_id, platform: data.platform, title: data.title, timestamp: new Date(data.last_played).getTime() };
-      }
-    } else {
-      const history = this.getDb('history').filter(h => h.userId === this.state.user.id);
-      if (history.length > 0) recent = history.sort((a, b) => b.timestamp - a.timestamp)[0];
-    }
-
-    if (!recent) {
-      if (this.elements.resumeLearningSection) this.elements.resumeLearningSection.classList.add('hidden');
-      return;
-    }
-
-    // Show section
-    if (this.elements.resumeLearningSection) this.elements.resumeLearningSection.classList.remove('hidden');
-
-    const thumbUrl = this.getThumbnailUrl(recent.platform, recent.videoId);
-    
-    // Calculate simple relative time (e.g. yesterday)
-    const diffDays = Math.floor((new Date() - new Date(recent.timestamp)) / (1000 * 60 * 60 * 24));
-    let dateStr = diffDays === 0 ? "today" : diffDays === 1 ? "yesterday" : diffDays + " days ago";
-
-    if (this.elements.resumeCard) {
-      this.elements.resumeCard.style.backgroundImage = `url('${thumbUrl}')`;
-      this.elements.resumeCard.innerHTML = `
-        <div class="resume-card-overlay"></div>
-        <div class="resume-card-content">
-          <div class="resume-card-text">
-            <p>You practiced:</p>
-            <h4>${this.truncateString(recent.title || "Video", 40)}</h4>
-            <div class="last-practiced">Last practiced ${dateStr}</div>
-          </div>
-          <div class="resume-card-action">
-            <button class="btn btn-primary" onclick="app.loadVideo('${recent.videoId}', '${recent.platform}')">Continue <i data-lucide="play-circle"></i></button>
-          </div>
-        </div>
-      `;
-    }
-  }
-
   async renderDiscoverTab() {
-    this.renderResumeLearning();
 
     let discoverVideos = [
       { id: 'aqz-KE-bpKQ', platform: 'youtube', title: 'Big Buck Bunny 60fps 4K' },
