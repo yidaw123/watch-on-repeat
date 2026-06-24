@@ -471,7 +471,7 @@
         </div>
       </div>
 
-      <div class="settings-section mb-6">
+      <div class="settings-section mb-6" style="margin-top: 24px;">
         <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><i data-lucide="lock" style="width:18px;height:18px"></i> Security</h3>
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <div>
@@ -483,19 +483,13 @@
           </div>
           <div>
             <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Update Password</label>
-            <div style="display: flex; gap: 8px;">
-              <input type="password" id="settings-password-input" class="input-field" placeholder="New secure password" style="flex: 1;">
-              <button class="btn btn-primary" onclick="app.updateAccountPassword()">Update</button>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <input type="password" id="settings-password-input" class="input-field" placeholder="New secure password" style="width: 100%;">
+              <input type="password" id="settings-password-confirm" class="input-field" placeholder="Confirm new password" style="width: 100%;">
+              <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: -4px;">Password must be at least 6 characters long.</p>
+              <button class="btn btn-primary" style="align-self: flex-end;" onclick="app.updateAccountPassword()">Update Password</button>
             </div>
           </div>
-        </div>
-      </div>
-      
-      <div class="settings-section">
-        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: #ef4444; display: flex; align-items: center; gap: 8px;"><i data-lucide="alert-triangle" style="width:18px;height:18px"></i> Danger Zone</h3>
-        <div style="display: flex; gap: 12px;">
-          <button class="btn" style="flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white;" onclick="app.clearLocalCache()">Clear Local Cache</button>
-          <button class="btn" style="flex: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="app.deleteAccount()">Delete Account</button>
         </div>
       </div>
     </div>

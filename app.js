@@ -3263,7 +3263,18 @@ class WatchOnRepeat {
   async updateAccountPassword() {
     if (!window.supabaseClient) return;
     const password = document.getElementById('settings-password-input').value;
+    const confirm = document.getElementById('settings-password-confirm').value;
     if (!password) return;
+    
+    if (password.length < 6) {
+      this.showToast("Password must be at least 6 characters.", "alert-circle");
+      return;
+    }
+    
+    if (password !== confirm) {
+      this.showToast("Passwords do not match.", "alert-circle");
+      return;
+    }
     
     const { data, error } = await supabaseClient.auth.updateUser({ password });
     if (error) {
@@ -3271,6 +3282,7 @@ class WatchOnRepeat {
     } else {
       this.showToast("Password updated successfully!", "check-circle");
       document.getElementById('settings-password-input').value = '';
+      document.getElementById('settings-password-confirm').value = '';
     }
   }
 
