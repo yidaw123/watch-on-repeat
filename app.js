@@ -1776,18 +1776,21 @@ class WatchOnRepeat {
       }
       if (createRow) createRow.style.display = 'none';
       list.innerHTML = `
-        <div style="margin-bottom: 16px; display:flex; justify-content:space-between; align-items:center;">
-          <button class="btn btn-sm btn-outline" onclick="app.backToPlaylists()"><i data-lucide="arrow-left"></i> Back</button>
-          <div style="display:flex; gap: 8px;">
-            <select class="search-input" style="padding: 4px 8px; width: auto; font-size: 13px;" onchange="app.sortPlaylist('${p.id}', this.value)">
+        <div style="margin-bottom: 16px; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <button class="btn btn-sm btn-outline" onclick="app.backToPlaylists()"><i data-lucide="arrow-left"></i> Back</button>
+            <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${p.id}')" style="white-space: nowrap;"><i data-lucide="play"></i> Play Through</button>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <select class="search-input" style="padding: 6px 10px; width: auto; font-size: 13px;" onchange="app.sortPlaylist('${p.id}', this.value)">
               <option value="">Sort By...</option>
               <option value="date">Date Added</option>
               <option value="alpha">Alphabetical</option>
             </select>
-            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;">
-              <input type="checkbox" id="playlist-loop-toggle"> Loop Video
+            <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; user-select:none; font-weight: 500;">
+              <input type="checkbox" id="playlist-loop-toggle" style="width: 18px; height: 18px; cursor: pointer; accent-color: #60a5fa;"> 
+              <span>Loop Video</span>
             </label>
-            <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${p.id}')"><i data-lucide="play"></i> Play Through</button>
           </div>
         </div>
         <h2 style="margin-bottom:16px;">${this.escapeHtml(p.name)}</h2>
