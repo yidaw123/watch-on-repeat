@@ -45,11 +45,15 @@ class WatchOnRepeat {
   async setUserFromSession(session) {
     const user = session.user;
     let tier = 'free';
+    let subscriptionEndDate = null;
+    let cancelAtPeriodEnd = false;
 
     if (window.supabaseClient) {
-      const { data } = await supabaseClient.from('users').select('tier').eq('id', user.id).single();
+      const { data } = await supabaseClient.from('users').select('*').eq('id', user.id).single();
       if (data) {
         tier = data.tier;
+        subscriptionEndDate = data.subscription_end_date;
+        cancelAtPeriodEnd = data.cancel_at_period_end;
       } else {
         await supabaseClient.from('users').insert({ id: user.id, email: user.email, tier: 'free' });
       }
@@ -67,7 +71,9 @@ class WatchOnRepeat {
       avatar: avatar,
       provider: user.app_metadata?.provider || 'Email',
       tier: tier,
-      isPremium: tier === 'premium' || tier === 'pro'
+      isPremium: tier === 'premium' || tier === 'pro',
+      subscriptionEndDate: subscriptionEndDate,
+      cancelAtPeriodEnd: cancelAtPeriodEnd
     };
     
     // Update DB of registered users locally for reference
@@ -3171,6 +3177,121 @@ class WatchOnRepeat {
   }
 
   // ==========================================
+  // SETTINGS MODAL
+  // ==========================================
+  openSettingsModal() {
+    const modal = document.getElementById('settings-modal');
+    if (!modal) return;
+    
+    // Close user menu
+    if (this.elements.userMenu) this.elements.userMenu.classList.add('hidden');
+    
+    // Populate modal data
+    const planBadge = document.getElementById('settings-plan-badge');
+    const planDate = document.getElementById('settings-plan-date');
+    const cancelBtn = document.getElementById('settings-cancel-sub-btn');
+    const emailInput = document.getElementById('settings-email-input');
+    
+    if (this.state.user) {
+      emailInput.value = this.state.user.email;
+      
+      const tier = this.state.user.tier;
+      planBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
+      if (tier === 'pro') planBadge.style.background = 'var(--accent)';
+      else if (tier === 'premium') planBadge.style.background = 'var(--primary)';
+      else planBadge.style.background = 'var(--surface-light)';
+      
+      if (this.state.user.subscriptionEndDate) {
+        const d = new Date(this.state.user.subscriptionEndDate);
+        planDate.textContent = d.toLocaleDateString();
+        
+        if (this.state.user.cancelAtPeriodEnd) {
+          planDate.textContent += " (Canceling)";
+          cancelBtn.style.display = 'none';
+        } else {
+          cancelBtn.style.display = 'block';
+        }
+      } else {
+        planDate.textContent = "N/A";
+        cancelBtn.style.display = 'none';
+      }
+    }
+    
+    modal.classList.remove('hidden');
+  }
+
+  closeSettingsModal() {
+    const modal = document.getElementById('settings-modal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  async updateAccountEmail() {
+    if (!window.supabaseClient) return;
+    const email = document.getElementById('settings-email-input').value;
+    if (!email) return;
+    
+    const { data, error } = await supabaseClient.auth.updateUser({ email });
+    if (error) {
+      this.showToast(error.message, "alert-circle");
+    } else {
+      this.showToast("Confirmation link sent to your new email!", "check-circle");
+    }
+  }
+
+  async updateAccountPassword() {
+    if (!window.supabaseClient) return;
+    const password = document.getElementById('settings-password-input').value;
+    if (!password) return;
+    
+    const { data, error } = await supabaseClient.auth.updateUser({ password });
+    if (error) {
+      this.showToast(error.message, "alert-circle");
+    } else {
+      this.showToast("Password updated successfully!", "check-circle");
+      document.getElementById('settings-password-input').value = '';
+    }
+  }
+
+  clearLocalCache() {
+    if (confirm("Are you sure you want to clear your local application cache? This will NOT delete your cloud data.")) {
+      localStorage.clear();
+      this.showToast("Cache cleared! Reloading...", "check-circle");
+      setTimeout(() => window.location.reload(), 1500);
+    }
+  }
+
+  async deleteAccount() {
+    if (!window.supabaseClient) return;
+    const confirmation = prompt("Are you absolutely sure? This will permanently delete your account, history, and playlists. Type 'DELETE' to confirm.");
+    if (confirmation === 'DELETE') {
+      try {
+        const { error } = await supabaseClient.rpc('delete_user_account');
+        if (error) throw error;
+        
+        await supabaseClient.auth.signOut();
+        this.showToast("Your account has been completely deleted.", "check-circle");
+        setTimeout(() => window.location.reload(), 2000);
+      } catch (e) {
+        this.showToast("Failed to delete account: " + e.message, "alert-circle");
+      }
+    }
+  }
+
+  async cancelSubscription() {
+    if (!window.supabaseClient) return;
+    if (confirm("Are you sure you want to cancel your subscription? You will retain access until the end of your billing cycle.")) {
+      const { error } = await supabaseClient.from('users').update({ cancel_at_period_end: true }).eq('id', this.state.user.id);
+      
+      if (error) {
+        this.showToast("Failed to cancel: " + error.message, "alert-circle");
+      } else {
+        this.state.user.cancelAtPeriodEnd = true;
+        this.showToast("Subscription canceled. Access remains until end of cycle.", "check-circle");
+        this.openSettingsModal(); 
+      }
+    }
+  }
+
   // SHORTCUTS SETTINGS MODAL
   // ==========================================
   openShortcutsModal() {

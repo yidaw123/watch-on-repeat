@@ -103,7 +103,8 @@
               <hr>
               <a href="#" onclick="app.showTab('favorites')"><i data-lucide="heart"></i> My Favorites</a>
               <a href="#" onclick="app.showTab('history')"><i data-lucide="history"></i> Loop History</a>
-              <a href="#" onclick="app.openShortcutsModal()"><i data-lucide="keyboard"></i> Shortcuts Setting</a>
+              <a href="#" onclick="app.openSettingsModal()"><i data-lucide="settings"></i> Account Settings</a>
+              <a href="#" onclick="app.openShortcutsModal()"><i data-lucide="keyboard"></i> Keyboard Shortcuts</a>
               <hr>
               <a href="#" onclick="app.handleLogout()"><i data-lucide="log-out"></i> Sign Out</a>
             </div>
@@ -438,6 +439,63 @@
           <button id="show-create-playlist-btn" class="btn btn-outline w-full" onclick="document.getElementById('create-playlist-form').classList.remove('hidden'); document.getElementById('show-create-playlist-btn').classList.add('hidden'); document.getElementById('new-playlist-name').focus();" style="justify-content: center;">
             <i data-lucide="plus" style="display:inline; width:16px; height:16px; margin-right: 8px;"></i> Create New Playlist
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay hidden" id="settings-modal" onclick="app.closeSettingsModal()">
+    <div class="modal-card" style="max-width: 500px; padding: 24px; text-align: left;" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="app.closeSettingsModal()" style="position: absolute; top: 16px; right: 16px;">
+        <i data-lucide="x"></i>
+      </button>
+      
+      <div class="modal-header border-b pb-4 mb-4 border-gray-800">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 4px;">Account Settings</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Manage your credentials and subscription.</p>
+      </div>
+      
+      <div class="settings-section mb-6">
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><i data-lucide="credit-card" style="width:18px;height:18px"></i> Subscription</h3>
+        <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="color: var(--text-secondary);">Current Plan</span>
+            <span id="settings-plan-badge" class="badge" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">Free</span>
+          </div>
+          <div id="settings-plan-details" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 0.9rem;">
+            <span style="color: var(--text-secondary);">Renews On</span>
+            <span id="settings-plan-date" style="font-weight: 500;">N/A</span>
+          </div>
+          <button id="settings-cancel-sub-btn" class="btn" style="width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white;" onclick="app.cancelSubscription()">Cancel Subscription</button>
+        </div>
+      </div>
+
+      <div class="settings-section mb-6">
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><i data-lucide="lock" style="width:18px;height:18px"></i> Security</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Update Email</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="email" id="settings-email-input" class="input-field" placeholder="New email address" style="flex: 1;">
+              <button class="btn btn-primary" onclick="app.updateAccountEmail()">Update</button>
+            </div>
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Update Password</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="password" id="settings-password-input" class="input-field" placeholder="New secure password" style="flex: 1;">
+              <button class="btn btn-primary" onclick="app.updateAccountPassword()">Update</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-section">
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: #ef4444; display: flex; align-items: center; gap: 8px;"><i data-lucide="alert-triangle" style="width:18px;height:18px"></i> Danger Zone</h3>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn" style="flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white;" onclick="app.clearLocalCache()">Clear Local Cache</button>
+          <button class="btn" style="flex: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="app.deleteAccount()">Delete Account</button>
         </div>
       </div>
     </div>
