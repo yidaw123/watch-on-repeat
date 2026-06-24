@@ -619,26 +619,12 @@ class WatchOnRepeat {
     this.elements.playerLoaded.classList.remove('hidden');
     
     // Fetch video title (mocked/simulated or via iframe where possible)
-    let videoTitle = "Infinite Loop Video";
+    let videoTitle = "Loading title...";
     const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
     const statsKey = `${platform}_${id}`;
     
-    if (globalStats[statsKey]) {
+    if (globalStats[statsKey] && !globalStats[statsKey].title.includes("Cozy Coffee Shop") && !globalStats[statsKey].title.includes("Looped Version")) {
       videoTitle = globalStats[statsKey].title;
-    } else {
-      // Seed a generic title
-      videoTitle = await this.fetchVideoTitleMock(id, platform);
-      
-      // Save new video in global stats database
-      globalStats[statsKey] = {
-        id: id,
-        platform: platform,
-        title: videoTitle,
-        globalLoops: 0,
-        globalPlays: 1 // 1st play starts
-      };
-      this.saveDb('global_stats', globalStats);
-      this.renderTrendsTab();
     }
     
     this.state.currentVideo = {
@@ -647,8 +633,44 @@ class WatchOnRepeat {
       title: videoTitle
     };
 
-    // Update UI Elements
+    // Update UI Elements immediately
     this.elements.videoTitle.textContent = videoTitle;
+    
+    // Always fetch fresh title in background
+    this.fetchVideoTitleMock(id, platform).then(realTitle => {
+      if (realTitle && !realTitle.includes("Cozy Coffee Shop")) {
+        this.elements.videoTitle.textContent = realTitle;
+        if (this.state.currentVideo) this.state.currentVideo.title = realTitle;
+        
+        // Save to global stats
+        if (!globalStats[statsKey]) {
+          globalStats[statsKey] = {
+            id: id,
+            platform: platform,
+            title: realTitle,
+            globalLoops: 0,
+            globalPlays: 1
+          };
+        } else {
+          globalStats[statsKey].title = realTitle;
+        }
+        this.saveDb('global_stats', globalStats);
+        this.renderTrendsTab();
+
+        // Update history cache if needed
+        const history = this.getDb('history');
+        if (history && history.length > 0) {
+           let updated = false;
+           history.forEach(h => {
+             if (h.videoId === id && h.platform === platform) {
+               h.title = realTitle;
+               updated = true;
+             }
+           });
+           if (updated) this.saveDb('history', history);
+        }
+      }
+    });
     this.updatePlatformBadge(platform);
     this.updateStatsUI();
     this.updateFavoriteButtonUI();
