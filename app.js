@@ -1041,6 +1041,16 @@ class WatchOnRepeat {
     this.state.players.dailymotion.cleanup = () => {
        window.removeEventListener('message', messageHandler);
     };
+
+    // Fetch the correct video duration immediately from Dailymotion API
+    // so the timeline bar and loop boundaries are correctly sized.
+    fetch(`https://api.dailymotion.com/video/${id}?fields=duration`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.duration) {
+          this.setVideoDuration(data.duration);
+        }
+      }).catch(err => console.warn("Failed to fetch DM duration", err));
   }
 
   // ==========================================
