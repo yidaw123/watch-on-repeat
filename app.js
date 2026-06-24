@@ -2389,6 +2389,8 @@ class WatchOnRepeat {
         }
         this.state.abLoop.currentSegmentIndex = nextIndex;
         this.seekToTime(segments[nextIndex].start);
+      } else if (t < seg.start - 0.5) {
+        this.seekToTime(seg.start);
       }
     } else {
       if (t >= this.state.abLoop.end) {
@@ -2399,6 +2401,8 @@ class WatchOnRepeat {
         }
         this.seekToTime(this.state.abLoop.start);
         this.incrementLoops();
+      } else if (t < this.state.abLoop.start - 0.5) {
+        this.seekToTime(this.state.abLoop.start);
       }
     }
   }
