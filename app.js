@@ -2758,7 +2758,7 @@ class WatchOnRepeat {
       const currentSegIndex = this.state.abLoop.currentSegmentIndex || 0;
       const seg = segments[currentSegIndex];
       
-      if (t >= seg.end) {
+      if (t >= seg.end && seg.end > 0) {
         let nextIndex = currentSegIndex + 1;
         if (nextIndex >= segments.length) {
           nextIndex = 0; // loop back to first
@@ -2770,7 +2770,7 @@ class WatchOnRepeat {
         this.seekToTime(seg.start);
       }
     } else {
-      if (t >= this.state.abLoop.end) {
+      if (t >= this.state.abLoop.end && this.state.abLoop.end > 0) {
         if (this.state.isAutoTempoEnabled) {
           let speed = this.state.playbackRate || 1.0;
           speed = Math.min(2.0, speed + 0.05);
