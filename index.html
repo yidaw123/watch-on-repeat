@@ -838,12 +838,6 @@
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
         for(let registration of registrations) {
           registration.unregister();
-  <script src="app.js?v=22"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-          registration.unregister();
         }
       });
     }
@@ -855,5 +849,6 @@
       });
     }
   </script>
+  <script src="app.js?v=23"></script>
 </body>
 </html>
