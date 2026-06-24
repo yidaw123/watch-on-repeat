@@ -1348,6 +1348,7 @@ class WatchOnRepeat {
     }
 
     if (this.state.playlistMode && this.state.playlistMode.active) {
+      if (this.state.playlistMode.loopVideo) return false;
       const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
       if (p && p.videos && p.videos.length > 0) {
         this.state.playlistMode.currentIndex++;
@@ -1761,6 +1762,9 @@ class WatchOnRepeat {
               <option value="date">Date Added</option>
               <option value="alpha">Alphabetical</option>
             </select>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;">
+              <input type="checkbox" id="playlist-loop-toggle"> Loop Video
+            </label>
             <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${p.id}')"><i data-lucide="play"></i> Play Through</button>
           </div>
         </div>
@@ -1897,7 +1901,9 @@ class WatchOnRepeat {
   }
 
   playPlaylist(id) {
-    this.state.playlistMode = { active: true, id: id, currentIndex: 0 };
+    const loopToggle = document.getElementById('playlist-loop-toggle');
+    const isLooping = loopToggle ? loopToggle.checked : false;
+    this.state.playlistMode = { active: true, id: id, currentIndex: 0, loopVideo: isLooping };
     const p = this.getDb('playlists').find(pl => pl.id === id);
     if (!p || !p.videos || p.videos.length === 0) {
       this.showToast("Playlist is empty", "alert-circle");
