@@ -1183,6 +1183,12 @@ class WatchOnRepeat {
     const video = this.state.currentVideo;
     if (!video) return;
 
+    const now = Date.now();
+    if (this.lastLoopIncrementTime && now - this.lastLoopIncrementTime < 1000) {
+      return; // Debounce to prevent rapid firing while buffering
+    }
+    this.lastLoopIncrementTime = now;
+
     // Increment personal loops (session)
     this.state.personalLoops++;
     this.elements.personalLoopCount.textContent = this.formatNumber(this.state.personalLoops);
@@ -2606,11 +2612,11 @@ class WatchOnRepeat {
 
   async getCurrentTime() {
     const p = this.state.currentPlatform;
-    if (p === 'youtube' && this.state.players.youtube) return this.state.players.youtube.getCurrentTime() || 0;
+    if (p === 'youtube' && this.state.players.youtube) return (typeof this.state.players.youtube.getCurrentTime === 'function' ? this.state.players.youtube.getCurrentTime() : 0);
     if (p === 'vimeo' && this.state.players.vimeo) return await this.state.players.vimeo.getCurrentTime().catch(()=>0);
     if (p === 'dailymotion' && this.state.players.dailymotion) return this.state.players.dailymotion.currentTime || 0;
     if (p === 'html5' && this.state.players.html5) return this.state.players.html5.currentTime || 0;
-    if (p === 'twitch' && this.state.players.twitch) return this.state.players.twitch.getCurrentTime() || 0;
+    if (p === 'twitch' && this.state.players.twitch) return (typeof this.state.players.twitch.getCurrentTime === 'function' ? this.state.players.twitch.getCurrentTime() : 0);
     if (p === 'soundcloud' && this.state.players.soundcloud) {
       const ms = await new Promise(r => this.state.players.soundcloud.getPosition(r));
       return (ms || 0) / 1000;

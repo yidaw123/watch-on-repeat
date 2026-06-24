@@ -1993,5 +1993,26 @@ h1, h2, h3, h4, .brand-name {
   height: 14px;
 }
 
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface-light);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  z-index: 99999;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
 
 
