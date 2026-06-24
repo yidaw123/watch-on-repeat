@@ -42,9 +42,21 @@ class WatchOnRepeat {
     this.handleYouTubeStateChange = this.handleYouTubeStateChange.bind(this);
   }
 
-  setUserFromSession(session) {
+  async setUserFromSession(session) {
     const user = session.user;
-    const tier = user.user_metadata?.tier || 'free';
+    let tier = 'free';
+
+    if (window.supabaseClient) {
+      const { data } = await supabaseClient.from('users').select('tier').eq('id', user.id).single();
+      if (data) {
+        tier = data.tier;
+      } else {
+        await supabaseClient.from('users').insert({ id: user.id, email: user.email, tier: 'free' });
+      }
+    } else {
+      tier = user.user_metadata?.tier || 'free';
+    }
+
     const avatar = user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email);
     const username = user.user_metadata?.full_name || user.email.split('@')[0];
     
@@ -83,12 +95,12 @@ class WatchOnRepeat {
     if (supabaseClient) {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
-        this.setUserFromSession(session);
+        await this.setUserFromSession(session);
       }
       
-      supabaseClient.auth.onAuthStateChange((event, session) => {
+      supabaseClient.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          if (session) this.setUserFromSession(session);
+          if (session) await this.setUserFromSession(session);
         } else if (event === 'SIGNED_OUT') {
           this.state.user = null;
           this.updateUserUI();
