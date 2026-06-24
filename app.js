@@ -425,18 +425,13 @@ class WatchOnRepeat {
   }
 
   loadHome() {
-    this.state.currentVideo = null;
-    this.state.currentPlatform = null;
-    this.stopTimer();
+    // Instead of showing an empty state, always load a default video (Lofi Hip Hop)
+    this.loadVideo('jfKfPfyJRdk', 'youtube').catch(console.error);
     
-    this.elements.playerLoaded.classList.add('hidden');
-    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.remove('hidden');
-    
-    // Clear iframe container
-    this.elements.playerContainer.innerHTML = '';
-    
-    // Remove query params from address bar without page reload
-    window.history.pushState({}, document.title, window.location.href.split('?')[0]);
+    // Ensure the URL remains clean (without ?v=...) for the home state
+    try {
+      window.history.pushState({}, document.title, window.location.href.split('?')[0]);
+    } catch (e) {}
   }
 
   // ==========================================
@@ -1716,8 +1711,8 @@ class WatchOnRepeat {
     if (video.platform === 'youtube') {
       thumbUrl = `https://img.youtube.com/vi/${video.videoId || video.id}/mqdefault.jpg`;
     } else {
-      // Gradient SVG placeholder for non-youtube to maintain a sleek UI
-      thumbUrl = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="90" height="60" viewBox="0 0 90 60"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%238b5cf6"/><stop offset="100%" stop-color="%23ec4899"/></linearGradient></defs><rect width="90" height="60" fill="url(%23g)" opacity="0.85"/><text x="45" y="35" font-family="'Outfit',sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">${video.platform.toUpperCase()}</text></svg>`;
+      // Gradient SVG placeholder for non-youtube to maintain a sleek UI (using single quotes to prevent HTML attribute breaking)
+      thumbUrl = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60' viewBox='0 0 90 60'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%238b5cf6'/><stop offset='100%' stop-color='%23ec4899'/></linearGradient></defs><rect width='90' height='60' fill='url(%23g)' opacity='0.85'/><text x='45' y='35' font-family='Outfit,sans-serif' font-size='10' font-weight='bold' fill='white' text-anchor='middle'>${video.platform.toUpperCase()}</text></svg>`;
     }
 
     const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
