@@ -135,7 +135,7 @@ class WatchOnRepeat {
       }
       
       supabaseClient.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
           if (session) await this.setUserFromSession(session);
         } else if (event === 'SIGNED_OUT') {
           this.state.user = null;
