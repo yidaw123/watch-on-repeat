@@ -132,19 +132,24 @@ class WatchOnRepeat {
     
     // Initialize Supabase Auth Session
     if (supabaseClient) {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        await this.setUserFromSession(session);
-      }
-      
-      supabaseClient.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
-          if (session) await this.setUserFromSession(session);
-        } else if (event === 'SIGNED_OUT') {
-          this.state.user = null;
-          this.updateUserUI();
+      try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) console.warn("Supabase session error:", error);
+        if (session) {
+          await this.setUserFromSession(session);
         }
-      });
+        
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+            if (session) await this.setUserFromSession(session);
+          } else if (event === 'SIGNED_OUT') {
+            this.state.user = null;
+            this.updateUserUI();
+          }
+        });
+      } catch (err) {
+        console.warn("Failed to initialize Supabase auth:", err);
+      }
     }
 
     this.setupEventListeners();
