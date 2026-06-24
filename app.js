@@ -114,6 +114,8 @@ class WatchOnRepeat {
       this.saveDb('users', users);
     }
     
+    await this.syncFromSupabase();
+
     this.updateUserUI();
     this.closeLoginModal();
     
@@ -302,11 +304,102 @@ class WatchOnRepeat {
   }
 
   getDb(key) {
-    return JSON.parse(localStorage.getItem('wor_' + key) || '[]');
+    const defaultVal = (key === 'shortcuts' || key === 'analytics') ? '{}' : '[]';
+    return JSON.parse(localStorage.getItem('wor_' + key) || defaultVal);
   }
 
   saveDb(key, data) {
     localStorage.setItem('wor_' + key, JSON.stringify(data));
+    this.pushToSupabase(key, data);
+  }
+
+  async syncFromSupabase() {
+    if (!this.state.user || !window.supabaseClient) return;
+    
+    try {
+      const { data: playlists } = await supabaseClient.from('playlists').select('*').eq('user_id', this.state.user.id);
+      if (playlists) {
+        const localPlaylists = playlists.map(p => ({
+          id: p.id, userId: p.user_id, name: p.name, videos: p.videos
+        }));
+        localStorage.setItem('wor_playlists', JSON.stringify(localPlaylists));
+      }
+      
+      const { data: notes } = await supabaseClient.from('notes').select('*').eq('user_id', this.state.user.id);
+      if (notes) {
+        const localNotes = {};
+        notes.forEach(n => {
+          const vId = `${n.platform}_${n.video_id}`;
+          if (!localNotes[vId]) localNotes[vId] = [];
+          localNotes[vId].push({
+            id: n.id, userId: n.user_id, text: n.text, transcript: n.transcript,
+            timestamp: n.timestamp, timestampFormatted: n.timestamp_formatted
+          });
+        });
+        localStorage.setItem('wor_notes', JSON.stringify(localNotes));
+      }
+      
+      const { data: settings } = await supabaseClient.from('user_settings').select('*').eq('user_id', this.state.user.id).single();
+      if (settings) {
+        localStorage.setItem('wor_shortcuts', JSON.stringify(settings.shortcuts || {}));
+        localStorage.setItem('wor_analytics', JSON.stringify(settings.analytics || {"totalTime":0,"segments":{}}));
+      }
+
+      const { data: history } = await supabaseClient.from('user_history').select('*').eq('user_id', this.state.user.id).eq('is_favorite', true);
+      if (history) {
+        const localFavs = history.map(h => ({
+          id: 'fav_' + h.video_id, userId: h.user_id, videoId: h.video_id,
+          platform: h.platform, title: h.title, timestamp: h.last_played
+        }));
+        localStorage.setItem('wor_favorites', JSON.stringify(localFavs));
+      }
+      
+      if (this.state.activeTab === 'playlists') this.renderPlaylistsTab();
+      if (this.state.activeTab === 'notes') this.renderNotes();
+      this.updateFavoriteButtonUI();
+    } catch (err) {
+      console.error("Error syncing from Supabase:", err);
+    }
+  }
+
+  async pushToSupabase(key, data) {
+    if (!this.state.user || !window.supabaseClient) return;
+    try {
+      if (key === 'playlists') {
+        const userPlaylists = data.filter(p => p.userId === this.state.user.id);
+        for (const p of userPlaylists) {
+          const { error } = await supabaseClient.from('playlists').upsert({
+            id: p.id, user_id: p.userId, name: p.name, videos: p.videos
+          });
+          if (error && error.message.includes('limited to 5')) {
+             this.showToast("Free tier limit: Max 5 playlists. Please upgrade to Pro.", "alert-circle");
+             await this.syncFromSupabase();
+          }
+        }
+      } else if (key === 'notes') {
+        const userNotes = [];
+        for (const vId in data) {
+           data[vId].forEach(n => {
+             const parts = vId.split('_');
+             if (!n.userId || n.userId === this.state.user.id) {
+               userNotes.push({
+                 id: n.id, user_id: this.state.user.id, video_id: parts.slice(1).join('_'), platform: parts[0],
+                 text: n.text, transcript: n.transcript, timestamp: n.timestamp, timestamp_formatted: n.timestampFormatted || n.timestamp_formatted || '0:00'
+               });
+             }
+           });
+        }
+        for (const note of userNotes) {
+          await supabaseClient.from('notes').upsert(note);
+        }
+      } else if (key === 'shortcuts') {
+        await supabaseClient.from('user_settings').upsert({ user_id: this.state.user.id, shortcuts: data });
+      } else if (key === 'analytics') {
+        await supabaseClient.from('user_settings').upsert({ user_id: this.state.user.id, analytics: data });
+      }
+    } catch (e) {
+      console.error("Push error:", e);
+    }
   }
 
   // ==========================================
@@ -1368,6 +1461,12 @@ class WatchOnRepeat {
     if (index !== -1) {
       // Remove from favorites
       favorites.splice(index, 1);
+      if (this.state.user && window.supabaseClient) {
+          supabaseClient.from('user_history').update({ is_favorite: false })
+            .eq('user_id', this.state.user.id)
+            .eq('video_id', video.id)
+            .eq('platform', video.platform).then();
+      }
       this.showToast("Removed from favorites", "heart");
     } else {
       // Add to favorites
@@ -1379,6 +1478,12 @@ class WatchOnRepeat {
         title: video.title,
         timestamp: new Date().toISOString()
       });
+      if (this.state.user && window.supabaseClient) {
+          supabaseClient.from('user_history').update({ is_favorite: true })
+            .eq('user_id', this.state.user.id)
+            .eq('video_id', video.id)
+            .eq('platform', video.platform).then();
+      }
       this.showToast("Added to favorites!", "heart");
     }
 
@@ -2960,13 +3065,20 @@ class WatchOnRepeat {
     return snippets[Math.floor(Math.random() * snippets.length)];
   }
 
-  deleteNote(id) {
+  deleteNote(noteId) {
     const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     if (db[vId]) {
-      db[vId] = db[vId].filter(n => n.id !== id);
-      this.saveDb('notes', db);
-      this.renderNotes();
+      const index = db[vId].findIndex(n => n.id === noteId);
+      if (index !== -1) {
+        db[vId].splice(index, 1);
+        this.saveDb('notes', db);
+        if (this.state.user && window.supabaseClient) {
+            supabaseClient.from('notes').delete().eq('id', noteId).then();
+        }
+        this.renderNotes();
+        this.showToast("Note deleted", "trash-2");
+      }
     }
   }
 
