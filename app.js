@@ -13,6 +13,9 @@ class WatchOnRepeat {
       user: null,
       currentVideo: null, // { id, platform, title, duration }
       personalLoops: 0,
+      currentGlobalLoops: 0,
+      currentGlobalPlays: 0,
+      currentLifetimeLoops: 0,
       loopTimer: null,
       loopSeconds: 0,
       activeTab: 'discover',
@@ -622,8 +625,41 @@ class WatchOnRepeat {
     if (platform === 'local') return; // Handled separately
     this.state.currentPlatform = platform;
     this.state.personalLoops = 0;
+    this.state.currentGlobalLoops = 0;
+    this.state.currentGlobalPlays = 0;
+    this.state.currentLifetimeLoops = 0;
     this.state.loopSeconds = 0;
     this.state.currentVideoDuration = 0;
+
+    if (window.supabaseClient) {
+      supabaseClient.from('global_stats')
+        .select('global_loops, global_plays')
+        .eq('video_id', id)
+        .eq('platform', platform)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            this.state.currentGlobalLoops = data.global_loops;
+            this.state.currentGlobalPlays = data.global_plays;
+            this.updateStatsUI();
+          }
+        });
+        
+      if (this.state.user) {
+        supabaseClient.from('user_history')
+          .select('loops_count')
+          .eq('user_id', this.state.user.id)
+          .eq('video_id', id)
+          .eq('platform', platform)
+          .single()
+          .then(({ data }) => {
+            if (data) {
+              this.state.currentLifetimeLoops = data.loops_count;
+              this.updateStatsUI();
+            }
+          });
+      }
+    }
     
     if (this.elements.abStart) {
       this.elements.abStart.value = "";
@@ -1110,32 +1146,31 @@ class WatchOnRepeat {
       this.trackABSegment();
     }
 
-    // Increment personal loops (lifetime) in database (if logged in)
-    let personalLifetime = 0;
+    // Optimistic UI updates
+    this.state.currentGlobalLoops++;
     if (this.state.user) {
-      const history = this.getDb('history');
-      const record = history.find(h => h.videoId === video.id && h.platform === video.platform && h.userId === this.state.user.id);
-      if (record) {
-        record.loopsCount = (record.loopsCount || 0) + 1;
-        record.lastPlayed = new Date().toISOString();
-        personalLifetime = record.loopsCount;
-        this.saveDb('history', history);
-        this.renderHistoryTab();
+      this.state.currentLifetimeLoops++;
+    }
+    this.updateStatsUI();
+
+    // Fire and forget RPC updates to Supabase
+    if (window.supabaseClient) {
+      supabaseClient.rpc('increment_global_loops', {
+        p_video_id: video.id,
+        p_platform: video.platform
+      }).then(() => {});
+
+      if (this.state.user) {
+        supabaseClient.rpc('increment_user_loops', {
+          p_user_id: this.state.user.id,
+          p_video_id: video.id,
+          p_platform: video.platform,
+          p_title: video.title || ''
+        }).then(() => {
+          this.renderHistoryTab();
+        });
       }
     }
-
-
-
-    // Increment global loops
-    const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
-    const statsKey = `${video.platform}_${video.id}`;
-    if (globalStats[statsKey]) {
-      globalStats[statsKey].globalLoops++;
-      this.saveDb('global_stats', globalStats);
-    }
-
-    // Refresh UI stats
-    this.updateStatsUI();
   }
 
   incrementGlobalPlayCount(id, platform) {
@@ -1151,34 +1186,15 @@ class WatchOnRepeat {
     const video = this.state.currentVideo;
     if (!video) return;
 
-    const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
-    const statsKey = `${video.platform}_${video.id}`;
-    
-    let globalLoops = 0;
-    let globalPlays = 0;
-    
-    if (globalStats[statsKey]) {
-      globalLoops = globalStats[statsKey].globalLoops;
-      globalPlays = globalStats[statsKey].globalPlays;
-    }
-
     // Update personal session loops
     this.elements.personalLoopCount.textContent = this.formatNumber(this.state.personalLoops);
 
     // Update personal lifetime loops
-    let lifetimeLoops = 0;
-    if (this.state.user) {
-      const history = this.getDb('history');
-      const record = history.find(h => h.videoId === video.id && h.platform === video.platform && h.userId === this.state.user.id);
-      if (record) {
-        lifetimeLoops = record.loopsCount || 0;
-      }
-    }
-    this.elements.personalLifetimeCount.textContent = lifetimeLoops;
+    this.elements.personalLifetimeCount.textContent = this.formatNumber(this.state.currentLifetimeLoops);
 
     // Update global loops
-    if (this.elements.globalLoopCount) this.elements.globalLoopCount.textContent = this.formatNumber(globalLoops);
-    if (this.elements.globalPlayCount) this.elements.globalPlayCount.textContent = this.formatNumber(globalPlays);
+    if (this.elements.globalLoopCount) this.elements.globalLoopCount.textContent = this.formatNumber(this.state.currentGlobalLoops);
+    if (this.elements.globalPlayCount) this.elements.globalPlayCount.textContent = this.formatNumber(this.state.currentGlobalPlays);
   }
 
   // ==========================================
@@ -1385,20 +1401,27 @@ class WatchOnRepeat {
     return '';
   }
 
-  renderResumeLearning() {
+  async renderResumeLearning() {
     if (!this.state.user) {
       if (this.elements.resumeLearningSection) this.elements.resumeLearningSection.classList.add('hidden');
       return;
     }
 
-    const history = this.getDb('history').filter(h => h.userId === this.state.user.id);
-    if (history.length === 0) {
+    let recent = null;
+    if (window.supabaseClient) {
+      const { data } = await supabaseClient.from('user_history').select('*').eq('user_id', this.state.user.id).order('last_played', { ascending: false }).limit(1).single();
+      if (data) {
+        recent = { videoId: data.video_id, platform: data.platform, title: data.title, timestamp: new Date(data.last_played).getTime() };
+      }
+    } else {
+      const history = this.getDb('history').filter(h => h.userId === this.state.user.id);
+      if (history.length > 0) recent = history.sort((a, b) => b.timestamp - a.timestamp)[0];
+    }
+
+    if (!recent) {
       if (this.elements.resumeLearningSection) this.elements.resumeLearningSection.classList.add('hidden');
       return;
     }
-
-    // Get the most recent video
-    const recent = history.sort((a, b) => b.timestamp - a.timestamp)[0];
 
     // Show section
     if (this.elements.resumeLearningSection) this.elements.resumeLearningSection.classList.remove('hidden');
@@ -1672,7 +1695,7 @@ class WatchOnRepeat {
     if (this.state.activeTab === 'playlists') this.renderPlaylistsTab();
   }
 
-  renderHistoryTab() {
+  async renderHistoryTab() {
     if (!this.state.user) {
       this.elements.historyAuthRequired.classList.remove('hidden');
       this.elements.historyList.classList.add('hidden');
@@ -1682,7 +1705,15 @@ class WatchOnRepeat {
 
     this.elements.historyAuthRequired.classList.add('hidden');
     
-    const history = this.getDb('history').filter(h => h.userId === this.state.user.id);
+    let history = [];
+    if (window.supabaseClient) {
+      const { data } = await supabaseClient.from('user_history').select('*').eq('user_id', this.state.user.id).order('last_played', { ascending: false });
+      if (data) {
+        history = data.map(d => ({ videoId: d.video_id, platform: d.platform, title: d.title, loopsCount: d.loops_count, lastPlayed: d.last_played }));
+      }
+    } else {
+      history = this.getDb('history').filter(h => h.userId === this.state.user.id);
+    }
 
     if (history.length === 0) {
       this.elements.historyList.classList.add('hidden');
@@ -1700,10 +1731,17 @@ class WatchOnRepeat {
     }
   }
 
-  renderTrendsTab() {
-    const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
-    // Convert map to array and sort by globalLoops descending
-    const trends = Object.values(globalStats).sort((a, b) => b.globalLoops - a.globalLoops);
+  async renderTrendsTab() {
+    let trends = [];
+    if (window.supabaseClient) {
+      const { data } = await supabaseClient.from('global_stats').select('*').order('global_loops', { ascending: false }).limit(10);
+      if (data) {
+        trends = data.map(d => ({ videoId: d.video_id, platform: d.platform, globalLoops: d.global_loops, globalPlays: d.global_plays, title: `Trending ${d.platform} video` }));
+      }
+    } else {
+      const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
+      trends = Object.values(globalStats).sort((a, b) => b.globalLoops - a.globalLoops);
+    }
 
     if (!this.elements.trendsList) return;
 
@@ -1732,11 +1770,11 @@ class WatchOnRepeat {
 
     const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
     const statsKey = `${video.platform}_${video.videoId || video.id}`;
-    const globalLoops = globalStats[statsKey] ? globalStats[statsKey].globalLoops : 0;
+    const globalLoops = video.globalLoops !== undefined ? video.globalLoops : (globalStats[statsKey] ? globalStats[statsKey].globalLoops : 0);
 
     let subMeta = '';
     if (isHistory) {
-      subMeta = `<span>Loops: <strong>${video.loopsCount || 0}</strong></span> • <span>${this.formatTimeAgo(video.lastPlayed)}</span>`;
+      subMeta = `<span>Loops: <strong>${video.loopsCount || 0}</strong></span> • <span>${this.formatTimeAgo(video.lastPlayed || video.timestamp)}</span>`;
     } else {
       subMeta = `<span class="global-count"><i data-lucide="refresh-cw"></i> <strong>${this.formatNumber(globalLoops)}</strong> loops</span>`;
     }
