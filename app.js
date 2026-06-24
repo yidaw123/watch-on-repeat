@@ -7,6 +7,10 @@ const SUPABASE_KEY = 'sb_publishable_e1gQuU0n8FofmTkitqTEQQ_pi1g8fqD';
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 window.supabaseClient = supabaseClient;
 
+if (typeof lucide === 'undefined') {
+  window.lucide = { createIcons: () => {} };
+}
+
 class WatchOnRepeat {
   constructor() {
     // Database and State
