@@ -49,8 +49,8 @@ class WatchOnRepeat {
     let cancelAtPeriodEnd = false;
     let loginCount = 1;
 
-    const avatar = user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email);
-    const username = user.user_metadata?.full_name || user.email.split('@')[0];
+    const avatar = user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'user');
+    const username = user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : 'User');
     const provider = user.app_metadata?.provider || 'Email';
 
     if (window.supabaseClient) {
