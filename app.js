@@ -11,6 +11,19 @@ if (typeof lucide === 'undefined') {
   window.lucide = { createIcons: () => {} };
 }
 
+window.addEventListener('error', function(e) {
+  console.error("Global Error Caught:", e.error);
+  if (window.app && typeof window.app.showToast === 'function') {
+    window.app.showToast("An unexpected error occurred. " + (e.message || ""), "alert-circle");
+  }
+});
+window.addEventListener('unhandledrejection', function(e) {
+  console.error("Unhandled Promise Rejection:", e.reason);
+  if (window.app && typeof window.app.showToast === 'function') {
+    window.app.showToast("An unexpected error occurred. " + (e.reason?.message || "Promise failed"), "alert-circle");
+  }
+});
+
 class WatchOnRepeat {
   constructor() {
     // Database and State
