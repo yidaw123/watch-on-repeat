@@ -30,6 +30,9 @@
   <!-- Video Player APIs -->
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="https://player.vimeo.com/api/player.js"></script>
+  <script src="https://player.twitch.tv/js/embed/v1.js"></script>
+  <script src="https://w.soundcloud.com/player/api.js"></script>
+  <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
 </head>
 <body>
 
@@ -56,7 +59,7 @@
         <form id="paste-form" onsubmit="app.handleSearchSubmit(event)">
           <div class="search-wrapper">
             <i data-lucide="link-2" class="search-icon"></i>
-            <input type="text" id="video-url-input" placeholder="Paste direct link (YouTube, Vimeo, Dailymotion, adult sites, etc.)..." autocomplete="off">
+            <input type="text" id="video-url-input" placeholder="Paste direct link (YouTube, Vimeo, Twitch, SoundCloud, Wistia, etc.)..." autocomplete="off">
             <button type="submit" class="search-btn">
               <span>Loop It</span>
               <i data-lucide="play"></i>

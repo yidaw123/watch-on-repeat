@@ -447,45 +447,59 @@ class WatchOnRepeat {
     if (!url) return null;
     url = url.trim();
 
-    // Support for YouTube and repeatyoutube
-    // e.g. youtube.com/watch?v=ID, repeatyoutube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID
+    // YouTube
     const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|repeatyoutube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/;
     const ytMatch = url.match(ytRegex);
     if (ytMatch && ytMatch[1]) {
       return { platform: 'youtube', id: ytMatch[1] };
     }
 
-    // Support for Vimeo
-    // e.g. vimeo.com/123456789, vimeo.com/channels/staffpicks/123456789
+    // Vimeo
     const vimeoRegex = /(?:vimeo\.com\/(?:channels\/[^\/]+\/|groups\/[^\/]+\/album\/[^\/]+\/video\/|showcase\/[^\/]+\/video\/)?|player\.vimeo\.com\/video\/)(\d+)/;
     const vimeoMatch = url.match(vimeoRegex);
     if (vimeoMatch && vimeoMatch[1]) {
       return { platform: 'vimeo', id: vimeoMatch[1] };
     }
 
-    // Support for Dailymotion
-    // e.g. dailymotion.com/video/x7t5vcr, dai.ly/x7t5vcr
+    // Dailymotion
     const dmRegex = /(?:dailymotion\.com\/video\/|dai\.ly\/)([a-zA-Z0-9]+)/;
     const dmMatch = url.match(dmRegex);
     if (dmMatch && dmMatch[1]) {
       return { platform: 'dailymotion', id: dmMatch[1] };
     }
 
-    // Fallback: If it's a simple 11-char string, assume YouTube ID, if numeric assume Vimeo, if alpha-numeric assume Dailymotion
-    if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
-      return { platform: 'youtube', id: url };
+    // Twitch (VODs, Clips, Channels)
+    const twitchRegex = /twitch\.tv\/(?:videos\/(\d+)|([a-zA-Z0-9_]+)\/clip\/([a-zA-Z0-9_-]+)|([a-zA-Z0-9_]+))/;
+    const twitchMatch = url.match(twitchRegex);
+    if (twitchMatch) {
+      if (twitchMatch[1]) return { platform: 'twitch', id: 'video=' + twitchMatch[1] };
+      if (twitchMatch[3]) return { platform: 'twitch', id: 'clip=' + twitchMatch[3] };
+      if (twitchMatch[4]) return { platform: 'twitch', id: 'channel=' + twitchMatch[4] };
     }
-    if (/^\d{8,11}$/.test(url)) {
-      return { platform: 'vimeo', id: url };
+
+    // SoundCloud
+    const scRegex = /soundcloud\.com\/([a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+)/;
+    const scMatch = url.match(scRegex);
+    if (scMatch && scMatch[1]) {
+      return { platform: 'soundcloud', id: scMatch[1] };
     }
-    if (/^[a-zA-Z0-9]{6,8}$/.test(url)) {
-      return { platform: 'dailymotion', id: url };
+
+    // Wistia
+    const wistiaRegex = /(?:wistia\.com\/medias\/|fast\.wistia\.net\/embed\/iframe\/)([a-zA-Z0-9]+)/;
+    const wistiaMatch = url.match(wistiaRegex);
+    if (wistiaMatch && wistiaMatch[1]) {
+      return { platform: 'wistia', id: wistiaMatch[1] };
     }
-    
+
     // HTML5 native video
     if (url.endsWith('.mp4') || url.endsWith('.webm') || url.includes('.mp4?')) {
       return { platform: 'html5', id: url };
     }
+    
+    // Fallbacks
+    if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return { platform: 'youtube', id: url };
+    if (/^\d{8,11}$/.test(url)) return { platform: 'vimeo', id: url };
+    if (/^[a-zA-Z0-9]{6,8}$/.test(url)) return { platform: 'dailymotion', id: url };
 
     return null;
   }
@@ -684,6 +698,12 @@ class WatchOnRepeat {
       this.initDailymotionPlayer(id);
     } else if (platform === 'html5') {
       this.initHTML5Player(id);
+    } else if (platform === 'twitch') {
+      this.initTwitchPlayer(id);
+    } else if (platform === 'soundcloud') {
+      this.initSoundCloudPlayer(id);
+    } else if (platform === 'wistia') {
+      this.initWistiaPlayer(id);
     }
 
     // Apply speed if passed via URL
@@ -796,6 +816,8 @@ class WatchOnRepeat {
         videoUrl = `https://vimeo.com/${id}`;
       } else if (platform === 'dailymotion') {
         videoUrl = `https://www.dailymotion.com/video/${id}`;
+      } else if (platform === 'soundcloud') {
+        videoUrl = `https://soundcloud.com/${id}`;
       }
 
       if (videoUrl) {
@@ -812,8 +834,16 @@ class WatchOnRepeat {
     }
     
     // Generate an appealing fake title for unrecognized videos based on the ID to make it look realistic
+    let baseId = id;
+    if (platform === 'twitch') {
+      const parts = id.split('=');
+      baseId = parts[1] || id;
+      return `Twitch Stream: ${baseId}`;
+    }
+    if (platform === 'wistia') return `Wistia Video`;
+
     const prefixes = ["Chill Beats", "Synthwave Session", "Ambient Relaxation", "Nature Sounds", "Epic Orchestral", "Developer Focus", "Cozy Coffee Shop", "Live Music Session"];
-    const index = id.charCodeAt(0) % prefixes.length;
+    const index = String(baseId).charCodeAt(0) % prefixes.length;
     return `${prefixes[index]}`;
   }
 
@@ -2285,12 +2315,120 @@ class WatchOnRepeat {
     });
   }
 
+  initTwitchPlayer(id) {
+    this.elements.playerContainer.innerHTML = '<div id="twitch-player-target" style="width:100%;height:100%;"></div>';
+    
+    // Parse the id we packed earlier
+    const opts = { width: '100%', height: '100%', parent: [window.location.hostname || 'localhost'] };
+    if (id.startsWith('video=')) opts.video = id.split('=')[1];
+    else if (id.startsWith('clip=')) opts.collection = id.split('=')[1];
+    else if (id.startsWith('channel=')) opts.channel = id.split('=')[1];
+    else opts.video = id; // fallback
+
+    const setupTwitch = () => {
+      const player = new Twitch.Player("twitch-player-target", opts);
+      this.state.players.twitch = player;
+
+      player.addEventListener(Twitch.Player.READY, () => {
+        this.setVideoDuration(player.getDuration());
+        this.onVideoReady();
+        player.play();
+      });
+      player.addEventListener(Twitch.Player.PLAYING, () => {
+        this.elements.loopStateText.textContent = "Looping";
+        this.elements.loopStateText.className = "stat-value text-green";
+      });
+      player.addEventListener(Twitch.Player.PAUSE, () => {
+        this.elements.loopStateText.textContent = "Paused";
+        this.elements.loopStateText.className = "stat-value text-muted";
+      });
+      player.addEventListener(Twitch.Player.ENDED, () => {
+        this.incrementLoops();
+        this.seekToTime(this.state.abLoop.start || 0);
+        player.play();
+      });
+    };
+
+    if (window.Twitch) setupTwitch();
+    else setTimeout(setupTwitch, 1000);
+  }
+
+  initSoundCloudPlayer(id) {
+    this.elements.playerContainer.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${id}&auto_play=true&show_artwork=true&visual=true`;
+    iframe.width = "100%";
+    iframe.height = "100%";
+    iframe.allow = "autoplay";
+    this.elements.playerContainer.appendChild(iframe);
+
+    const setupSC = () => {
+      const widget = SC.Widget(iframe);
+      this.state.players.soundcloud = widget;
+
+      widget.bind(SC.Widget.Events.READY, () => {
+        widget.getDuration((duration) => {
+          this.setVideoDuration(duration / 1000);
+        });
+        this.onVideoReady();
+      });
+      widget.bind(SC.Widget.Events.PLAY, () => {
+        this.elements.loopStateText.textContent = "Looping";
+        this.elements.loopStateText.className = "stat-value text-green";
+      });
+      widget.bind(SC.Widget.Events.PAUSE, () => {
+        this.elements.loopStateText.textContent = "Paused";
+        this.elements.loopStateText.className = "stat-value text-muted";
+      });
+      widget.bind(SC.Widget.Events.FINISH, () => {
+        this.incrementLoops();
+        this.seekToTime(this.state.abLoop.start || 0);
+        widget.play();
+      });
+    };
+
+    if (window.SC) setupSC();
+    else setTimeout(setupSC, 1000);
+  }
+
+  initWistiaPlayer(id) {
+    this.elements.playerContainer.innerHTML = `<div class="wistia_embed wistia_async_${id}" style="width:100%;height:100%;"></div>`;
+    
+    window._wq = window._wq || [];
+    window._wq.push({ id: id, onReady: (video) => {
+      this.state.players.wistia = video;
+      this.setVideoDuration(video.duration());
+      this.onVideoReady();
+      video.play();
+
+      video.bind('play', () => {
+        this.elements.loopStateText.textContent = "Looping";
+        this.elements.loopStateText.className = "stat-value text-green";
+      });
+      video.bind('pause', () => {
+        this.elements.loopStateText.textContent = "Paused";
+        this.elements.loopStateText.className = "stat-value text-muted";
+      });
+      video.bind('end', () => {
+        this.incrementLoops();
+        this.seekToTime(this.state.abLoop.start || 0);
+        video.play();
+      });
+    }});
+  }
+
   async getCurrentTime() {
     const p = this.state.currentPlatform;
     if (p === 'youtube' && this.state.players.youtube) return this.state.players.youtube.getCurrentTime() || 0;
     if (p === 'vimeo' && this.state.players.vimeo) return await this.state.players.vimeo.getCurrentTime().catch(()=>0);
     if (p === 'dailymotion' && this.state.players.dailymotion) return this.state.players.dailymotion.currentTime || 0;
     if (p === 'html5' && this.state.players.html5) return this.state.players.html5.currentTime || 0;
+    if (p === 'twitch' && this.state.players.twitch) return this.state.players.twitch.getCurrentTime() || 0;
+    if (p === 'soundcloud' && this.state.players.soundcloud) {
+      const ms = await new Promise(r => this.state.players.soundcloud.getPosition(r));
+      return (ms || 0) / 1000;
+    }
+    if (p === 'wistia' && this.state.players.wistia) return this.state.players.wistia.time() || 0;
     return 0;
   }
 
@@ -2300,6 +2438,9 @@ class WatchOnRepeat {
     if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.setCurrentTime(seconds);
     if (p === 'dailymotion' && this.state.players.dailymotion) this.state.players.dailymotion.seek(seconds);
     if (p === 'html5' && this.state.players.html5) this.state.players.html5.currentTime = seconds;
+    if (p === 'twitch' && this.state.players.twitch) this.state.players.twitch.seek(seconds);
+    if (p === 'soundcloud' && this.state.players.soundcloud) this.state.players.soundcloud.seekTo(seconds * 1000);
+    if (p === 'wistia' && this.state.players.wistia) this.state.players.wistia.time(seconds);
   }
 
   setPlaybackSpeed(rate) {

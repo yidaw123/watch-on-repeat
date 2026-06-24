@@ -193,7 +193,7 @@ h1, h2, h3, h4, .brand-name {
 /* Search Container */
 .search-container {
   flex: 1;
-  max-width: 600px;
+  max-width: 850px;
   margin: 0 2rem;
 }
 
