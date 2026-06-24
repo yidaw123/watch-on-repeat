@@ -1207,23 +1207,27 @@ class WatchOnRepeat {
     }
     this.updateStatsUI();
 
-    // Fire and forget RPC updates to Supabase
+    // Fire and forget direct upserts to Supabase to completely bypass RPCs
     if (window.supabaseClient) {
-      supabaseClient.rpc('increment_global_loops', {
-        p_video_id: video.id,
-        p_platform: video.platform
-      }).then(({ error }) => {
-        if (error) console.error("Missing RPC increment_global_loops:", error);
+      supabaseClient.from('global_stats').upsert({
+        video_id: video.id,
+        platform: video.platform,
+        global_loops: this.state.currentGlobalLoops,
+        global_plays: this.state.currentGlobalPlays
+      }, { onConflict: 'video_id, platform' }).then(({ error }) => {
+        if (error) console.error("Global Loops Upsert Error:", error);
       });
 
       if (this.state.user) {
-        supabaseClient.rpc('increment_user_loops', {
-          p_user_id: this.state.user.id,
-          p_video_id: video.id,
-          p_platform: video.platform,
-          p_title: video.title || ''
-        }).then(({ error }) => {
-          if (error) console.error("Missing RPC increment_user_loops:", error);
+        supabaseClient.from('user_history').upsert({
+          user_id: this.state.user.id,
+          video_id: video.id,
+          platform: video.platform,
+          title: video.title || '',
+          loops_count: this.state.currentLifetimeLoops,
+          last_played: new Date().toISOString()
+        }, { onConflict: 'user_id, video_id, platform' }).then(({ error }) => {
+          if (error) console.error("User History Upsert Error:", error);
           this.renderHistoryTab();
         });
       }
