@@ -890,8 +890,8 @@ class WatchOnRepeat {
       if (realTitle && !realTitle.includes("Cozy Coffee Shop")) {
         this.elements.videoTitle.textContent = realTitle;
         if (this.state.currentVideo) this.state.currentVideo.title = realTitle;
-      }
-    });  this.renderTrendsTab();
+        
+        this.renderTrendsTab();
 
         // Update history cache if needed
         const history = this.getDb('history');
