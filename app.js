@@ -795,7 +795,12 @@ class WatchOnRepeat {
   // ==========================================
 
   async  loadVideo(id, platform = 'youtube') {
-    if (platform === 'local') return; // Handled separately
+    if (platform === 'local') {
+      this.showToast("For security, please re-select your local file to continue.", "folder");
+      const input = document.getElementById('local-video-input');
+      if (input) input.click();
+      return;
+    }
     this.state.currentPlatform = platform;
     this.state.personalLoops = 0;
     this.state.currentGlobalLoops = 0;
