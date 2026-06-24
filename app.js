@@ -47,6 +47,11 @@ class WatchOnRepeat {
     let tier = 'free';
     let subscriptionEndDate = null;
     let cancelAtPeriodEnd = false;
+    let loginCount = 1;
+
+    const avatar = user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email);
+    const username = user.user_metadata?.full_name || user.email.split('@')[0];
+    const provider = user.app_metadata?.provider || 'Email';
 
     if (window.supabaseClient) {
       const { data } = await supabaseClient.from('users').select('*').eq('id', user.id).single();
@@ -54,22 +59,35 @@ class WatchOnRepeat {
         tier = data.tier;
         subscriptionEndDate = data.subscription_end_date;
         cancelAtPeriodEnd = data.cancel_at_period_end;
+        loginCount = (data.login_count || 0) + 1;
+        
+        await supabaseClient.from('users').update({
+          last_active_date: new Date().toISOString(),
+          login_count: loginCount,
+          full_name: username,
+          provider: provider
+        }).eq('id', user.id);
       } else {
-        await supabaseClient.from('users').insert({ id: user.id, email: user.email, tier: 'free' });
+        await supabaseClient.from('users').insert({ 
+          id: user.id, 
+          email: user.email, 
+          tier: 'free',
+          full_name: username,
+          provider: provider,
+          last_active_date: new Date().toISOString(),
+          login_count: 1
+        });
       }
     } else {
       tier = user.user_metadata?.tier || 'free';
     }
-
-    const avatar = user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email);
-    const username = user.user_metadata?.full_name || user.email.split('@')[0];
     
     this.state.user = {
       id: user.id,
       name: username.charAt(0).toUpperCase() + username.slice(1),
       email: user.email,
       avatar: avatar,
-      provider: user.app_metadata?.provider || 'Email',
+      provider: provider,
       tier: tier,
       isPremium: tier === 'premium' || tier === 'pro',
       subscriptionEndDate: subscriptionEndDate,
