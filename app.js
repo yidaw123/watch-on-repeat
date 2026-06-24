@@ -482,9 +482,40 @@ class WatchOnRepeat {
     let rawUrl = urlParams.get('url');
     let platform = urlParams.get('p') || 'youtube';
 
-    // Check if the user is using the repeatyoutube.com style URL directly (e.g. /watch?v=VIDEO_ID)
-    if (!videoId && window.location.pathname.includes('/watch')) {
-      videoId = urlParams.get('v');
+    // Parse custom URL shortcuts (e.g. watchonrepeat.com/123456789 or watchonrepeat.com/video/x7abcde)
+    const path = window.location.pathname;
+    if (!videoId && path.length > 1 && path !== '/index.html') {
+      const parts = path.split('/').filter(Boolean);
+      
+      if (parts.length === 1) {
+        // Handle /watch?v=... where v is missed, or bare IDs
+        if (parts[0] !== 'watch') {
+          const id = parts[0];
+          videoId = id;
+          if (id.length === 11 && !/^\d+$/.test(id)) {
+            platform = 'youtube';
+          } else if (/^\d+$/.test(id)) {
+            platform = 'vimeo'; // Vimeo usually uses numeric IDs
+          } else {
+            platform = 'youtube'; // Default fallback
+          }
+        }
+      } else if (parts.length >= 2) {
+        const type = parts[0].toLowerCase();
+        const id = parts[1];
+        
+        if (type === 'video') {
+          videoId = id;
+          if (id.startsWith('x')) {
+            platform = 'dailymotion';
+          } else {
+            platform = 'vimeo'; // fallback for /video/123456
+          }
+        } else if (type === 'videos') {
+          videoId = id;
+          platform = 'twitch';
+        }
+      }
     }
 
     // Parse deep-linked clip params
