@@ -3872,6 +3872,3 @@ class WatchOnRepeat {
 const app = new WatchOnRepeat();
 window.app = app; // Expose globally for inline onclick handlers
 
-document.addEventListener('DOMContentLoaded', () => {
-  app.init();
-});
