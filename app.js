@@ -1861,9 +1861,9 @@ class WatchOnRepeat {
     const rankPrefix = rank ? `<span class="badge" style="margin-right:0.25rem; background: var(--gradient-primary); color:white;">#${rank}</span>` : '';
 
     card.innerHTML = `
-      <img src="${thumbUrl}" class="video-card-thumb" alt="${video.title}">
+      <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" alt="${this.escapeHtml(video.title)}">
       <div class="video-card-details">
-        <h4 class="video-card-title">${rankPrefix}${video.title}</h4>
+        <h4 class="video-card-title">${rankPrefix}${this.escapeHtml(video.title)}</h4>
         <div class="video-card-meta">
           <span class="badge">${video.platform}</span>
           ${subMeta}
@@ -2188,7 +2188,7 @@ class WatchOnRepeat {
       
       this.elements.userAvatar.src = this.state.user.avatar;
       if (isPremium) {
-        this.elements.userName.innerHTML = `${this.state.user.name} <span class="premium-badge" title="Premium Member"><i data-lucide="crown"></i></span>`;
+        this.elements.userName.innerHTML = `${this.escapeHtml(this.state.user.name)} <span class="premium-badge" title="Premium Member"><i data-lucide="crown"></i></span>`;
       } else {
         this.elements.userName.textContent = this.state.user.name;
       }
