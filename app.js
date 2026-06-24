@@ -429,12 +429,19 @@ class WatchOnRepeat {
     this.state.currentPlatform = null;
     this.stopTimer();
     
-    // Hide both loaded state and empty state to leave a completely blank area
-    this.elements.playerLoaded.classList.add('hidden');
+    // Show the player UI but leave the video area blank
     if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
+    this.elements.playerLoaded.classList.remove('hidden');
     
-    // Clear iframe container
+    // Clear iframe container to keep it completely blank
     this.elements.playerContainer.innerHTML = '';
+    
+    // Reset title and stats for empty state
+    if (this.elements.videoTitle) this.elements.videoTitle.textContent = "Ready to Loop";
+    const loopDisplay = document.getElementById('personal-loop-count');
+    const sessionDisplay = document.getElementById('session-duration');
+    if (loopDisplay) loopDisplay.textContent = '0';
+    if (sessionDisplay) sessionDisplay.textContent = '00:00:00';
     
     // Ensure the URL remains clean (without ?v=...) for the home state
     try {
