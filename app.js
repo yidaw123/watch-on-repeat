@@ -1450,11 +1450,10 @@ class WatchOnRepeat {
     }
   }
 
-  renderDiscoverTab() {
+  async renderDiscoverTab() {
     this.renderResumeLearning();
 
-    // Standard recommended videos
-    const discoverVideos = [
+    let discoverVideos = [
       { id: 'aqz-KE-bpKQ', platform: 'youtube', title: 'Big Buck Bunny 60fps 4K' },
       { id: 'jfKfPfyJRdk', platform: 'youtube', title: 'lofi hip hop radio - beats to relax/study to' },
       { id: '76979871', platform: 'vimeo', title: 'Big Buck Bunny (High Quality Animated Film)' },
@@ -1462,10 +1461,27 @@ class WatchOnRepeat {
       { id: 'Sagg0zTrNGA', platform: 'youtube', title: 'Epic Sax Guy - 10 Hours Loop Edition' }
     ];
 
+    if (window.supabaseClient) {
+      const { data } = await supabaseClient.from('global_stats')
+        .select('*')
+        .order('global_loops', { ascending: false })
+        .limit(10);
+      
+      if (data && data.length > 0) {
+        discoverVideos = data.map(d => ({
+          videoId: d.video_id,
+          platform: d.platform,
+          title: `Trending ${d.platform} video`,
+          globalLoops: d.global_loops
+        }));
+      }
+    }
+
     this.elements.discoverList.innerHTML = '';
     
-    discoverVideos.forEach(v => {
-      const card = this.createVideoCard(v);
+    discoverVideos.forEach((v, index) => {
+      const isTrending = !!v.globalLoops;
+      const card = this.createVideoCard(v, false, isTrending ? index + 1 : null);
       this.elements.discoverList.appendChild(card);
     });
     
