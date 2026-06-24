@@ -2485,11 +2485,15 @@ class WatchOnRepeat {
       this.state.players.twitch = player;
 
       player.addEventListener(Twitch.Player.READY, () => {
-        this.setVideoDuration(player.getDuration());
+        this.setVideoDuration(player.getDuration() || 0);
         this.onVideoReady();
         player.play();
       });
       player.addEventListener(Twitch.Player.PLAYING, () => {
+        const duration = player.getDuration();
+        if (duration > 0 && (!this.state.currentVideoDuration || this.state.currentVideoDuration <= 0)) {
+          this.setVideoDuration(duration);
+        }
         this.elements.loopStateText.textContent = "Looping";
         this.elements.loopStateText.className = "stat-value text-green";
       });
