@@ -665,8 +665,8 @@
           <!-- 1. Welcome View (Decluttered) -->
           <div id="auth-welcome-view" style="max-width: 320px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 12px;">
             <!-- Native Google Identity Services Button Container wrapped in brand gradient -->
-            <div style="background: var(--gradient-primary); padding: 2px; border-radius: 4px;">
-              <div id="google-btn-container" style="display: flex; justify-content: center; width: 100%; border-radius: 2px; overflow: hidden; background: #131415;"></div>
+            <div style="background: var(--gradient-primary); padding: 1px; border-radius: var(--radius-md);">
+              <div id="google-btn-container" style="display: flex; justify-content: center; width: 100%; border-radius: calc(var(--radius-md) - 1px); overflow: hidden; background: #131414;"></div>
             </div>
             
             <button class="btn btn-primary w-full" style="justify-content: center;" onclick="app.switchAuthView('signup')">
