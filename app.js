@@ -425,8 +425,16 @@ class WatchOnRepeat {
   }
 
   loadHome() {
-    // Instead of showing an empty state, always load a default video (Lofi Hip Hop)
-    this.loadVideo('jfKfPfyJRdk', 'youtube').catch(console.error);
+    this.state.currentVideo = null;
+    this.state.currentPlatform = null;
+    this.stopTimer();
+    
+    // Hide both loaded state and empty state to leave a completely blank area
+    this.elements.playerLoaded.classList.add('hidden');
+    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
+    
+    // Clear iframe container
+    this.elements.playerContainer.innerHTML = '';
     
     // Ensure the URL remains clean (without ?v=...) for the home state
     try {
@@ -1790,7 +1798,7 @@ class WatchOnRepeat {
     if (btnContainer) {
       google.accounts.id.renderButton(
         btnContainer,
-        { theme: "outline", size: "large", width: 320, text: "continue_with" }
+        { theme: "filled_black", size: "large", width: 320, text: "continue_with", shape: "rectangular" }
       );
     }
   }
