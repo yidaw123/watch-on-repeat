@@ -84,8 +84,10 @@ class WatchOnRepeat {
         if (insertError) {
           console.error("Failed to insert new user:", insertError);
           this.showToast("DB Insert Error: " + insertError.message, "alert-circle");
+          alert("DATABASE ERROR: " + insertError.message + "\n\nDetails: " + JSON.stringify(insertError));
         } else {
           this.showToast("Account successfully synced to Database!", "check-circle");
+          console.log("SUCCESSFULLY INSERTED USER INTO DATABASE!");
         }
       }
     } else {
@@ -2627,13 +2629,13 @@ class WatchOnRepeat {
 
   seekToTime(seconds) {
     const p = this.state.currentPlatform;
-    if (p === 'youtube' && this.state.players.youtube) this.state.players.youtube.seekTo(seconds, true);
-    if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.setCurrentTime(seconds);
-    if (p === 'dailymotion' && this.state.players.dailymotion) this.state.players.dailymotion.seek(seconds);
+    if (p === 'youtube' && this.state.players.youtube && typeof this.state.players.youtube.seekTo === 'function') this.state.players.youtube.seekTo(seconds, true);
+    if (p === 'vimeo' && this.state.players.vimeo && typeof this.state.players.vimeo.setCurrentTime === 'function') this.state.players.vimeo.setCurrentTime(seconds);
+    if (p === 'dailymotion' && this.state.players.dailymotion && typeof this.state.players.dailymotion.seek === 'function') this.state.players.dailymotion.seek(seconds);
     if (p === 'html5' && this.state.players.html5) this.state.players.html5.currentTime = seconds;
-    if (p === 'twitch' && this.state.players.twitch) this.state.players.twitch.seek(seconds);
-    if (p === 'soundcloud' && this.state.players.soundcloud) this.state.players.soundcloud.seekTo(seconds * 1000);
-    if (p === 'wistia' && this.state.players.wistia) this.state.players.wistia.time(seconds);
+    if (p === 'twitch' && this.state.players.twitch && typeof this.state.players.twitch.seek === 'function') this.state.players.twitch.seek(seconds);
+    if (p === 'soundcloud' && this.state.players.soundcloud && typeof this.state.players.soundcloud.seekTo === 'function') this.state.players.soundcloud.seekTo(seconds * 1000);
+    if (p === 'wistia' && this.state.players.wistia && typeof this.state.players.wistia.time === 'function') this.state.players.wistia.time(seconds);
   }
 
   setPlaybackSpeed(rate) {
