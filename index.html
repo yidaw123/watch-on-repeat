@@ -200,6 +200,13 @@
                   <div class="timeline-selection" id="timeline-selection"></div>
                   <div class="timeline-handle handle-start" id="timeline-handle-start"></div>
                   <div class="timeline-handle handle-end" id="timeline-handle-end"></div>
+                  <div id="timeline-markers" class="timeline-markers" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+                </div>
+                <div style="margin-top: 6px; text-align: center;">
+                  <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #aaa; cursor: pointer;">
+                    <input type="checkbox" id="toggle-note-markers" checked onchange="app.toggleNoteMarkers(event)">
+                    Show Note Markers
+                  </label>
                 </div>
 
                 <div class="input-group-inline">
@@ -577,9 +584,17 @@
               <div class="notes-container">
                 <div class="notes-input-area">
                   <textarea id="note-input" placeholder="Type a note here..."></textarea>
-                  <button class="btn btn-primary btn-sm" onclick="app.addNote()">
-                    <i data-lucide="plus"></i> Add at Current Time
-                  </button>
+                  <div style="display: flex; gap: 8px; flex-direction: column;">
+                    <button class="btn btn-primary btn-sm" onclick="app.addNote()">
+                      <i data-lucide="plus"></i> Add at Current Time
+                    </button>
+                    <div style="display: flex; gap: 8px;">
+                      <button class="btn btn-primary btn-sm" onclick="app.addNote(true)" style="flex: 1;">
+                        <i data-lucide="plus"></i> Add at Manual Time
+                      </button>
+                      <input type="text" id="manual-note-time" placeholder="0:00" class="time-input" style="width: 70px; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white; padding: 4px; font-size: 12px;">
+                    </div>
+                  </div>
                 </div>
                 <div class="notes-list" id="notes-list">
                   <!-- Notes loaded here -->
@@ -849,6 +864,6 @@
       });
     }
   </script>
-  <script src="app.js?v=25"></script>
+  <script src="app.js?v=26"></script>
 </body>
 </html>

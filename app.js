@@ -1004,6 +1004,11 @@ class WatchOnRepeat {
       this.loadLoopData(this.state.currentVideo.id);
     }
     
+    // Once duration is known, we can accurately plot the note markers
+    if (this.renderNoteMarkers) {
+      this.renderNoteMarkers();
+    }
+    
     if (this.updateTimelineUI) {
       this.updateTimelineUI();
     }
@@ -3171,19 +3176,30 @@ class WatchOnRepeat {
   // NOTES FEATURE
   // ==========================================
 
-  async addNote() {
+  async addNote(isManual = false) {
     if (!this.state.currentVideo) return;
     const text = this.elements.noteInput.value.trim();
     if (!text) return;
     
-    const time = await this.getCurrentTime();
+    let time = 0;
+    if (isManual) {
+      const manualInput = document.getElementById('manual-note-time');
+      if (manualInput && manualInput.value.trim() !== '') {
+        time = this.parseTime(manualInput.value.trim());
+      } else {
+        this.showToast("Please enter a valid timestamp", "alert-circle");
+        return;
+      }
+    } else {
+      time = await this.getCurrentTime();
+    }
     
     const notes = this.getDb('notes');
     const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     if (!notes[vId]) notes[vId] = [];
     
     const noteObj = {
-      id: Date.now().toString(),
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
       time: Math.floor(time),
       text: text,
       transcript: null,
@@ -3213,9 +3229,9 @@ class WatchOnRepeat {
     notes[vId].sort((a,b) => a.time - b.time);
     
     this.saveDb('notes', notes);
-    this.elements.noteInput.value = '';
+    // Do NOT clear noteInput so user can rapidly add it again
     this.renderNotes();
-    this.showToast("Note added at current timestamp!", "edit-3");
+    this.showToast(`Note added at ${this.formatTime(Math.floor(time))}!`, "edit-3");
 
     // Fetch AI Transcript asynchronously
     this.fetchAITranscriptSnippet().then(transcript => {
@@ -3313,6 +3329,50 @@ class WatchOnRepeat {
     });
     
     lucide.createIcons();
+    
+    // Also update markers whenever notes are rendered
+    this.renderNoteMarkers();
+  }
+
+  toggleNoteMarkers(e) {
+    this.state.showNoteMarkers = e.target.checked;
+    this.renderNoteMarkers();
+  }
+
+  renderNoteMarkers() {
+    const container = document.getElementById('timeline-markers');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // If toggled off or no duration, don't show markers
+    if (this.state.showNoteMarkers === false || !this.state.currentVideoDuration) {
+      return;
+    }
+    
+    const vId = this.state.currentVideo ? `${this.state.currentPlatform}_${this.state.currentVideo.id}` : null;
+    if (!vId) return;
+    
+    const db = this.getDb('notes');
+    const notes = db[vId] || [];
+    
+    notes.forEach(note => {
+      const pct = (note.time / this.state.currentVideoDuration) * 100;
+      if (pct >= 0 && pct <= 100) {
+        const marker = document.createElement('div');
+        marker.className = 'timeline-marker tooltip';
+        marker.style.left = `${pct}%`;
+        marker.setAttribute('data-tip', note.text);
+        
+        // Clicking marker seeks to note
+        marker.onclick = (e) => {
+          e.stopPropagation(); // prevent dragging timeline
+          this.seekToTime(note.time);
+        };
+        
+        container.appendChild(marker);
+      }
+    });
   }
 
   escapeHtml(unsafe) {

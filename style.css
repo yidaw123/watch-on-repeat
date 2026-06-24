@@ -2016,3 +2016,4 @@ h1, h2, h3, h4, .brand-name {
 
 
 
+.timeline-marker { position: absolute; top: -2px; bottom: -2px; width: 4px; background-color: #ec4899; z-index: 5; border-radius: 2px; pointer-events: auto; cursor: pointer; transition: transform 0.2s; box-shadow: 0 0 4px rgba(236,72,153,0.8); } .timeline-marker:hover { transform: scaleY(1.3); }
