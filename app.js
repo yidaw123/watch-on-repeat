@@ -1133,7 +1133,7 @@ class WatchOnRepeat {
       this.elements.loopStateText.textContent = "Restarting...";
       this.elements.loopStateText.className = "stat-value text-muted";
       
-      this.incrementLoops();
+      if (this.incrementLoops()) return;
       
       // Re-play video
       this.state.players.youtube.playVideo();
@@ -1169,7 +1169,7 @@ class WatchOnRepeat {
       this.state.players.vimeo = player;
 
       player.on('ended', () => {
-        this.incrementLoops();
+        if (this.incrementLoops()) return;
         player.play();
       });
 
@@ -1263,7 +1263,7 @@ class WatchOnRepeat {
          this.setVideoDuration(data.duration || 0);
       } else if (data && data.event === 'video_end') {
          this.elements.loopStateText.textContent = "Restarting...";
-         this.incrementLoops();
+         if (this.incrementLoops()) return;
          this.seekToTime(this.state.abLoop.start || 0);
          this.state.players.dailymotion.play();
       } else if (data && data.event === 'playing') {
@@ -1346,6 +1346,23 @@ class WatchOnRepeat {
         });
       }
     }
+
+    if (this.state.playlistMode && this.state.playlistMode.active) {
+      const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
+      if (p && p.videos && p.videos.length > 0) {
+        this.state.playlistMode.currentIndex++;
+        if (this.state.playlistMode.currentIndex < p.videos.length) {
+          const nextV = p.videos[this.state.playlistMode.currentIndex];
+          this.showToast(`Up next: ${this.escapeHtml(nextV.title)}`, 'play');
+          this.loadVideo(nextV.videoId || nextV.id, nextV.platform);
+          return true;
+        } else {
+          this.state.playlistMode.active = false;
+          this.showToast("Playlist finished playing", "check");
+        }
+      }
+    }
+    return false;
   }
 
   async incrementGlobalPlayCount(id, platform) {
@@ -1727,6 +1744,82 @@ class WatchOnRepeat {
     // --- END TRANSIENT VIEW ---
 
     const createRow = content.querySelector('div[style*="margin-bottom: 24px"]');
+
+    if (this.state.viewingPlaylistId) {
+      const p = this.getDb('playlists').find(pl => pl.id === this.state.viewingPlaylistId && pl.userId === this.state.user.id);
+      if (!p) {
+        this.state.viewingPlaylistId = null;
+        return this.renderPlaylistsTab();
+      }
+      if (createRow) createRow.style.display = 'none';
+      list.innerHTML = `
+        <div style="margin-bottom: 16px; display:flex; justify-content:space-between; align-items:center;">
+          <button class="btn btn-sm btn-outline" onclick="app.backToPlaylists()"><i data-lucide="arrow-left"></i> Back</button>
+          <div style="display:flex; gap: 8px;">
+            <select class="search-input" style="padding: 4px 8px; width: auto; font-size: 13px;" onchange="app.sortPlaylist('${p.id}', this.value)">
+              <option value="">Sort By...</option>
+              <option value="date">Date Added</option>
+              <option value="alpha">Alphabetical</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${p.id}')"><i data-lucide="play"></i> Play Through</button>
+          </div>
+        </div>
+        <h2 style="margin-bottom:16px;">${this.escapeHtml(p.name)}</h2>
+      `;
+      
+      if (!p.videos || p.videos.length === 0) {
+        list.innerHTML += '<div class="empty-state"><p>This playlist is empty.</p></div>';
+        lucide.createIcons();
+        return;
+      }
+
+      p.videos.forEach((v, index) => {
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.style.cursor = 'grab';
+        card.draggable = true;
+        
+        card.ondragstart = (e) => {
+          this.state.draggedIndex = index;
+          e.dataTransfer.effectAllowed = 'move';
+          card.style.opacity = '0.5';
+        };
+        card.ondragend = () => {
+          card.style.opacity = '1';
+          this.state.draggedIndex = null;
+        };
+        card.ondragover = (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        };
+        card.ondrop = (e) => {
+          e.preventDefault();
+          if (this.state.draggedIndex === null || this.state.draggedIndex === index) return;
+          const playlists = this.getDb('playlists');
+          const pl = playlists.find(pll => pll.id === p.id && pll.userId === this.state.user.id);
+          const moved = pl.videos.splice(this.state.draggedIndex, 1)[0];
+          pl.videos.splice(index, 0, moved);
+          this.saveDb('playlists', playlists);
+          this.renderPlaylistsTab();
+        };
+
+        const thumbUrl = v.thumbnail || this.getThumbnailUrl(v.platform, v.videoId || v.id);
+        card.innerHTML = `
+          <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" alt="${this.escapeHtml(v.title)}" onclick="app.loadVideo('${v.videoId || v.id}', '${v.platform}')">
+          <div class="video-card-details">
+            <h4 class="video-card-title">${index + 1}. ${this.escapeHtml(v.title)}</h4>
+            <div class="video-card-meta" style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="badge">${v.platform}</span>
+              <button class="icon-btn text-red-500" onclick="app.removeVideoFromPlaylist('${p.id}', '${v.videoId || v.id}')" style="padding:0; margin-left:8px;"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+      lucide.createIcons();
+      return;
+    }
+
     if (createRow) createRow.style.display = 'flex'; // restore
     
     if (!this.state.user) {
@@ -1751,6 +1844,11 @@ class WatchOnRepeat {
     playlists.forEach(p => {
       const card = document.createElement('div');
       card.className = 'video-card';
+      card.style.cursor = 'pointer';
+      card.onclick = (e) => {
+        if (e.target.closest('button') || e.target.closest('input') || e.target.closest('label')) return;
+        app.viewPlaylist(p.id);
+      };
       card.innerHTML = `
         <div class="video-info" style="width: 100%;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -1771,6 +1869,53 @@ class WatchOnRepeat {
       `;
       list.appendChild(card);
     });
+  }
+
+  viewPlaylist(id) {
+    this.state.viewingPlaylistId = id;
+    this.renderPlaylistsTab();
+  }
+
+  backToPlaylists() {
+    this.state.viewingPlaylistId = null;
+    this.renderPlaylistsTab();
+  }
+
+  sortPlaylist(id, criteria) {
+    if (!criteria) return;
+    const playlists = this.getDb('playlists');
+    const p = playlists.find(pl => pl.id === id && pl.userId === this.state.user.id);
+    if (!p || !p.videos) return;
+    
+    if (criteria === 'date') {
+      p.videos.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+    } else if (criteria === 'alpha') {
+      p.videos.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    }
+    this.saveDb('playlists', playlists);
+    this.renderPlaylistsTab();
+  }
+
+  playPlaylist(id) {
+    this.state.playlistMode = { active: true, id: id, currentIndex: 0 };
+    const p = this.getDb('playlists').find(pl => pl.id === id);
+    if (!p || !p.videos || p.videos.length === 0) {
+      this.showToast("Playlist is empty", "alert-circle");
+      return;
+    }
+    const v = p.videos[0];
+    this.showToast(`Starting Playlist: ${this.escapeHtml(p.name)}`, 'play');
+    this.loadVideo(v.videoId || v.id, v.platform);
+  }
+
+  removeVideoFromPlaylist(playlistId, videoId) {
+    const playlists = this.getDb('playlists');
+    const p = playlists.find(pl => pl.id === playlistId && pl.userId === this.state.user.id);
+    if (!p || !p.videos) return;
+    p.videos = p.videos.filter(v => (v.videoId || v.id) !== videoId);
+    this.saveDb('playlists', playlists);
+    this.renderPlaylistsTab();
+    this.showToast("Video removed from playlist", "check");
   }
 
   togglePlaylistPublic(id, isPublic) {
@@ -2724,7 +2869,7 @@ class WatchOnRepeat {
     this.state.players.html5 = video;
 
     video.addEventListener('ended', () => {
-      this.incrementLoops();
+      if (this.incrementLoops()) return;
       video.play();
     });
 
@@ -2771,7 +2916,7 @@ class WatchOnRepeat {
         this.elements.loopStateText.className = "stat-value text-muted";
       });
       player.addEventListener(Twitch.Player.ENDED, () => {
-        this.incrementLoops();
+        if (this.incrementLoops()) return;
         this.seekToTime(this.state.abLoop.start || 0);
         player.play();
       });
@@ -2809,7 +2954,7 @@ class WatchOnRepeat {
         this.elements.loopStateText.className = "stat-value text-muted";
       });
       widget.bind(SC.Widget.Events.FINISH, () => {
-        this.incrementLoops();
+        if (this.incrementLoops()) return;
         this.seekToTime(this.state.abLoop.start || 0);
         widget.play();
       });
@@ -2838,7 +2983,7 @@ class WatchOnRepeat {
         this.elements.loopStateText.className = "stat-value text-muted";
       });
       video.bind('end', () => {
-        this.incrementLoops();
+        if (this.incrementLoops()) return;
         this.seekToTime(this.state.abLoop.start || 0);
         video.play();
       });
@@ -3007,7 +3152,7 @@ class WatchOnRepeat {
         let nextIndex = currentSegIndex + 1;
         if (nextIndex >= segments.length) {
           nextIndex = 0; // loop back to first
-          this.incrementLoops();
+          if (this.incrementLoops()) return;
         }
         this.state.abLoop.currentSegmentIndex = nextIndex;
         this.seekToTime(segments[nextIndex].start);
@@ -3022,7 +3167,7 @@ class WatchOnRepeat {
           this.setPlaybackSpeed(speed.toFixed(2));
         }
         this.seekToTime(this.state.abLoop.start);
-        this.incrementLoops();
+        if (this.incrementLoops()) return;
       } else if (t < this.state.abLoop.start - 0.5) {
         this.seekToTime(this.state.abLoop.start);
       }

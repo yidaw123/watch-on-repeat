@@ -54,7 +54,6 @@ body {
 }
 
 h1, h2, h3, h4, .brand-name {
-  font-family: 'Outfit', sans-serif;
   font-weight: 600;
 }
 
@@ -703,7 +702,6 @@ h1, h2, h3, h4, .brand-name {
 .stat-value {
   font-size: 1.75rem;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
   color: var(--text-primary);
   line-height: 1.2;
   word-break: break-word;
@@ -1359,7 +1357,6 @@ h1, h2, h3, h4, .brand-name {
 }
 
 .ad-vertical .ad-title {
-  font-family: 'Outfit', sans-serif;
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-purple);
@@ -1426,7 +1423,6 @@ h1, h2, h3, h4, .brand-name {
 }
 
 .ad-sky-title {
-  font-family: 'Outfit', sans-serif;
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-purple);
@@ -1895,7 +1891,6 @@ h1, h2, h3, h4, .brand-name {
 .analytics-value {
   font-size: 1.5rem;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
   color: var(--color-primary);
 }
 
