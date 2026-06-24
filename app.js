@@ -1834,6 +1834,30 @@ class WatchOnRepeat {
     }
   }
 
+  togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    
+    const wrapper = input.parentElement;
+    const isPassword = input.type === 'password';
+    
+    // Toggle input type
+    input.type = isPassword ? 'text' : 'password';
+    
+    // Replace the Lucide icon safely
+    const oldIcon = wrapper.querySelector('.password-toggle-icon');
+    if (oldIcon) {
+      const newIcon = document.createElement('i');
+      newIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+      newIcon.className = 'password-toggle-icon';
+      newIcon.onclick = () => this.togglePasswordVisibility(inputId);
+      wrapper.replaceChild(newIcon, oldIcon);
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+  }
+
   switchAuthView(viewName) {
     // Hide all views
     document.getElementById('auth-welcome-view').classList.add('hidden');

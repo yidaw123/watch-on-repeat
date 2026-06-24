@@ -1483,6 +1483,23 @@ h1, h2, h3, h4, .brand-name {
   box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
 }
 
+.password-toggle-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s;
+  z-index: 5;
+}
+
+.password-toggle-icon:hover {
+  color: var(--text-primary);
+}
+
 .auth-divider {
   display: flex;
   align-items: center;

@@ -697,9 +697,15 @@
           <div id="auth-signup-view" class="hidden">
             <form class="auth-form" onsubmit="app.handleEmailSignUp(event)" id="auth-signup-form">
               <input type="email" id="signup-email" placeholder="Email Address" required>
-              <input type="password" id="signup-password" placeholder="Password" required>
+              <div style="position: relative;">
+                <input type="password" id="signup-password" placeholder="Password" required style="width: 100%;">
+                <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('signup-password')"></i>
+              </div>
               <div style="font-size: 11px; color: #9ca3af; margin-top: -8px; margin-bottom: 12px; padding-left: 8px;">Minimum 7 characters, must contain letters and numbers.</div>
-              <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+              <div style="position: relative;">
+                <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required style="width: 100%;">
+                <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('signup-confirm-password')"></i>
+              </div>
               
               <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 8px;">Sign Up</button>
             </form>
@@ -712,7 +718,10 @@
           <div id="auth-login-view" class="hidden">
             <form class="auth-form" onsubmit="app.handleEmailLogin(event)" id="auth-email-form">
               <input type="email" id="login-email" placeholder="Email Address" required>
-              <input type="password" id="login-password" placeholder="Password" required>
+              <div style="position: relative;">
+                <input type="password" id="login-password" placeholder="Password" required style="width: 100%;">
+                <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('login-password')"></i>
+              </div>
               <div style="text-align: right; margin-top: 4px; margin-bottom: 16px;">
                 <a href="#" onclick="app.switchAuthView('reset'); event.preventDefault();" style="color: #9ca3af; font-size: 14px; text-decoration: none; font-weight: 500;">Forgot Password?</a>
               </div>
