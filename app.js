@@ -1532,13 +1532,21 @@ class WatchOnRepeat {
     this.elements.tabNotesBtn.classList.toggle('active', tabId === 'notes');
     this.elements.tabAnalyticsBtn.classList.toggle('active', tabId === 'analytics');
 
-    this.elements.tabDiscover.classList.toggle('hidden', tabId !== 'discover');
-    this.elements.tabFavorites.classList.toggle('hidden', tabId !== 'favorites');
-    this.elements.tabPlaylists = document.getElementById('tab-playlists');
-    if (this.elements.tabPlaylists) this.elements.tabPlaylists.classList.toggle('hidden', tabId !== 'playlists');
-    this.elements.tabHistory.classList.toggle('hidden', tabId !== 'history');
-    this.elements.tabNotes.classList.toggle('hidden', tabId !== 'notes');
-    this.elements.tabAnalytics.classList.toggle('hidden', tabId !== 'analytics');
+    const panels = {
+      'discover': this.elements.tabDiscover,
+      'favorites': this.elements.tabFavorites,
+      'playlists': this.elements.tabPlaylists || document.getElementById('tab-playlists'),
+      'history': this.elements.tabHistory,
+      'notes': this.elements.tabNotes,
+      'analytics': this.elements.tabAnalytics || document.getElementById('tab-analytics')
+    };
+
+    for (const [id, panel] of Object.entries(panels)) {
+      if (panel) {
+        panel.classList.toggle('active', tabId === id);
+        panel.classList.toggle('hidden', tabId !== id);
+      }
+    }
 
     if (tabId === 'discover') {
       this.renderDiscoverTab();
