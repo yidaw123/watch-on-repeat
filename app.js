@@ -1795,7 +1795,7 @@ class WatchOnRepeat {
     if (btnContainer) {
       google.accounts.id.renderButton(
         btnContainer,
-        { theme: "outline", size: "large", width: '100%', text: "continue_with" }
+        { theme: "outline", size: "large", width: 320, text: "continue_with" }
       );
     }
   }
