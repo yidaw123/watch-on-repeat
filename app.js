@@ -67,7 +67,10 @@ class WatchOnRepeat {
           full_name: username,
           provider: provider
         }).eq('id', user.id);
-        if (updateError) console.error("Failed to update user tracking:", updateError);
+        if (updateError) {
+          console.error("Failed to update user tracking:", updateError);
+          this.showToast("DB Update Error: " + updateError.message, "alert-circle");
+        }
       } else {
         const { error: insertError } = await supabaseClient.from('users').insert({ 
           id: user.id, 
@@ -78,7 +81,12 @@ class WatchOnRepeat {
           last_active_date: new Date().toISOString(),
           login_count: 1
         });
-        if (insertError) console.error("Failed to insert new user:", insertError);
+        if (insertError) {
+          console.error("Failed to insert new user:", insertError);
+          this.showToast("DB Insert Error: " + insertError.message, "alert-circle");
+        } else {
+          this.showToast("Account successfully synced to Database!", "check-circle");
+        }
       }
     } else {
       tier = user.user_metadata?.tier || 'free';
