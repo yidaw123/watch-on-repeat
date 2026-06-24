@@ -292,18 +292,7 @@ class WatchOnRepeat {
       }));
     }
     
-    // Seed Global Video Stats
-    if (!localStorage.getItem('wor_global_stats')) {
-      const defaultGlobalStats = {
-        'youtube_aqz-KE-bpKQ': { id: 'aqz-KE-bpKQ', platform: 'youtube', title: 'Big Buck Bunny 60fps 4K - Official Blender Foundation Short Film', globalLoops: 845209, globalPlays: 924510 },
-        'youtube_jfKfPfyJRdk': { id: 'jfKfPfyJRdk', platform: 'youtube', title: 'lofi hip hop radio - beats to relax/study to', globalLoops: 1205318, globalPlays: 1420993 },
-        'vimeo_76979871': { id: '76979871', platform: 'vimeo', title: 'Big Buck Bunny', globalLoops: 18451, globalPlays: 25421 },
-        'dailymotion_x7t5vcr': { id: 'x7t5vcr', platform: 'dailymotion', title: 'Introducing Dailymotion - Our new player', globalLoops: 9540, globalPlays: 12401 },
-        'youtube_Sagg0zTrNGA': { id: 'Sagg0zTrNGA', platform: 'youtube', title: 'Epic Sax Guy 10 Hours', globalLoops: 421590, globalPlays: 490220 },
-        'youtube_W3q8Od5qJio': { id: 'W3q8Od5qJio', platform: 'youtube', title: 'Relaxing Rain on a Tent - Sleeping Sound 3 Hours', globalLoops: 654210, globalPlays: 720199 }
-      };
-      localStorage.setItem('wor_global_stats', JSON.stringify(defaultGlobalStats));
-    }
+    // Global stats are now fetched exclusively from Supabase
 
     // Session is handled by Supabase
   }
@@ -864,12 +853,6 @@ class WatchOnRepeat {
     
     // Fetch video title (mocked/simulated or via iframe where possible)
     let videoTitle = "Loading title...";
-    const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
-    const statsKey = `${platform}_${id}`;
-    
-    if (globalStats[statsKey] && !globalStats[statsKey].title.includes("Cozy Coffee Shop") && !globalStats[statsKey].title.includes("Looped Version")) {
-      videoTitle = globalStats[statsKey].title;
-    }
     
     this.state.currentVideo = {
       id: id,
@@ -885,21 +868,8 @@ class WatchOnRepeat {
       if (realTitle && !realTitle.includes("Cozy Coffee Shop")) {
         this.elements.videoTitle.textContent = realTitle;
         if (this.state.currentVideo) this.state.currentVideo.title = realTitle;
-        
-        // Save to global stats
-        if (!globalStats[statsKey]) {
-          globalStats[statsKey] = {
-            id: id,
-            platform: platform,
-            title: realTitle,
-            globalLoops: 0,
-            globalPlays: 1
-          };
-        } else {
-          globalStats[statsKey].title = realTitle;
-        }
-        this.saveDb('global_stats', globalStats);
-        this.renderTrendsTab();
+      }
+    });  this.renderTrendsTab();
 
         // Update history cache if needed
         const history = this.getDb('history');
@@ -1378,12 +1348,12 @@ class WatchOnRepeat {
     }
   }
 
-  incrementGlobalPlayCount(id, platform) {
-    const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
-    const statsKey = `${platform}_${id}`;
-    if (globalStats[statsKey]) {
-      globalStats[statsKey].globalPlays++;
-      this.saveDb('global_stats', globalStats);
+  async incrementGlobalPlayCount(id, platform) {
+    if (!window.supabaseClient) return;
+    try {
+      await supabaseClient.rpc('increment_video_play', { p_video_id: id, p_platform: platform });
+    } catch (e) {
+      console.warn("Could not increment global play count", e);
     }
   }
 
@@ -2071,9 +2041,6 @@ class WatchOnRepeat {
       if (data) {
         trends = data.map(d => ({ videoId: d.video_id, platform: d.platform, globalLoops: d.global_loops, globalPlays: d.global_plays, title: `Trending ${d.platform} video` }));
       }
-    } else {
-      const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
-      trends = Object.values(globalStats).sort((a, b) => b.globalLoops - a.globalLoops);
     }
 
     if (!this.elements.trendsList) return;
@@ -2101,9 +2068,7 @@ class WatchOnRepeat {
       thumbUrl = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60' viewBox='0 0 90 60'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%238b5cf6'/><stop offset='100%' stop-color='%23ec4899'/></linearGradient></defs><rect width='90' height='60' fill='url(%23g)' opacity='0.85'/><text x='45' y='35' font-family='Outfit,sans-serif' font-size='10' font-weight='bold' fill='white' text-anchor='middle'>${video.platform.toUpperCase()}</text></svg>`;
     }
 
-    const globalStats = JSON.parse(localStorage.getItem('wor_global_stats') || '{}');
-    const statsKey = `${video.platform}_${video.videoId || video.id}`;
-    const globalLoops = video.globalLoops !== undefined ? video.globalLoops : (globalStats[statsKey] ? globalStats[statsKey].globalLoops : 0);
+    const globalLoops = video.globalLoops !== undefined ? video.globalLoops : 0;
 
     let subMeta = '';
     if (isHistory) {
@@ -2311,21 +2276,21 @@ class WatchOnRepeat {
     }
 
     try {
-      let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      let { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       
       if (error) throw error;
-
-      emailInput.value = '';
-      passwordInput.value = '';
-      
-      this.showToast(`Logged in successfully!`, 'shield-check');
-      this.switchTab(this.state.activeTab);
-
     } catch (err) {
       this.showToast(err.message, "alert-circle");
       this.elements.authOptions.classList.remove('hidden');
       this.elements.authLoading.classList.add('hidden');
+      return;
     }
+
+    emailInput.value = '';
+    passwordInput.value = '';
+    
+    this.showToast(`Logged in successfully!`, 'shield-check');
+    this.switchTab(this.state.activeTab);
   }
 
   async handleEmailSignUp(e) {
@@ -2350,32 +2315,37 @@ class WatchOnRepeat {
     this.elements.authLoading.classList.remove('hidden');
     this.elements.authLoadingText.textContent = "Creating your account...";
 
+    let signUpData = null;
+
     try {
       const { data, error } = await supabaseClient.auth.signUp({ email, password });
       if (error) throw error;
-
-      // Check if email confirmation is required by looking if a session was created immediately
-      if (data.user && !data.session) {
-        this.showToast("Success! Please check your email inbox to confirm your account.", "check-circle");
-        this.closeLoginModal();
-        return;
-      }
-
-      // If no confirmation required (auto-login)
-      if (data.user) {
-        await supabaseClient.from('users').insert({
-          id: data.user.id,
-          email: email,
-          tier: 'free'
-        });
-
-        this.showToast(`Account created successfully!`, 'shield-check');
-      }
-
+      signUpData = data;
     } catch (err) {
       this.showToast(err.message, "alert-circle");
       this.elements.authOptions.classList.remove('hidden');
       this.elements.authLoading.classList.add('hidden');
+      return;
+    }
+
+    // Safely execute UI updates and secondary calls outside try block
+    if (signUpData.user && !signUpData.session) {
+      this.showToast("Success! Please check your email inbox to confirm your account.", "check-circle");
+      this.closeLoginModal();
+      return;
+    }
+
+    if (signUpData.user) {
+      try {
+        await supabaseClient.from('users').insert({
+          id: signUpData.user.id,
+          email: email,
+          tier: 'free'
+        });
+      } catch (insertErr) {
+        console.warn("Could not insert user row:", insertErr);
+      }
+      this.showToast(`Account created successfully!`, 'shield-check');
     }
   }
 
