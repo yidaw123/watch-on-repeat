@@ -429,8 +429,8 @@ class WatchOnRepeat {
     this.state.currentPlatform = null;
     this.stopTimer();
     
-    this.elements.playerLoaded.classList.remove('hidden');
-    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
+    this.elements.playerLoaded.classList.add('hidden');
+    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.remove('hidden');
     
     // Clear iframe container
     this.elements.playerContainer.innerHTML = '';

@@ -46,12 +46,12 @@
     
     <!-- Top Navigation Bar -->
     <header class="navbar">
-      <div class="brand" id="brand-logo" onclick="app.loadHome()">
+      <a href="/" class="brand" id="brand-logo" onclick="event.preventDefault(); app.loadHome();">
         <div class="brand-icon">
           <i data-lucide="repeat"></i>
         </div>
         <span class="brand-name">Watch<span>On</span>Repeat</span>
-      </div>
+      </a>
       
       <!-- Center Search/URL Input Bar -->
       <div class="search-container">
