@@ -1787,7 +1787,7 @@ class WatchOnRepeat {
     
     // Initialize Google Identity Services
     google.accounts.id.initialize({
-      client_id: "YOUR_GOOGLE_CLIENT_ID_HERE", // IMPORTANT: User must replace this!
+      client_id: "534274847026-mpjji7pf95nhdbn7o1963qjs2r3v6h26.apps.googleusercontent.com",
       callback: this.handleGoogleCredentialResponse.bind(this)
     });
 
