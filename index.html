@@ -664,8 +664,10 @@
           
           <!-- 1. Welcome View (Decluttered) -->
           <div id="auth-welcome-view" style="max-width: 320px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 12px;">
-            <!-- Native Google Identity Services Button Container -->
-            <div id="google-btn-container" style="display: flex; justify-content: center; width: 100%;"></div>
+            <!-- Native Google Identity Services Button Container wrapped in brand gradient -->
+            <div style="background: var(--gradient-primary); padding: 2px; border-radius: 4px;">
+              <div id="google-btn-container" style="display: flex; justify-content: center; width: 100%; border-radius: 2px; overflow: hidden; background: #131415;"></div>
+            </div>
             
             <button class="btn btn-primary w-full" style="justify-content: center;" onclick="app.switchAuthView('signup')">
               <i data-lucide="mail" style="width: 18px; height: 18px; margin-right: 8px;"></i> Sign Up with Email
@@ -711,8 +713,8 @@
             <form class="auth-form" onsubmit="app.handleEmailLogin(event)" id="auth-email-form">
               <input type="email" id="login-email" placeholder="Email Address" required>
               <input type="password" id="login-password" placeholder="Password" required>
-              <div style="text-align: right; margin-top: -8px; margin-bottom: 16px;">
-                <a href="#" onclick="app.switchAuthView('reset'); event.preventDefault();" style="color: #9ca3af; font-size: 12px; text-decoration: none;">Forgot Password?</a>
+              <div style="text-align: right; margin-top: 4px; margin-bottom: 16px;">
+                <a href="#" onclick="app.switchAuthView('reset'); event.preventDefault();" style="color: #9ca3af; font-size: 14px; text-decoration: none; font-weight: 500;">Forgot Password?</a>
               </div>
               <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Log In</button>
             </form>
