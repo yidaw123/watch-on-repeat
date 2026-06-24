@@ -979,16 +979,20 @@ class WatchOnRepeat {
       seek: function(seconds) {
         if (iframe && iframe.contentWindow) {
           iframe.contentWindow.postMessage(JSON.stringify({command: 'seek', parameters: [seconds]}), '*');
+          iframe.contentWindow.postMessage(`command=seek&parameters[]=${seconds}`, '*');
+          iframe.contentWindow.postMessage(`seek=${seconds}`, '*');
         }
       },
       play: function() {
         if (iframe && iframe.contentWindow) {
           iframe.contentWindow.postMessage(JSON.stringify({command: 'play'}), '*');
+          iframe.contentWindow.postMessage('command=play', '*');
         }
       },
       pause: function() {
         if (iframe && iframe.contentWindow) {
           iframe.contentWindow.postMessage(JSON.stringify({command: 'pause'}), '*');
+          iframe.contentWindow.postMessage('command=pause', '*');
         }
       }
     };
@@ -996,25 +1000,41 @@ class WatchOnRepeat {
     const messageHandler = (event) => {
       // Dailymotion postMessage events
       if (event.origin !== 'https://www.dailymotion.com') return;
+      
+      let data = {};
       try {
-        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        if (data && data.event === 'timeupdate') {
-           this.state.players.dailymotion.currentTime = data.time;
-        } else if (data && data.event === 'durationchange') {
-           this.setVideoDuration(data.duration);
-        } else if (data && data.event === 'video_end') {
-           this.elements.loopStateText.textContent = "Restarting...";
-           this.incrementLoops();
-           this.seekToTime(this.state.abLoop.start || 0);
-           this.state.players.dailymotion.play();
-        } else if (data && data.event === 'playing') {
-           this.elements.loopStateText.textContent = "Looping";
-           this.elements.loopStateText.className = "stat-value text-green";
-        } else if (data && data.event === 'pause') {
-           this.elements.loopStateText.textContent = "Paused";
-           this.elements.loopStateText.className = "stat-value text-muted";
+        if (typeof event.data === 'string') {
+          if (event.data.trim().startsWith('{')) {
+            data = JSON.parse(event.data);
+          } else {
+            const params = new URLSearchParams(event.data);
+            data = {
+              event: params.get('event'),
+              time: parseFloat(params.get('time')),
+              duration: parseFloat(params.get('duration'))
+            };
+          }
+        } else {
+          data = event.data || {};
         }
       } catch(e) {}
+      
+      if (data && data.event === 'timeupdate') {
+         this.state.players.dailymotion.currentTime = data.time || 0;
+      } else if (data && data.event === 'durationchange') {
+         this.setVideoDuration(data.duration || 0);
+      } else if (data && data.event === 'video_end') {
+         this.elements.loopStateText.textContent = "Restarting...";
+         this.incrementLoops();
+         this.seekToTime(this.state.abLoop.start || 0);
+         this.state.players.dailymotion.play();
+      } else if (data && data.event === 'playing') {
+         this.elements.loopStateText.textContent = "Looping";
+         this.elements.loopStateText.className = "stat-value text-green";
+      } else if (data && data.event === 'pause') {
+         this.elements.loopStateText.textContent = "Paused";
+         this.elements.loopStateText.className = "stat-value text-muted";
+      }
     };
 
     window.addEventListener('message', messageHandler);
