@@ -1212,7 +1212,9 @@ class WatchOnRepeat {
       supabaseClient.rpc('increment_global_loops', {
         p_video_id: video.id,
         p_platform: video.platform
-      }).then(() => {});
+      }).then(({ error }) => {
+        if (error) console.error("Missing RPC increment_global_loops:", error);
+      });
 
       if (this.state.user) {
         supabaseClient.rpc('increment_user_loops', {
@@ -1220,7 +1222,8 @@ class WatchOnRepeat {
           p_video_id: video.id,
           p_platform: video.platform,
           p_title: video.title || ''
-        }).then(() => {
+        }).then(({ error }) => {
+          if (error) console.error("Missing RPC increment_user_loops:", error);
           this.renderHistoryTab();
         });
       }
