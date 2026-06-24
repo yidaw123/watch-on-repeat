@@ -3114,6 +3114,22 @@ class WatchOnRepeat {
     const list = document.getElementById('multi-segment-list');
     if (!list) return;
     
+    const checkbox = document.getElementById('multi-segment-checkbox');
+    const addBtn = document.getElementById('add-segment-btn');
+    const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+
+    if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+      if (checkbox) checkbox.checked = true;
+      list.classList.remove('hidden');
+      if (isPremium && addBtn) addBtn.classList.remove('hidden');
+      else if (addBtn) addBtn.classList.add('hidden');
+    } else {
+      if (checkbox && !checkbox.checked) {
+        list.classList.add('hidden');
+        if (addBtn) addBtn.classList.add('hidden');
+      }
+    }
+
     list.innerHTML = '';
     this.state.abLoop.multiSegments.forEach((seg, index) => {
       const row = document.createElement('div');
