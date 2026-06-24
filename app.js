@@ -61,14 +61,15 @@ class WatchOnRepeat {
         cancelAtPeriodEnd = data.cancel_at_period_end;
         loginCount = (data.login_count || 0) + 1;
         
-        await supabaseClient.from('users').update({
+        const { error: updateError } = await supabaseClient.from('users').update({
           last_active_date: new Date().toISOString(),
           login_count: loginCount,
           full_name: username,
           provider: provider
         }).eq('id', user.id);
+        if (updateError) console.error("Failed to update user tracking:", updateError);
       } else {
-        await supabaseClient.from('users').insert({ 
+        const { error: insertError } = await supabaseClient.from('users').insert({ 
           id: user.id, 
           email: user.email, 
           tier: 'free',
@@ -77,6 +78,7 @@ class WatchOnRepeat {
           last_active_date: new Date().toISOString(),
           login_count: 1
         });
+        if (insertError) console.error("Failed to insert new user:", insertError);
       }
     } else {
       tier = user.user_metadata?.tier || 'free';
