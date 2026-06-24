@@ -958,80 +958,69 @@ class WatchOnRepeat {
 
   // --- Dailymotion Player Controller ---
   initDailymotionPlayer(id) {
-    const playerDiv = document.createElement('div');
-    playerDiv.id = 'dm-player-target';
-    playerDiv.style.width = '100%';
-    playerDiv.style.height = '100%';
-    this.elements.playerContainer.appendChild(playerDiv);
+    this.elements.playerContainer.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.id = "dm-player-target";
+    // We use api=1 to enable the postMessage API
+    iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1&api=1`;
+    iframe.width = "100%";
+    iframe.height = "100%";
+    iframe.allow = "autoplay; fullscreen";
+    this.elements.playerContainer.appendChild(iframe);
 
-    const createFallback = () => {
-      const iframe = document.createElement('iframe');
-      iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1`;
-      iframe.width = "100%";
-      iframe.height = "100%";
-      iframe.allow = "autoplay; fullscreen";
-      this.elements.playerContainer.innerHTML = '';
-      this.elements.playerContainer.appendChild(iframe);
-      console.warn("Dailymotion SDK failed, using fallback iframe embedding.");
-    };
+    // Clean up previous event listener if exists
+    if (this.state.players.dailymotion && this.state.players.dailymotion.cleanup) {
+      this.state.players.dailymotion.cleanup();
+    }
 
-    const setupPlayer = () => {
-      if (window.DM && typeof window.DM.player === 'function') {
-        try {
-          const player = DM.player(playerDiv.id, {
-            video: id,
-            width: '100%',
-            height: '100%',
-            params: {
-              autoplay: true,
-              controls: true,
-              'queue-autoplay-next': false,
-              'queue-enable': false,
-              mute: false
-            }
-          });
-          
-          this.state.players.dailymotion = player;
-
-          player.addEventListener('apiready', () => {
-            console.log("Dailymotion API Ready");
-          });
-
-          player.addEventListener('end', () => {
-            this.incrementLoops();
-            player.play();
-          });
-
-          player.addEventListener('playing', () => {
-            this.elements.loopStateText.textContent = "Looping";
-            this.elements.loopStateText.className = "stat-value text-green";
-            if (!this.state.currentVideoDuration && player.duration) {
-              this.setVideoDuration(player.duration);
-            }
-          });
-
-          player.addEventListener('pause', () => {
-            this.elements.loopStateText.textContent = "Paused";
-            this.elements.loopStateText.className = "stat-value text-muted";
-          });
-        } catch (e) {
-          createFallback();
+    this.state.players.dailymotion = {
+      iframe: iframe,
+      currentTime: 0,
+      seek: function(seconds) {
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(JSON.stringify({command: 'seek', parameters: [seconds]}), '*');
         }
-      } else {
-        createFallback();
+      },
+      play: function() {
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(JSON.stringify({command: 'play'}), '*');
+        }
+      },
+      pause: function() {
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(JSON.stringify({command: 'pause'}), '*');
+        }
       }
     };
 
-    if (window.DM) {
-      setupPlayer();
-    } else {
-      const checkInterval = setInterval(() => {
-        if (window.DM) {
-          clearInterval(checkInterval);
-          setupPlayer();
+    const messageHandler = (event) => {
+      // Dailymotion postMessage events
+      if (event.origin !== 'https://www.dailymotion.com') return;
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (data && data.event === 'timeupdate') {
+           this.state.players.dailymotion.currentTime = data.time;
+        } else if (data && data.event === 'durationchange') {
+           this.setVideoDuration(data.duration);
+        } else if (data && data.event === 'video_end') {
+           this.elements.loopStateText.textContent = "Restarting...";
+           this.incrementLoops();
+           this.seekToTime(this.state.abLoop.start || 0);
+           this.state.players.dailymotion.play();
+        } else if (data && data.event === 'playing') {
+           this.elements.loopStateText.textContent = "Looping";
+           this.elements.loopStateText.className = "stat-value text-green";
+        } else if (data && data.event === 'pause') {
+           this.elements.loopStateText.textContent = "Paused";
+           this.elements.loopStateText.className = "stat-value text-muted";
         }
-      }, 100);
-    }
+      } catch(e) {}
+    };
+
+    window.addEventListener('message', messageHandler);
+    this.state.players.dailymotion.cleanup = () => {
+       window.removeEventListener('message', messageHandler);
+    };
   }
 
   // ==========================================
