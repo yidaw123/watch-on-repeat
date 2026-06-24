@@ -2014,7 +2014,6 @@ class WatchOnRepeat {
     if (!playlist.videos) playlist.videos = [];
     
     // Enforce 50 vids limit
-    const tier = this.state.user.tier || 'free';
     if (tier === 'free' && playlist.videos.length >= 50) {
       this.closePlaylistModal();
       this.openUpgradeModal("Free users can only add up to 50 videos per playlist. Upgrade to Premium for unlimited videos!");
@@ -3871,4 +3870,8 @@ class WatchOnRepeat {
 // Instantiate and initialize
 const app = new WatchOnRepeat();
 window.app = app; // Expose globally for inline onclick handlers
+
+document.addEventListener('DOMContentLoaded', () => {
+  app.init();
+});
 
