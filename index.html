@@ -8,36 +8,6 @@
   <meta name="keywords" content="watch on repeat, watchonrepeat, loop, repeat, youtube, video, video looper, a-b loop, practice tool">
   <link rel="canonical" href="https://watchonrepeat.com/">
   
-  <script>
-    // GUARANTEED ERROR REPORTER
-    window.addEventListener('error', function(e) {
-      if (document.body) {
-        var errDiv = document.createElement('div');
-        errDiv.style = "position:fixed;top:0;left:0;right:0;background:red;color:white;z-index:999999;padding:20px;font-size:20px;font-weight:bold;white-space:pre-wrap;";
-        errDiv.innerHTML = 'CRITICAL ERROR: ' + (e.message || 'Unknown') + ' | File: ' + (e.filename || 'N/A') + ' | Line: ' + (e.lineno || 'N/A');
-        document.body.appendChild(errDiv);
-      } else {
-        alert('CRITICAL ERROR: ' + e.message + ' at line ' + e.lineno);
-      }
-    });
-    window.addEventListener('unhandledrejection', function(e) {
-      if (document.body) {
-        var errDiv = document.createElement('div');
-        errDiv.style = "position:fixed;top:80px;left:0;right:0;background:orange;color:black;z-index:999999;padding:20px;font-size:20px;font-weight:bold;white-space:pre-wrap;";
-        errDiv.innerHTML = 'PROMISE REJECTION: ' + (e.reason ? e.reason.message : 'Unknown');
-        document.body.appendChild(errDiv);
-      }
-    });
-    window.addEventListener('load', function() {
-      if (typeof WatchOnRepeat === 'undefined') {
-        var errDiv = document.createElement('div');
-        errDiv.style = "position:fixed;bottom:0;left:0;right:0;background:darkred;color:white;z-index:999999;padding:20px;font-size:20px;font-weight:bold;";
-        errDiv.innerHTML = 'FATAL: app.js did not execute. It may have a syntax error or failed to download.';
-        document.body.appendChild(errDiv);
-      }
-    });
-  </script>
-
   <!-- Open Graph / Social Media -->
   <meta property="og:title" content="Watch On Repeat | Loop YouTube Videos & Practice Tool">
   <meta property="og:description" content="Watch on repeat allows you to loop YouTube, Vimeo, and Twitch videos infinitely. The best video looper to repeat sections, change speed, and practice.">
@@ -917,6 +887,6 @@
       });
     }
   </script>
-  <script src="app.js?v=35"></script>
+  <script src="app.js?v=33"></script>
 </body>
 </html>
