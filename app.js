@@ -646,7 +646,9 @@ class WatchOnRepeat {
     this.state.abLoop.currentSegmentIndex = 0;
     this.state.abLoop.multiSegments = [];
     if (typeof this.renderMultiSegments === 'function') this.renderMultiSegments();
-    if (this.elements.timelineContainer) this.elements.timelineContainer.innerHTML = '';
+    if (this.elements.timelineContainer) {
+      this.elements.timelineContainer.querySelectorAll('.timeline-selection, .timeline-handle').forEach(el => el.remove());
+    }
 
     // Create object URL
     const videoUrl = URL.createObjectURL(file);
@@ -761,7 +763,9 @@ class WatchOnRepeat {
     this.state.abLoop.currentSegmentIndex = 0;
     this.state.abLoop.multiSegments = [];
     if (typeof this.renderMultiSegments === 'function') this.renderMultiSegments();
-    if (this.elements.timelineContainer) this.elements.timelineContainer.innerHTML = '';
+    if (this.elements.timelineContainer) {
+      this.elements.timelineContainer.querySelectorAll('.timeline-selection, .timeline-handle').forEach(el => el.remove());
+    }
     
     // Clear previous iframes
     this.elements.playerContainer.innerHTML = '';
