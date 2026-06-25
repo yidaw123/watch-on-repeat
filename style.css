@@ -154,8 +154,8 @@ h1, h2, h3, h4, .brand-name {
 }
 
 .brand-icon {
-  width: 42px;
-  height: 42px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1103,8 +1103,8 @@ h1, h2, h3, h4, .brand-name {
 }
 
 .modal-logo {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
