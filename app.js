@@ -790,7 +790,7 @@ class WatchOnRepeat {
     this.elements.playerContainer.appendChild(videoEl);
     
     // Create Mock Player API Adapter
-    this.player = {
+    this.state.players.local = {
       seekTo: (time) => { videoEl.currentTime = time; },
       getDuration: () => videoEl.duration || 0,
       getCurrentTime: () => Promise.resolve(videoEl.currentTime),
@@ -805,13 +805,14 @@ class WatchOnRepeat {
       this.onVideoReady();
     };
 
-    // We can use requestAnimationFrame to check time for native video, 
-    // or just rely on the existing loop tracker
-    
     if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
     this.elements.playerLoaded.classList.remove('hidden');
     
-    this.updateVideoInfoUI();
+    // Update the UI with file name instead of crashing
+    if (this.elements.videoTitle) this.elements.videoTitle.textContent = file.name;
+    document.title = file.name + " | Watch On Repeat";
+    this.updatePlatformBadge('local');
+    
     this.updateNotesUI();
     if (this.state.currentVideo) {
       this.loadLoopData(this.state.currentVideo.id);
@@ -978,6 +979,7 @@ class WatchOnRepeat {
     else if (platform === 'soundcloud') iconName = 'music';
     else if (platform === 'wistia') iconName = 'film';
     else if (platform === 'html5') iconName = 'monitor-play';
+    else if (platform === 'local') iconName = 'hard-drive';
     
     this.elements.platformBadge.innerHTML = `<i data-lucide="${iconName}"></i><span id="platform-text">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>`;
     setTimeout(() => {
@@ -3211,6 +3213,7 @@ class WatchOnRepeat {
     if (p === 'vimeo' && this.state.players.vimeo) return await this.state.players.vimeo.getCurrentTime().catch(()=>0);
     if (p === 'dailymotion' && this.state.players.dailymotion) return this.state.players.dailymotion.currentTime || 0;
     if (p === 'html5' && this.state.players.html5) return this.state.players.html5.currentTime || 0;
+    if (p === 'local' && this.state.players.local) return await this.state.players.local.getCurrentTime();
     if (p === 'twitch' && this.state.players.twitch) return (typeof this.state.players.twitch.getCurrentTime === 'function' ? this.state.players.twitch.getCurrentTime() : 0);
     if (p === 'soundcloud' && this.state.players.soundcloud) {
       const ms = await new Promise(r => this.state.players.soundcloud.getPosition(r));
@@ -3226,6 +3229,7 @@ class WatchOnRepeat {
     if (p === 'vimeo' && this.state.players.vimeo && typeof this.state.players.vimeo.setCurrentTime === 'function') this.state.players.vimeo.setCurrentTime(seconds);
     if (p === 'dailymotion' && this.state.players.dailymotion && typeof this.state.players.dailymotion.seek === 'function') this.state.players.dailymotion.seek(seconds);
     if (p === 'html5' && this.state.players.html5) this.state.players.html5.currentTime = seconds;
+    if (p === 'local' && this.state.players.local) this.state.players.local.seekTo(seconds);
     if (p === 'twitch' && this.state.players.twitch && typeof this.state.players.twitch.seek === 'function') this.state.players.twitch.seek(seconds);
     if (p === 'soundcloud' && this.state.players.soundcloud && typeof this.state.players.soundcloud.seekTo === 'function') this.state.players.soundcloud.seekTo(seconds * 1000);
     if (p === 'wistia' && this.state.players.wistia && typeof this.state.players.wistia.time === 'function') this.state.players.wistia.time(seconds);
@@ -3240,6 +3244,7 @@ class WatchOnRepeat {
       if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.setPlaybackRate(rate);
       if (p === 'dailymotion' && this.state.players.dailymotion) if (DEBUG_MODE) console.warn("Dailymotion API may not support rate changes directly.");
       if (p === 'html5' && this.state.players.html5) this.state.players.html5.playbackRate = rate;
+      if (p === 'local' && this.state.players.local) this.state.players.local.setPlaybackRate(rate);
       this.showToast(`Speed set to ${rate}x`);
     } catch(e) {
       if (DEBUG_MODE) console.error("Error setting rate", e);
