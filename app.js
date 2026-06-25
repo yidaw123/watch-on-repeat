@@ -100,12 +100,15 @@ class WatchOnRepeat {
           login_count: 1
         });
         if (insertError) {
-          console.error("Failed to insert new user:", insertError);
-          this.showToast("DB Insert Error: " + insertError.message, "alert-circle");
-          alert("DATABASE ERROR: " + insertError.message + "\n\nDetails: " + JSON.stringify(insertError));
+          if (insertError.code === '23505') {
+            // Race condition: another tab already inserted the user. Safe to ignore.
+            console.log("User already exists (race condition handled).");
+          } else {
+            console.error("Failed to insert new user:", insertError);
+            this.showToast("DB Insert Error: " + insertError.message, "alert-circle");
+          }
         } else {
           this.showToast("Account successfully synced to Database!", "check-circle");
-          console.log("SUCCESSFULLY INSERTED USER INTO DATABASE!");
         }
       }
     } else {
@@ -725,13 +728,15 @@ class WatchOnRepeat {
         }
         
         this.loadVideo(parsed.id, parsed.platform).catch(err => {
-          alert("loadVideo Error: " + err.message + "\nLine: " + err.stack);
+          console.error("loadVideo Error:", err);
+          this.showToast("Failed to load video: " + err.message, "alert-circle");
         });
       } else {
         this.showToast('Invalid URL. Please enter a valid YouTube, Vimeo, Dailymotion, or other supported link.', 'alert-triangle');
       }
     } catch (err) {
-      alert("handleSearchSubmit Error: " + err.message + "\nLine: " + err.stack);
+      console.error("handleSearchSubmit Error:", err);
+      this.showToast("An error occurred: " + err.message, "alert-circle");
     }
   }
 
