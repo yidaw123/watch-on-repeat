@@ -184,17 +184,25 @@ class PlaylistsMixin {
       };
       
       const vidsCount = p.videos ? p.videos.length : 0;
-      let firstThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 16 9" fill="%23111"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="1" fill="%23333">Empty Playlist</text></svg>';
       
+      let thumbContent = '';
       if (vidsCount > 0) {
         const v = p.videos[0];
-        firstThumb = this.escapeHtml(v.thumbnail || this.getThumbnailUrl(v.platform, v.videoId || v.id));
+        const firstThumb = this.escapeHtml(v.thumbnail || this.getThumbnailUrl(v.platform, v.videoId || v.id));
+        thumbContent = `<img class="playlist-thumb-img" src="${firstThumb}" alt="${this.escapeHtml(p.name)}">`;
+      } else {
+        thumbContent = `
+          <div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(255,255,255,0.02); color:var(--text-muted); gap:8px;">
+            <i data-lucide="folder-open" style="width:24px; height:24px; opacity:0.6;"></i>
+            <span style="font-size:12px; font-weight:500; opacity:0.6; letter-spacing:0.5px;">Empty</span>
+          </div>
+        `;
       }
 
       card.innerHTML = `
         <div class="playlist-thumb-wrapper">
           <div class="playlist-thumb-container">
-            <img class="playlist-thumb-img" src="${firstThumb}" alt="${this.escapeHtml(p.name)}">
+            ${thumbContent}
           </div>
         </div>
         <div class="playlist-card-modern-info">
