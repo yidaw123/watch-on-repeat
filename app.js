@@ -53,7 +53,8 @@ class WatchOnRepeat {
         end: 0,
         timer: null
       },
-      playbackRate: 1
+      playbackRate: 1,
+      guestPromptShown: false
     };
 
     // DOM Elements Cache
@@ -3643,6 +3644,13 @@ class WatchOnRepeat {
     this.elements.noteInput.value = ''; // Clear input for the next note
     this.renderNotes();
     this.showToast(`Note added at ${this.formatTime(Math.floor(time))}!`, "edit-3");
+
+    if (!this.state.user && !this.state.guestPromptShown) {
+      this.state.guestPromptShown = true;
+      setTimeout(() => {
+        this.showToast("Loving the features? Create a free account to save your loops, notes, and playlists so you never lose them!", "heart");
+      }, 2000);
+    }
   }
 
   deleteNote(noteId) {
@@ -4262,6 +4270,13 @@ class WatchOnRepeat {
     this.elements.loopNameInput.value = '';
     this.showToast(`Loop saved as "${name}"`, "save");
     if (this.state.activeTab === 'analytics') this.renderAnalyticsTab();
+
+    if (!this.state.user && !this.state.guestPromptShown) {
+      this.state.guestPromptShown = true;
+      setTimeout(() => {
+        this.showToast("Loving the features? Create a free account to save your loops, notes, and playlists so you never lose them!", "heart");
+      }, 2000);
+    }
   }
 
   renderAnalyticsTab() {
