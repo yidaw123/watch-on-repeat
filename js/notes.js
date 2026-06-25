@@ -1,10 +1,9 @@
 window.NotesMixin = {
   async addNote(isManual = false) {
     if (!this.state.currentVideo) return;
-    const text = this.elements.noteInput.value.trim();
+    let text = this.elements.noteInput.value.trim();
     if (!text) {
-      this.showToast("Please enter some text for your note first", "alert-circle");
-      return;
+      text = "Bookmark"; // Allow empty notes as bookmarks
     }
     
     let time = 0;
