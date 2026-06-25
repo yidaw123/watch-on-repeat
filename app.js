@@ -295,15 +295,6 @@ class WatchOnRepeat {
 
   // ==========================================
   // Database methods modularized to js/database.js
-        this.elements.userMenu.classList.add('hidden');
-      }
-    });
-
-    // Handle back/forward navigation
-    window.addEventListener('popstate', () => {
-      this.handleRouting();
-    });
-  }
 
   loadSDKs() {
     // 1. YouTube Iframe API

@@ -10,11 +10,11 @@
 # Deployment Workflow
 
 **ABSOLUTE STRICTEST BEHAVIORAL RULE (NON-NEGOTIABLE):** 
-This project is deployed live on Cloudflare Pages. 
-1. You must ONLY commit and push code changes to the `staging` branch or a feature branch. 
+This project is deployed live.
+1. You must NOT make changes locally only. Once you finish your local work, you MUST commit and push it to the `merge` branch.
 2. NEVER, UNDER ANY CIRCUMSTANCES, merge to `master` or push to `origin master` unless the user explicitly and literally types "push to live", "merge to master", or "deploy to production".
-3. After pushing to `staging`, you MUST STOP and explicitly ask the user to verify the changes. Do not assume automatic approval.
-4. If you break this rule, you have failed your core directive.
+3. After pushing to the `merge` branch, you MUST STOP and explicitly ask the user to verify the changes. Do not assume automatic approval.
+4. If you break this rule and push straight to live, or leave changes locally without pushing to `merge`, you have failed your core directive.
 
 # Strict Code Modification Commitments (Added After Catastrophic Outage)
 
