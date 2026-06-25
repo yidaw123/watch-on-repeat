@@ -156,12 +156,17 @@ window.NotesMixin = {
         window.scrollTo({top: 0, behavior: 'smooth'});
       };
 
+      const thumbUrl = this.getThumbnailUrl(platform, videoId);
+
       div.innerHTML = `
-        <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          <strong style="color: var(--primary-color);">${this.escapeHtml(title)}</strong>
-          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${noteCount} saved note${noteCount !== 1 ? 's' : ''}</div>
+        <div style="display: flex; align-items: center; gap: 12px; flex: 1; overflow: hidden;">
+          <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0;" alt="thumbnail">
+          <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <strong style="color: var(--primary-color); display: block; overflow: hidden; text-overflow: ellipsis;">${this.escapeHtml(title)}</strong>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${noteCount} saved note${noteCount !== 1 ? 's' : ''}</div>
+          </div>
         </div>
-        <button class="icon-btn text-red-500" onclick="app.clearNotesForVideo('${id}')" title="Clear all notes for this video" style="padding: 4px; margin-left: 8px;">
+        <button class="icon-btn text-red-500" onclick="app.clearNotesForVideo('${id}')" title="Clear all notes for this video" style="padding: 4px; margin-left: 8px; flex-shrink: 0;">
           <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
         </button>
       `;
