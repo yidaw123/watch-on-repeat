@@ -80,9 +80,19 @@ class DatabaseMixin {
         localStorage.setItem('wor_analytics', JSON.stringify(settings.analytics || {"totalTime":0,"segments":{}}));
       }
 
-      const { data: history } = await supabaseClient.from('user_history').select('*').eq('user_id', this.state.user.id).eq('is_favorite', true);
-      if (history) {
-        const localFavs = history.map(h => ({
+      const { data: fullHistory } = await supabaseClient.from('user_history').select('*').eq('user_id', this.state.user.id);
+      if (fullHistory) {
+        const localHistory = fullHistory.map(h => ({
+          videoId: h.video_id, platform: h.platform, title: h.title,
+          userId: h.user_id, loopsCount: h.loops_count, lastPlayed: h.last_played,
+          timestamp: new Date(h.last_played).getTime()
+        }));
+        
+        const existingHistory = JSON.parse(localStorage.getItem('wor_history') || '[]');
+        const otherUsersHistory = existingHistory.filter(h => h.userId !== this.state.user.id);
+        localStorage.setItem('wor_history', JSON.stringify([...otherUsersHistory, ...localHistory]));
+
+        const localFavs = fullHistory.filter(h => h.is_favorite).map(h => ({
           id: 'fav_' + h.video_id, userId: h.user_id, videoId: h.video_id,
           platform: h.platform, title: h.title, timestamp: h.last_played
         }));
