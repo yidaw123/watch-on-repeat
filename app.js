@@ -222,6 +222,7 @@ class WatchOnRepeat {
       personalLoopCount: document.getElementById('personal-loop-count'),
       sessionTotalLoopCount: document.getElementById('session-total-loop-count'),
       personalLifetimeCount: document.getElementById('personal-lifetime-count'),
+      allTimeTotalCount: document.getElementById('all-time-total-count'),
       globalLoopCount: document.getElementById('global-loop-count'),
       platformTotalLoops: document.getElementById('platform-total-loops'),
       loopStateText: document.getElementById('loop-state-text'),
@@ -1497,6 +1498,19 @@ class WatchOnRepeat {
 
     // Update personal lifetime loops
     this.elements.personalLifetimeCount.textContent = this.formatNumber(this.state.currentLifetimeLoops);
+
+    // Update all-time loops for all videos
+    if (this.elements.allTimeTotalCount) {
+      let historyLoops = 0;
+      if (this.state.user) {
+        const history = this.getDb('history');
+        const userHistory = history.filter(h => h.userId === this.state.user.id && h.videoId !== video.id);
+        historyLoops = userHistory.reduce((sum, h) => sum + (h.loopsCount || 0), 0);
+        this.elements.allTimeTotalCount.textContent = this.formatNumber(historyLoops + this.state.currentLifetimeLoops);
+      } else {
+        this.elements.allTimeTotalCount.textContent = this.formatNumber(this.state.sessionTotalLoops);
+      }
+    }
 
     // Update global loops
     if (this.elements.globalLoopCount) this.elements.globalLoopCount.textContent = this.formatNumber(this.state.currentGlobalLoops);
