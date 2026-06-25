@@ -222,7 +222,7 @@ class WatchOnRepeat {
       sessionTotalLoopCount: document.getElementById('session-total-loop-count'),
       personalLifetimeCount: document.getElementById('personal-lifetime-count'),
       globalLoopCount: document.getElementById('global-loop-count'),
-      globalPlayCount: document.getElementById('global-play-count'),
+      platformTotalLoops: document.getElementById('platform-total-loops'),
       loopStateText: document.getElementById('loop-state-text'),
       loopTimer: document.getElementById('loop-timer'),
       
@@ -839,17 +839,18 @@ class WatchOnRepeat {
 
     if (window.supabaseClient) {
       supabaseClient.from('global_stats')
-        .select('global_loops, global_plays')
+        .select('global_loops')
         .eq('video_id', id)
         .eq('platform', platform)
         .single()
         .then(({ data }) => {
           if (data) {
-            this.state.currentGlobalLoops = data.global_loops;
-            this.state.currentGlobalPlays = data.global_plays;
-            this.updateStatsUI();
+            this.state.currentGlobalLoops = data.global_loops || 0;
+            if (this.elements.globalLoopCount) this.elements.globalLoopCount.textContent = this.formatNumber(this.state.currentGlobalLoops);
           }
-        });
+        }).catch(() => {});
+        
+      this.fetchPlatformTotalLoops();
         
       if (this.state.user) {
         supabaseClient.from('user_history')
@@ -1388,9 +1389,9 @@ class WatchOnRepeat {
       supabaseClient.from('global_stats').upsert({
         video_id: video.id,
         platform: video.platform,
-        global_loops: this.state.currentGlobalLoops,
-        global_plays: this.state.currentGlobalPlays
+        global_loops: this.state.currentGlobalLoops
       }, { onConflict: 'video_id, platform' }).then(({ error }) => {
+        if (!error) this.fetchPlatformTotalLoops(); // Refresh the massive platform number
         if (error && DEBUG_MODE) console.error("Global Loops Upsert Error:", error);
       });
 
@@ -1435,6 +1436,17 @@ class WatchOnRepeat {
     } catch (e) {
       if (DEBUG_MODE) console.warn("Could not increment global play count", e);
     }
+  }
+
+  async fetchPlatformTotalLoops() {
+    if (!window.supabaseClient || !this.elements.platformTotalLoops) return;
+    try {
+      const { data } = await supabaseClient.from('global_stats').select('global_loops');
+      if (data) {
+        const total = data.reduce((acc, row) => acc + (row.global_loops || 0), 0);
+        this.elements.platformTotalLoops.textContent = this.formatNumber(total);
+      }
+    } catch (e) {}
   }
 
   updateStatsUI() {
