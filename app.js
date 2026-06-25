@@ -194,6 +194,7 @@ class WatchOnRepeat {
     // Initial Render
     this.renderDiscoverTab();
     this.updateUserUI();
+    this.updateStatsUI();
   }
 
   cacheElements() {
@@ -1362,25 +1363,33 @@ class WatchOnRepeat {
 
   updateStatsUI() {
     const video = this.state.currentVideo;
-    if (!video) return;
 
     // Update personal session loops
-    this.elements.personalLoopCount.textContent = this.formatNumber(this.state.personalLoops);
+    if (this.elements.personalLoopCount) {
+      this.elements.personalLoopCount.textContent = this.formatNumber(this.state.personalLoops || 0);
+    }
 
     // Update personal lifetime loops
-    this.elements.personalLifetimeCount.textContent = this.formatNumber(this.state.currentLifetimeLoops);
+    if (this.elements.personalLifetimeCount) {
+      this.elements.personalLifetimeCount.textContent = this.formatNumber(this.state.currentLifetimeLoops || 0);
+    }
 
     // Update all-time loops for all videos
     if (this.elements.allTimeTotalCount) {
       let historyLoops = 0;
       if (this.state.user) {
         const history = this.getDb('history');
-        const userHistory = history.filter(h => h.userId === this.state.user.id && h.videoId !== video.id);
+        const userHistory = history.filter(h => h.userId === this.state.user.id && (!video || h.videoId !== video.id));
         historyLoops = userHistory.reduce((sum, h) => sum + (h.loopsCount || 0), 0);
-        this.elements.allTimeTotalCount.textContent = this.formatNumber(historyLoops + this.state.currentLifetimeLoops);
+        this.elements.allTimeTotalCount.textContent = this.formatNumber(historyLoops + (this.state.currentLifetimeLoops || 0));
       } else {
-        this.elements.allTimeTotalCount.textContent = this.formatNumber(this.state.sessionTotalLoops);
+        this.elements.allTimeTotalCount.textContent = this.formatNumber(this.state.sessionTotalLoops || 0);
       }
+    }
+
+    if (!video) {
+      this.fetchPlatformTotalLoops();
+      return;
     }
 
     // Update global loops
