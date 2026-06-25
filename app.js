@@ -2840,54 +2840,45 @@ class WatchOnRepeat {
     if (!str) return 0;
     if (!isNaN(str)) return parseFloat(str);
     const parts = str.toString().split(':');
-    if (parts.length === 2) {
+    if (parts.length === 3) {
+      return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
+    } else if (parts.length === 2) {
       return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
     }
     return parseFloat(str) || 0;
   }
 
   formatTime(seconds) {
-    if (isNaN(seconds)) return "0:00";
+    if (isNaN(seconds)) return "00:00:00";
     const isPremium = this.state.user && this.state.user.isPremium;
     
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    
     if (isPremium) {
-      const m = Math.floor(seconds / 60);
-      const s = Math.floor(seconds % 60);
-      const ms = Math.floor((seconds % 1) * 100);
-      return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+      const ms = Math.floor((seconds % 1) * 1000);
+      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
     } else {
-      seconds = Math.floor(seconds);
-      const m = Math.floor(seconds / 60);
-      const s = seconds % 60;
-      return `${m}:${s.toString().padStart(2, '0')}`;
+      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
   }
 
   applyTimeMask(input, onChangeCallback) {
     input.addEventListener('focus', function() {
-      if (!this.value || this.value === '0' || this.value === '0:00') {
-        this.value = '0:00';
-      }
       setTimeout(() => this.select(), 10);
     });
     
     input.addEventListener('input', function(e) {
-      let val = this.value.replace(/\D/g, '');
-      if (!val) {
-        this.value = '';
-        return;
-      }
-      if (val.length <= 2) {
-        this.value = val;
-      } else {
-        let m = val.slice(0, -2);
-        let s = val.slice(-2);
-        this.value = `${m}:${s}`;
-      }
+      this.value = this.value.replace(/[^\d:.]/g, '');
     });
 
     if (onChangeCallback) {
       input.addEventListener('change', onChangeCallback);
+      input.addEventListener('blur', () => {
+        const parsed = this.parseTime(input.value);
+        input.value = this.formatTime(parsed);
+      });
     }
   }
 
@@ -3529,9 +3520,9 @@ class WatchOnRepeat {
       
       row.innerHTML = `
         <span class="text-xs text-gray-500 w-4">${index + 1}</span>
-        <input type="text" class="multi-seg-input" data-index="${index}" data-type="start" value="${this.formatTime(seg.start)}" style="width: 75px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
+        <input type="text" class="multi-seg-input" data-index="${index}" data-type="start" value="${this.formatTime(seg.start)}" style="width: 100px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
         <span class="text-gray-500">to</span>
-        <input type="text" class="multi-seg-input" data-index="${index}" data-type="end" value="${this.formatTime(seg.end)}" style="width: 75px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
+        <input type="text" class="multi-seg-input" data-index="${index}" data-type="end" value="${this.formatTime(seg.end)}" style="width: 100px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
         <button class="icon-btn text-red-500" onclick="app.removeLoopSegment(${index})" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
       `;
       list.appendChild(row);
