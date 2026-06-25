@@ -616,7 +616,8 @@ h1, h2, h3, h4, .brand-name {
   color: var(--text-muted);
 }
 
-.platform-indicator i {
+.platform-indicator i,
+.platform-indicator svg {
   width: 18px;
   height: 18px;
 }

@@ -980,7 +980,9 @@ class WatchOnRepeat {
     else if (platform === 'html5') iconName = 'monitor-play';
     
     this.elements.platformBadge.innerHTML = `<i data-lucide="${iconName}"></i><span id="platform-text">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>`;
-    if (window.lucide) window.lucide.createIcons();
+    setTimeout(() => {
+      if (window.lucide) window.lucide.createIcons();
+    }, 10);
   }
 
   saveLoopData() {
