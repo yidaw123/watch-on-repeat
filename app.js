@@ -802,6 +802,16 @@ class WatchOnRepeat {
            });
            if (updated) this.saveDb('history', history);
         }
+        
+        // Update notes cache if needed
+        const notes = this.getDb('notes');
+        if (notes && notes.__titles) {
+          const vId = `${platform}_${id}`;
+          if (notes[vId]) {
+            notes.__titles[vId] = realTitle;
+            this.saveDb('notes', notes);
+          }
+        }
       }
     });
     this.updatePlatformBadge(platform);

@@ -131,11 +131,31 @@ window.NotesMixin = {
     }
 
     uniqueVideos.forEach(id => {
-      const title = (db.__titles && db.__titles[id]) ? db.__titles[id] : 'Unknown Video';
+      let title = (db.__titles && db.__titles[id]) ? db.__titles[id] : 'Unknown Video';
       const noteCount = db[id].length;
+      
+      const parts = id.split('_');
+      const platform = parts[0];
+      const videoId = parts.slice(1).join('_');
+      
+      if (title === 'Unknown Video' || title === 'Loading title...') {
+        title = `Video: ${videoId}`; // Fallback to showing ID so it's not totally unknown
+      }
+
       const div = document.createElement('div');
       div.className = 'note-item';
-      div.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px;";
+      div.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px; cursor: pointer; transition: background 0.2s;";
+      
+      div.onmouseover = () => div.style.background = 'rgba(255,255,255,0.05)';
+      div.onmouseout = () => div.style.background = 'var(--surface-color)';
+      
+      div.onclick = (e) => {
+        if (e.target.closest('button')) return;
+        app.loadVideo(videoId, platform);
+        // Scroll to top to see the player if on mobile
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      };
+
       div.innerHTML = `
         <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
           <strong style="color: var(--primary-color);">${this.escapeHtml(title)}</strong>
