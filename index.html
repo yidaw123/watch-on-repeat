@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watch On Repeat | Loop YouTube Videos & Practice Tool</title>
+  <title>Watch On Repeat</title>
   <meta name="description" content="Watch on repeat allows you to loop YouTube, Vimeo, and Twitch videos infinitely. The best video looper to repeat sections, change speed, and practice.">
   <meta name="keywords" content="watch on repeat, watchonrepeat, loop, repeat, youtube, video, video looper, a-b loop, practice tool">
   <link rel="canonical" href="https://watchonrepeat.com/">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
   
   <!-- Open Graph / Social Media -->
-  <meta property="og:title" content="Watch On Repeat | Loop YouTube Videos & Practice Tool">
+  <meta property="og:title" content="Watch On Repeat">
   <meta property="og:description" content="Watch on repeat allows you to loop YouTube, Vimeo, and Twitch videos infinitely. The best video looper to repeat sections, change speed, and practice.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://watchonrepeat.com/">
@@ -227,9 +227,7 @@
                 
                 <div class="timeline-container" id="timeline-container">
                   <div class="timeline-track" id="timeline-track"></div>
-                  <div class="timeline-selection" id="timeline-selection"></div>
-                  <div class="timeline-handle handle-start" id="timeline-handle-start"></div>
-                  <div class="timeline-handle handle-end" id="timeline-handle-end"></div>
+                  <!-- Segments and handles will be dynamically injected here by JS -->
                   <div id="timeline-markers" class="timeline-markers" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
                 </div>
                 <div style="margin-top: 6px; text-align: center;">
@@ -280,7 +278,7 @@
                 </label>
                 
                 <div id="multi-segment-list" class="hidden" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-                  <!-- Dynamic segments will go here -->
+                  <!-- Dynamic segment list will go here -->
                 </div>
                 <button class="btn btn-secondary btn-sm hidden" id="add-segment-btn" onclick="app.addLoopSegment()" style="margin-top: 8px; width: 100%;"><i data-lucide="plus"></i> Add Segment</button>
               </div>
@@ -650,7 +648,7 @@
                 <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Vimeo, Dailymotion, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
                 <a id="bookmarklet-btn" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;">
                   <i data-lucide="repeat"></i>
-                  <span>Loop on WatchOnRepeat</span>
+                  <span>Watch On Repeat</span>
                 </a>
               </div>
             </div>

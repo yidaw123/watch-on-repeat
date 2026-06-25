@@ -2811,20 +2811,29 @@ class WatchOnRepeat {
 
   parseTime(str) {
     if (!str) return 0;
-    if (!isNaN(str)) return parseInt(str);
+    if (!isNaN(str)) return parseFloat(str);
     const parts = str.toString().split(':');
     if (parts.length === 2) {
-      return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
     }
-    return parseInt(str) || 0;
+    return parseFloat(str) || 0;
   }
 
   formatTime(seconds) {
     if (isNaN(seconds)) return "0:00";
-    seconds = Math.floor(seconds);
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
+    const isPremium = this.state.user && this.state.user.isPremium;
+    
+    if (isPremium) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      const ms = Math.floor((seconds % 1) * 100);
+      return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+    } else {
+      seconds = Math.floor(seconds);
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
   }
 
   applyTimeMask(input, onChangeCallback) {
@@ -2856,51 +2865,86 @@ class WatchOnRepeat {
   }
 
   initTimeline() {
-    let isDragging = null;
+    let draggingHandle = null;
 
-    const updateFromInputs = (source) => {
+    const renderTimelineHandles = () => {
+      const container = this.elements.timelineContainer;
+      if (!container) return;
+      
+      const track = container.querySelector('.timeline-track');
+      const markers = container.querySelector('.timeline-markers');
+      container.innerHTML = '';
+      if (track) container.appendChild(track);
+      
+      if (!this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
+        this.state.abLoop.multiSegments = [{
+          start: this.state.abLoop.start || 0,
+          end: this.state.abLoop.end || this.state.currentVideoDuration || 10
+        }];
+      }
+      
       const duration = this.state.currentVideoDuration || 3600;
-      let s = this.parseTime(this.elements.abStart.value);
-      let e = this.elements.abEnd.value ? this.parseTime(this.elements.abEnd.value) : duration;
       
-      if (s < 0) s = 0;
-      if (e > duration) e = duration;
-      if (s > e) s = e;
+      this.state.abLoop.multiSegments.forEach((seg, index) => {
+        let sPct = (seg.start / duration) * 100;
+        let ePct = (seg.end / duration) * 100;
+        
+        const sel = document.createElement('div');
+        sel.className = 'timeline-selection';
+        sel.style.left = `${sPct}%`;
+        sel.style.width = `${ePct - sPct}%`;
+        
+        const hStart = document.createElement('div');
+        hStart.className = `timeline-handle handle-start`;
+        hStart.style.left = `${sPct}%`;
+        hStart.dataset.index = index;
+        hStart.dataset.type = 'start';
+        
+        const hEnd = document.createElement('div');
+        hEnd.className = `timeline-handle handle-end`;
+        hEnd.style.left = `${ePct}%`;
+        hEnd.dataset.index = index;
+        hEnd.dataset.type = 'end';
+        
+        hStart.addEventListener('mousedown', handlePointerDown);
+        hStart.addEventListener('touchstart', handlePointerDown, {passive: false});
+        
+        hEnd.addEventListener('mousedown', handlePointerDown);
+        hEnd.addEventListener('touchstart', handlePointerDown, {passive: false});
+        
+        container.appendChild(sel);
+        container.appendChild(hStart);
+        container.appendChild(hEnd);
+      });
       
-      const sPct = (s / duration) * 100;
-      const ePct = (e / duration) * 100;
-
-      if (this.elements.timelineSelection) {
-        this.elements.timelineSelection.style.left = `${sPct}%`;
-        this.elements.timelineSelection.style.width = `${ePct - sPct}%`;
-      }
-      if (this.elements.timelineHandleStart) {
-        this.elements.timelineHandleStart.style.left = `${sPct}%`;
-      }
-      if (this.elements.timelineHandleEnd) {
-        this.elements.timelineHandleEnd.style.left = `${ePct}%`;
-      }
-      this.state.abLoop.start = s;
-      this.state.abLoop.end = e;
-      this.state.abLoop.active = true;
-      this.saveLoopData();
+      if (markers) container.appendChild(markers);
       
-
-      // Handle Skipping/Jumping
-      if (this.state.currentPlatform && !isDragging) {
-        this.getCurrentTime().then(t => {
-          if (t < s || t > e) {
-            this.seekToTime(s);
-          }
-        });
+      const activeIdx = this.state.abLoop.currentSegmentIndex || 0;
+      if (this.state.abLoop.multiSegments[activeIdx]) {
+        if (this.elements.abStart) this.elements.abStart.value = this.formatTime(this.state.abLoop.multiSegments[activeIdx].start);
+        if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(this.state.abLoop.multiSegments[activeIdx].end);
+        
+        this.state.abLoop.start = this.state.abLoop.multiSegments[activeIdx].start;
+        this.state.abLoop.end = this.state.abLoop.multiSegments[activeIdx].end;
       }
+      
+      this.renderMultiSegments();
     };
 
-    this.updateTimelineUI = updateFromInputs;
+    this.updateTimelineUI = () => {
+      this.state.abLoop.active = true;
+      renderTimelineHandles();
+      this.saveLoopData();
+    };
 
-    const handlePointerDown = (e, handleType) => {
+    const handlePointerDown = (e) => {
       if (e.cancelable) e.preventDefault();
-      isDragging = handleType;
+      draggingHandle = {
+        index: parseInt(e.target.dataset.index),
+        type: e.target.dataset.type
+      };
+      this.state.abLoop.currentSegmentIndex = draggingHandle.index;
+      
       document.addEventListener('mousemove', handlePointerMove, {passive: false});
       document.addEventListener('mouseup', handlePointerUp);
       document.addEventListener('touchmove', handlePointerMove, {passive: false});
@@ -2908,7 +2952,7 @@ class WatchOnRepeat {
     };
 
     const handlePointerMove = (e) => {
-      if (!isDragging) return;
+      if (!draggingHandle) return;
       if (e.cancelable) e.preventDefault();
       
       const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
@@ -2919,53 +2963,67 @@ class WatchOnRepeat {
       
       const pct = x / rect.width;
       const duration = this.state.currentVideoDuration || 3600;
-      const val = Math.floor(pct * duration);
-
-      if (isDragging === 'start') {
-        const currentEnd = this.elements.abEnd.value ? this.parseTime(this.elements.abEnd.value) : duration;
-        this.elements.abStart.value = this.formatTime(Math.min(val, currentEnd));
-        updateFromInputs('start');
+      let val = pct * duration;
+      
+      const idx = draggingHandle.index;
+      const segs = this.state.abLoop.multiSegments;
+      
+      if (draggingHandle.type === 'start') {
+        let minStart = idx > 0 ? segs[idx - 1].end : 0;
+        let maxStart = segs[idx].end;
+        segs[idx].start = Math.max(minStart, Math.min(val, maxStart));
       } else {
-        const currentStart = this.parseTime(this.elements.abStart.value);
-        this.elements.abEnd.value = this.formatTime(Math.max(val, currentStart));
-        updateFromInputs('end');
+        let minEnd = segs[idx].start;
+        let maxEnd = idx < segs.length - 1 ? segs[idx + 1].start : duration;
+        segs[idx].end = Math.max(minEnd, Math.min(val, maxEnd));
       }
+      
+      renderTimelineHandles();
     };
 
     const handlePointerUp = () => {
-      const draggedHandle = isDragging;
-      isDragging = null;
+      if (!draggingHandle) return;
+      
+      const idx = draggingHandle.index;
+      const val = draggingHandle.type === 'start' ? this.state.abLoop.multiSegments[idx].start : this.state.abLoop.multiSegments[idx].end;
+      
+      if (this.state.currentPlatform) {
+        this.seekToTime(draggingHandle.type === 'start' ? val : val - 0.5);
+      }
+      
+      draggingHandle = null;
       document.removeEventListener('mousemove', handlePointerMove);
       document.removeEventListener('mouseup', handlePointerUp);
       document.removeEventListener('touchmove', handlePointerMove);
       document.removeEventListener('touchend', handlePointerUp);
       
-      if (draggedHandle) {
-        updateFromInputs(draggedHandle);
-      }
+      this.saveLoopData();
     };
 
-    if (this.elements.timelineHandleStart) {
-      this.elements.timelineHandleStart.addEventListener('mousedown', (e) => handlePointerDown(e, 'start'));
-      this.elements.timelineHandleStart.addEventListener('touchstart', (e) => handlePointerDown(e, 'start'), {passive: false});
-    }
-    if (this.elements.timelineHandleEnd) {
-      this.elements.timelineHandleEnd.addEventListener('mousedown', (e) => handlePointerDown(e, 'end'));
-      this.elements.timelineHandleEnd.addEventListener('touchstart', (e) => handlePointerDown(e, 'end'), {passive: false});
-    }
-    
-    // Bind text inputs
+    const updateActiveFromInputs = () => {
+      const idx = this.state.abLoop.currentSegmentIndex || 0;
+      if (!this.state.abLoop.multiSegments[idx]) return;
+      const duration = this.state.currentVideoDuration || 3600;
+      
+      let s = this.parseTime(this.elements.abStart.value);
+      let e = this.elements.abEnd.value ? this.parseTime(this.elements.abEnd.value) : duration;
+      
+      let minStart = idx > 0 ? this.state.abLoop.multiSegments[idx - 1].end : 0;
+      let maxEnd = idx < this.state.abLoop.multiSegments.length - 1 ? this.state.abLoop.multiSegments[idx + 1].start : duration;
+      
+      s = Math.max(minStart, Math.min(s, e));
+      e = Math.max(s, Math.min(e, maxEnd));
+      
+      this.state.abLoop.multiSegments[idx].start = s;
+      this.state.abLoop.multiSegments[idx].end = e;
+      this.updateTimelineUI();
+    };
+
     if (this.elements.abStart) {
-      this.applyTimeMask(this.elements.abStart, () => {
-        this.elements.abStart.value = this.formatTime(this.parseTime(this.elements.abStart.value));
-        updateFromInputs('start');
-      });
+      this.applyTimeMask(this.elements.abStart, () => updateActiveFromInputs());
     }
     if (this.elements.abEnd) {
-      this.applyTimeMask(this.elements.abEnd, () => {
-        this.elements.abEnd.value = this.formatTime(this.parseTime(this.elements.abEnd.value));
-        updateFromInputs('end');
-      });
+      this.applyTimeMask(this.elements.abEnd, () => updateActiveFromInputs());
     }
   }
 
@@ -3273,89 +3331,107 @@ class WatchOnRepeat {
     if (!this.state.abLoop.active) return;
     const t = await this.getCurrentTime();
     
-    const isMultiEnabled = document.getElementById('multi-segment-checkbox') && document.getElementById('multi-segment-checkbox').checked;
+    if (!this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
+      this.state.abLoop.multiSegments = [{ start: this.state.abLoop.start || 0, end: this.state.abLoop.end || this.state.currentVideoDuration || 10 }];
+    }
     
-    if (isMultiEnabled && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
-      const segments = this.state.abLoop.multiSegments;
-      const currentSegIndex = this.state.abLoop.currentSegmentIndex || 0;
-      const seg = segments[currentSegIndex];
+    const segments = this.state.abLoop.multiSegments;
+    const currentSegIndex = this.state.abLoop.currentSegmentIndex || 0;
+    
+    // Safety fallback
+    if (!segments[currentSegIndex]) {
+      this.state.abLoop.currentSegmentIndex = 0;
+      return;
+    }
+    
+    const seg = segments[currentSegIndex];
+    
+    if (t >= seg.end && seg.end > 0) {
+      let nextIndex = currentSegIndex + 1;
       
-      if (t >= seg.end && seg.end > 0) {
-        let nextIndex = currentSegIndex + 1;
-        if (nextIndex >= segments.length) {
-          nextIndex = 0; // loop back to first
-          if (this.incrementLoops()) return;
-        }
-        this.state.abLoop.currentSegmentIndex = nextIndex;
-        this.seekToTime(segments[nextIndex].start);
-      } else if (t < seg.start - 0.5) {
-        this.seekToTime(seg.start);
-      }
-    } else {
-      if (t >= this.state.abLoop.end && this.state.abLoop.end > 0) {
+      if (nextIndex >= segments.length) {
+        nextIndex = 0; // loop back to first
+        
+        // Auto Tempo applies when a full cycle completes
         if (this.state.isAutoTempoEnabled) {
           let speed = this.state.playbackRate || 1.0;
           speed = Math.min(2.0, speed + 0.05);
           this.setPlaybackSpeed(speed.toFixed(2));
         }
-        this.seekToTime(this.state.abLoop.start);
+        
         if (this.incrementLoops()) return;
-      } else if (t < this.state.abLoop.start - 0.5) {
-        this.seekToTime(this.state.abLoop.start);
       }
+      
+      this.state.abLoop.currentSegmentIndex = nextIndex;
+      
+      // If the next segment starts exactly where this one ended, we don't even need to seek!
+      // This allows contiguous segments to play seamlessly.
+      if (segments[nextIndex].start !== seg.end) {
+        this.seekToTime(segments[nextIndex].start);
+      }
+    } else if (t < seg.start - 0.5) {
+      this.seekToTime(seg.start);
     }
   }
 
   toggleMultiSegment(e) {
-    if (e.target.checked && !this.checkLimit('multiple_segments')) {
-      e.target.checked = false;
-      return;
-    }
-    
-    const wrapperList = document.getElementById('multi-segment-list');
+    const list = document.getElementById('multi-segment-list');
     const addBtn = document.getElementById('add-segment-btn');
-    const defaultInputs = document.querySelectorAll('.input-group');
-    const timelineContainer = document.getElementById('timeline-container');
     
     if (e.target.checked) {
-      const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
-      if (!isPremium) {
+      if (!this.enforcePremiumFeature("Multiple loop segments are a Premium feature.")) {
         e.target.checked = false;
-        this.openUpgradeModal("Multiple loop segments are a Premium feature.");
         return;
       }
       
-      wrapperList.classList.remove('hidden');
+      list.classList.remove('hidden');
       addBtn.classList.remove('hidden');
-      defaultInputs.forEach(el => el.classList.add('hidden'));
-      if (timelineContainer) timelineContainer.classList.add('hidden');
       
       if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
       if (this.state.abLoop.multiSegments.length === 0) {
         this.addLoopSegment();
       }
     } else {
-      wrapperList.classList.add('hidden');
+      list.classList.add('hidden');
       addBtn.classList.add('hidden');
-      defaultInputs.forEach(el => el.classList.remove('hidden'));
-      if (timelineContainer) timelineContainer.classList.remove('hidden');
+      // Revert to single segment
+      if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 1) {
+        this.state.abLoop.multiSegments = [this.state.abLoop.multiSegments[0]];
+        this.saveLoopData();
+      }
     }
+    if (this.updateTimelineUI) this.updateTimelineUI();
   }
 
   addLoopSegment() {
     if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
-    this.state.abLoop.multiSegments.push({ start: 0, end: this.state.currentVideoDuration || 10 });
+    const duration = this.state.currentVideoDuration || 10;
+    
+    let newStart = 0;
+    if (this.state.abLoop.multiSegments.length > 0) {
+      const lastSeg = this.state.abLoop.multiSegments[this.state.abLoop.multiSegments.length - 1];
+      newStart = lastSeg.end;
+    }
+    
+    if (newStart >= duration) newStart = duration - 1;
+    if (newStart < 0) newStart = 0;
+    
+    this.state.abLoop.multiSegments.push({ start: newStart, end: duration });
+    this.state.abLoop.currentSegmentIndex = this.state.abLoop.multiSegments.length - 1;
     this.saveLoopData();
-    this.renderMultiSegments();
+    if (this.updateTimelineUI) this.updateTimelineUI();
   }
 
   removeLoopSegment(index) {
     this.state.abLoop.multiSegments.splice(index, 1);
+    if (this.state.abLoop.multiSegments.length === 0) {
+      this.state.abLoop.multiSegments.push({ start: 0, end: this.state.currentVideoDuration || 10 });
+    }
     if (this.state.abLoop.currentSegmentIndex >= this.state.abLoop.multiSegments.length) {
       this.state.abLoop.currentSegmentIndex = 0;
     }
     this.saveLoopData();
-    this.renderMultiSegments();
+    if (this.updateTimelineUI) this.updateTimelineUI();
   }
 
   renderMultiSegments() {
@@ -3364,7 +3440,7 @@ class WatchOnRepeat {
     
     const checkbox = document.getElementById('multi-segment-checkbox');
     const addBtn = document.getElementById('add-segment-btn');
-    const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+    const isPremium = this.state.user && this.state.user.isPremium;
 
     if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
       if (checkbox) checkbox.checked = true;
@@ -3385,31 +3461,45 @@ class WatchOnRepeat {
       row.style.gap = '8px';
       row.style.alignItems = 'center';
       
+      const isActive = index === (this.state.abLoop.currentSegmentIndex || 0);
+      const activeStyle = isActive ? 'border-color: var(--color-primary); box-shadow: 0 0 5px var(--color-primary);' : 'border-color: #333;';
+      
       row.innerHTML = `
         <span class="text-xs text-gray-500 w-4">${index + 1}</span>
-        <input type="text" class="multi-seg-input" data-index="${index}" data-type="start" value="${this.formatTime(seg.start)}" style="width: 60px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white; text-align: center;">
+        <input type="text" class="multi-seg-input" data-index="${index}" data-type="start" value="${this.formatTime(seg.start)}" style="width: 75px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
         <span class="text-gray-500">to</span>
-        <input type="text" class="multi-seg-input" data-index="${index}" data-type="end" value="${this.formatTime(seg.end)}" style="width: 60px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white; text-align: center;">
+        <input type="text" class="multi-seg-input" data-index="${index}" data-type="end" value="${this.formatTime(seg.end)}" style="width: 75px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
         <button class="icon-btn text-red-500" onclick="app.removeLoopSegment(${index})" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
       `;
       list.appendChild(row);
     });
     
-    // Add event listeners to new inputs
     list.querySelectorAll('.multi-seg-input').forEach(input => {
       this.applyTimeMask(input, (e) => {
         const idx = parseInt(e.target.dataset.index, 10);
         const type = e.target.dataset.type;
         const val = this.parseTime(e.target.value);
-        this.state.abLoop.multiSegments[idx][type] = val;
-        e.target.value = this.formatTime(val);
-        // Force loop restart at new segment if we edit it
+        
+        const duration = this.state.currentVideoDuration || 3600;
+        const segs = this.state.abLoop.multiSegments;
+        
+        if (type === 'start') {
+          let minStart = idx > 0 ? segs[idx - 1].end : 0;
+          let maxStart = segs[idx].end;
+          segs[idx].start = Math.max(minStart, Math.min(val, maxStart));
+        } else {
+          let minEnd = segs[idx].start;
+          let maxEnd = idx < segs.length - 1 ? segs[idx + 1].start : duration;
+          segs[idx].end = Math.max(minEnd, Math.min(val, maxEnd));
+        }
+        
         this.state.abLoop.currentSegmentIndex = idx;
         this.saveLoopData();
+        if (this.updateTimelineUI) this.updateTimelineUI();
       });
     });
     
-    lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
   }
 
   // ==========================================
