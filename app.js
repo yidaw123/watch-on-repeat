@@ -3402,6 +3402,12 @@ class WatchOnRepeat {
 
   addLoopSegment() {
     if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
+    
+    if (this.state.abLoop.multiSegments.length >= 10) {
+      this.showToast("Maximum of 10 segments reached.", "alert-circle");
+      return;
+    }
+    
     const duration = this.state.currentVideoDuration || 10;
     
     let newStart = 0;
@@ -3442,8 +3448,22 @@ class WatchOnRepeat {
     if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
       if (checkbox) checkbox.checked = true;
       list.classList.remove('hidden');
-      if (isPremium && addBtn) addBtn.classList.remove('hidden');
-      else if (addBtn) addBtn.classList.add('hidden');
+      if (isPremium && addBtn) {
+        addBtn.classList.remove('hidden');
+        if (this.state.abLoop.multiSegments.length >= 10) {
+          addBtn.disabled = true;
+          addBtn.innerHTML = '<i data-lucide="alert-circle"></i> Max 10 Segments';
+          addBtn.style.opacity = '0.5';
+          addBtn.style.cursor = 'not-allowed';
+        } else {
+          addBtn.disabled = false;
+          addBtn.innerHTML = '<i data-lucide="plus"></i> Add Segment';
+          addBtn.style.opacity = '1';
+          addBtn.style.cursor = 'pointer';
+        }
+      } else if (addBtn) {
+        addBtn.classList.add('hidden');
+      }
     } else {
       if (checkbox && !checkbox.checked) {
         list.classList.add('hidden');
