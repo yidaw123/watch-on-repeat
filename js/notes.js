@@ -93,10 +93,9 @@ window.NotesMixin = {
     if (notes.length === 0) {
       this.elements.notesList.appendChild(this.elements.notesEmpty);
       this.elements.notesEmpty.classList.remove('hidden');
-      return;
+    } else {
+      this.elements.notesEmpty.classList.add('hidden');
     }
-    
-    this.elements.notesEmpty.classList.add('hidden');
     
     notes.forEach(note => {
       const m = Math.floor(note.time / 60).toString().padStart(2, '0');
