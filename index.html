@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Watch On Repeat</title>
   <meta name="description" content="Watch on repeat allows you to loop YouTube, Vimeo, and Twitch videos infinitely. The best video looper to repeat sections, change speed, and practice.">
   <meta name="keywords" content="watch on repeat, watchonrepeat, loop, repeat, youtube, video, video looper, a-b loop, practice tool">
@@ -40,7 +43,7 @@
   }
   </script>
   
-  <link href="style.css?v=6" rel="stylesheet" />
+  <link href="style.css?v=8" rel="stylesheet" />
   <!-- Google Fonts: Outfit and Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
@@ -703,7 +706,7 @@
             <div class="empty-state hidden" id="playlists-auth-required">
               <i data-lucide="lock" style="width:48px;height:48px;margin-bottom:16px;color:var(--text-muted)"></i>
               <h3>Sign in required</h3>
-              <p>Create and manage your practice playlists.</p>
+              <p>Create and manage your playlists.</p>
               <button class="btn btn-primary" onclick="app.openLoginModal()" style="margin-top:16px;">Sign In</button>
             </div>
             
@@ -918,6 +921,11 @@
       });
     }
   </script>
-  <script src="app.js?v=38"></script>
+  <script src="js/database.js?v=5"></script>
+  <script src="js/auth.js?v=3"></script>
+  <script src="js/notes.js?v=4"></script>
+  <script src="js/playlists.js?v=4"></script>
+  <script src="js/loops.js?v=3"></script>
+  <script src="app.js?v=40"></script>
 </body>
 </html>

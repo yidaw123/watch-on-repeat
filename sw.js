@@ -1,4 +1,4 @@
-const CACHE_NAME = 'watchonrepeat-v5';
+const CACHE_NAME = 'watchonrepeat-v6';
 const urlsToCache = [
   './',
   './index.html',
@@ -17,6 +17,18 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Completely bypass Service Worker caching during local development
+  const isLocalhost = Boolean(
+    self.location.hostname === 'localhost' ||
+    self.location.hostname === '127.0.0.1' ||
+    self.location.hostname === '[::1]'
+  );
+
+  if (isLocalhost) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   // Only handle same-origin requests — never intercept YouTube, Vimeo, CDN, etc.
   if (!event.request.url.startsWith(self.location.origin)) {
     return;
