@@ -2087,14 +2087,21 @@ class WatchOnRepeat {
       renderTimelineHandles();
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = async () => {
       if (!draggingHandle) return;
       
       const idx = draggingHandle.index;
       const val = draggingHandle.type === 'start' ? this.state.abLoop.multiSegments[idx].start : this.state.abLoop.multiSegments[idx].end;
       
       if (this.state.currentPlatform) {
-        this.seekToTime(draggingHandle.type === 'start' ? val : val - 0.5);
+        if (draggingHandle.type === 'start') {
+          const currentTime = await this.getCurrentTime();
+          if (val > currentTime) {
+            this.seekToTime(val);
+          }
+        } else {
+          this.seekToTime(val - 0.5);
+        }
       }
       
       draggingHandle = null;
