@@ -967,14 +967,11 @@ class WatchOnRepeat {
     this.elements.platformBadge.className = `platform-indicator ${platform}`;
     this.elements.platformText.textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
     
-    // Set matching lucide icon
-    let iconName = 'video';
-    if (platform === 'youtube') iconName = 'youtube';
-    else if (platform === 'vimeo') iconName = 'video';
-    else if (platform === 'dailymotion') iconName = 'play-circle';
+    // Always use the play-circle icon for consistency across platforms
+    let iconName = 'play-circle';
     
     this.elements.platformBadge.innerHTML = `<i data-lucide="${iconName}"></i><span id="platform-text">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>`;
-    lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
   }
 
   saveLoopData() {
