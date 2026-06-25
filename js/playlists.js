@@ -195,15 +195,12 @@ class PlaylistsMixin {
         <div class="playlist-thumb-wrapper">
           <div class="playlist-thumb-container">
             <img class="playlist-thumb-img" src="${firstThumb}" alt="${this.escapeHtml(p.name)}">
-            <div class="playlist-video-count-overlay">
-              <i data-lucide="list"></i> ${vidsCount} videos
-            </div>
           </div>
         </div>
         <div class="playlist-card-modern-info">
           <div class="playlist-card-modern-title">${this.escapeHtml(p.name)}</div>
           <div class="playlist-card-modern-meta">
-            ${p.isPublic ? 'Public' : 'Private'} • Playlist
+            ${p.isPublic ? 'Public' : 'Private'} • ${vidsCount} video${vidsCount !== 1 ? 's' : ''}
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
             <div style="display:flex; gap:8px;">

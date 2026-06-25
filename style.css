@@ -2177,15 +2177,15 @@ input[type="checkbox"]:focus {
 }
 
 .playlist-card-modern-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: #c4cef5;
+  font-size: 15px;
+  font-weight: 600;
+  color: #e2e8f0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
 }
 
 .playlist-card-modern-meta {
