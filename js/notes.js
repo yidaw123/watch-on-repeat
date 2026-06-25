@@ -2,7 +2,10 @@ window.NotesMixin = {
   async addNote(isManual = false) {
     if (!this.state.currentVideo) return;
     const text = this.elements.noteInput.value.trim();
-    if (!text) return;
+    if (!text) {
+      this.showToast("Please enter some text for your note first", "alert-circle");
+      return;
+    }
     
     let time = 0;
     if (isManual) {
