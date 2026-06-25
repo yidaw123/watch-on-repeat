@@ -771,6 +771,23 @@ class WatchOnRepeat {
       platform: 'local'
     };
 
+    if (this.elements.abStart) {
+      this.elements.abStart.value = "";
+      this.elements.abStart.placeholder = "Start";
+    }
+    if (this.elements.abEnd) {
+      this.elements.abEnd.value = "";
+      this.elements.abEnd.placeholder = "End";
+    }
+    
+    // Reset loop state completely for the new video
+    this.state.abLoop.start = 0;
+    this.state.abLoop.end = 0;
+    this.state.abLoop.currentSegmentIndex = 0;
+    this.state.abLoop.multiSegments = [];
+    if (typeof this.renderMultiSegments === 'function') this.renderMultiSegments();
+    if (this.elements.timelineContainer) this.elements.timelineContainer.innerHTML = '';
+
     // Create object URL
     const videoUrl = URL.createObjectURL(file);
     
@@ -877,6 +894,14 @@ class WatchOnRepeat {
       this.elements.abEnd.value = "";
       this.elements.abEnd.placeholder = "End";
     }
+    
+    // Reset loop state completely for the new video
+    this.state.abLoop.start = 0;
+    this.state.abLoop.end = 0;
+    this.state.abLoop.currentSegmentIndex = 0;
+    this.state.abLoop.multiSegments = [];
+    if (typeof this.renderMultiSegments === 'function') this.renderMultiSegments();
+    if (this.elements.timelineContainer) this.elements.timelineContainer.innerHTML = '';
     
     // Clear previous iframes
     this.elements.playerContainer.innerHTML = '';
