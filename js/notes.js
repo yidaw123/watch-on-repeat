@@ -138,31 +138,40 @@ window.NotesMixin = {
       const platform = parts[0];
       const videoId = parts.slice(1).join('_');
       
-      if (title === 'Unknown Video' || title === 'Loading title...') {
-        title = `Video: ${videoId}`; // Fallback to showing ID so it's not totally unknown
+      if (title === 'Unknown Video' || title === 'Loading title...' || title.startsWith('Video: ')) {
+        const history = this.getDb('history') || [];
+        const hItem = history.find(h => h.videoId === videoId && h.platform === platform);
+        if (hItem && hItem.title && hItem.title !== 'Loading title...') {
+          title = hItem.title;
+          // Optionally save it back to notes db so we don't have to look it up next time
+          if (!db.__titles) db.__titles = {};
+          db.__titles[id] = title;
+          this.saveDb('notes', db);
+        } else {
+          title = `Video: ${videoId}`; // Fallback to showing ID so it's not totally unknown
+        }
       }
 
       const div = document.createElement('div');
       div.className = 'note-item';
-      div.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px; cursor: pointer; transition: background 0.2s;";
+      div.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px; transition: background 0.2s;";
       
       div.onmouseover = () => div.style.background = 'rgba(255,255,255,0.05)';
       div.onmouseout = () => div.style.background = 'var(--surface-color)';
       
-      div.onclick = (e) => {
-        if (e.target.closest('button')) return;
-        app.loadVideo(videoId, platform);
-        // Scroll to top to see the player if on mobile
-        window.scrollTo({top: 0, behavior: 'smooth'});
-      };
-
       const thumbUrl = this.getThumbnailUrl(platform, videoId);
+      
+      let appUrl = '?url=';
+      if (platform === 'youtube') appUrl += encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`);
+      else if (platform === 'vimeo') appUrl += encodeURIComponent(`https://vimeo.com/${videoId}`);
+      else if (platform === 'dailymotion') appUrl += encodeURIComponent(`https://www.dailymotion.com/video/${videoId}`);
+      else if (platform === 'soundcloud') appUrl += encodeURIComponent(`https://soundcloud.com/${videoId}`);
 
       div.innerHTML = `
         <div style="display: flex; align-items: center; gap: 12px; flex: 1; overflow: hidden;">
-          <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0;" alt="thumbnail">
+          <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0; cursor: pointer;" alt="thumbnail" onclick="app.loadVideo('${videoId}', '${platform}'); window.scrollTo({top: 0, behavior: 'smooth'});">
           <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            <strong style="color: var(--primary-color); display: block; overflow: hidden; text-overflow: ellipsis;">${this.escapeHtml(title)}</strong>
+            <a href="${appUrl}" onclick="event.preventDefault(); app.loadVideo('${videoId}', '${platform}'); window.scrollTo({top: 0, behavior: 'smooth'});" style="color: var(--primary-color); display: block; overflow: hidden; text-overflow: ellipsis; font-weight: 500; text-decoration: none;">${this.escapeHtml(title)}</a>
             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${noteCount} saved note${noteCount !== 1 ? 's' : ''}</div>
           </div>
         </div>

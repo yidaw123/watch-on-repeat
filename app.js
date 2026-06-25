@@ -46,6 +46,8 @@ class WatchOnRepeat {
         dailymotion: null,
         html5: null
       },
+      searchQuery: '',
+      showNoteMarkers: true,
       currentPlatform: null,
       abLoop: {
         active: true,
@@ -947,6 +949,9 @@ class WatchOnRepeat {
     
     if (this.updateTimelineUI) {
       this.updateTimelineUI();
+    }
+    if (this.renderNoteMarkers) {
+      this.renderNoteMarkers();
     }
   }
 
