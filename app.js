@@ -3636,7 +3636,7 @@ class WatchOnRepeat {
     notes[vId].sort((a,b) => a.time - b.time);
     
     this.saveDb('notes', notes);
-    // Do NOT clear noteInput so user can rapidly add it again
+    this.elements.noteInput.value = ''; // Clear input for the next note
     this.renderNotes();
     this.showToast(`Note added at ${this.formatTime(Math.floor(time))}!`, "edit-3");
   }
