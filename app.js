@@ -3610,9 +3610,7 @@ class WatchOnRepeat {
     const noteObj = {
       id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
       time: Math.floor(time),
-      text: text,
-      transcript: null,
-      loadingTranscript: true
+      text: text
     };
     
     // Enforce Notes Limit for Free tier
@@ -3641,33 +3639,6 @@ class WatchOnRepeat {
     // Do NOT clear noteInput so user can rapidly add it again
     this.renderNotes();
     this.showToast(`Note added at ${this.formatTime(Math.floor(time))}!`, "edit-3");
-
-    // Fetch AI Transcript asynchronously
-    this.fetchAITranscriptSnippet().then(transcript => {
-      const currentDb = this.getDb('notes');
-      const targetNote = currentDb[vId].find(n => n.id === noteObj.id);
-      if (targetNote) {
-        targetNote.transcript = transcript;
-        targetNote.loadingTranscript = false;
-        this.saveDb('notes', currentDb);
-        if (this.state.activeTab === 'notes') {
-          this.renderNotes();
-        }
-      }
-    });
-  }
-
-  async fetchAITranscriptSnippet() {
-    // Simulate network delay
-    await new Promise(r => setTimeout(r, 1500));
-    const snippets = [
-      "Notice how the technique shifts here as we transition into the chorus.",
-      "The key to this movement is keeping your wrist entirely relaxed.",
-      "At this specific point, the emphasis is placed heavily on the downbeat.",
-      "Pay attention to the subtle variation introduced in this specific sequence.",
-      "This is a common mistake area; ensure you are maintaining proper form."
-    ];
-    return snippets[Math.floor(Math.random() * snippets.length)];
   }
 
   deleteNote(noteId) {
@@ -3707,23 +3678,6 @@ class WatchOnRepeat {
       const m = Math.floor(note.time / 60).toString().padStart(2, '0');
       const s = (note.time % 60).toString().padStart(2, '0');
       const timeStr = `${m}:${s}`;
-      
-      let aiBlock = '';
-      if (note.loadingTranscript) {
-        aiBlock = `
-          <div class="ai-loading">
-            <i data-lucide="loader-2"></i> Generating AI Transcript...
-          </div>
-        `;
-      } else if (note.transcript) {
-        aiBlock = `
-          <div class="note-transcript">
-            <i data-lucide="sparkles"></i>
-            <span>"${this.escapeHtml(note.transcript)}"</span>
-          </div>
-        `;
-      }
-
       const div = document.createElement('div');
       div.className = 'note-item';
       div.innerHTML = `
@@ -3732,7 +3686,6 @@ class WatchOnRepeat {
           <button class="note-delete" onclick="app.deleteNote('${note.id}')" title="Delete note"><i data-lucide="trash-2"></i></button>
         </div>
         <div class="note-content">${this.escapeHtml(note.text)}</div>
-        ${aiBlock}
       `;
       this.elements.notesList.appendChild(div);
     });
