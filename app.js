@@ -2099,9 +2099,9 @@ class WatchOnRepeat {
           if (val > currentTime) {
             this.seekToTime(val);
           }
-        } else {
-          this.seekToTime(val - 0.5);
         }
+        // We no longer seek when dragging the end handle to avoid interrupting playback.
+        // The checkLoop function will automatically handle looping if the new end time is passed.
       }
       
       draggingHandle = null;
