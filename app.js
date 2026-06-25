@@ -648,7 +648,7 @@ class WatchOnRepeat {
     this.state.abLoop.multiSegments = [];
     if (typeof this.renderMultiSegments === 'function') this.renderMultiSegments();
     if (this.elements.timelineContainer) {
-      this.elements.timelineContainer.querySelectorAll('.timeline-selection, .timeline-handle').forEach(el => el.remove());
+      this.updateTimelineUI();
     }
 
     // Create object URL
@@ -765,7 +765,7 @@ class WatchOnRepeat {
     this.state.abLoop.multiSegments = [];
     if (typeof this.renderMultiSegments === 'function') this.renderMultiSegments();
     if (this.elements.timelineContainer) {
-      this.elements.timelineContainer.querySelectorAll('.timeline-selection, .timeline-handle').forEach(el => el.remove());
+      this.updateTimelineUI();
     }
     
     // Clear previous iframes
@@ -2138,6 +2138,9 @@ class WatchOnRepeat {
     if (this.elements.abEnd) {
       this.applyTimeMask(this.elements.abEnd, () => updateActiveFromInputs());
     }
+    
+    // Explicitly update the timeline UI on load so it's not blank
+    this.updateTimelineUI();
   }
 
   formatTimeAgo(dateString) {
