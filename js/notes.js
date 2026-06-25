@@ -71,12 +71,14 @@ window.NotesMixin = {
     const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     if (db[vId]) {
-      const index = db[vId].findIndex(n => n.id === noteId);
+      const index = db[vId].findIndex(n => n.id && n.id.toString() === noteId.toString());
       if (index !== -1) {
         db[vId].splice(index, 1);
         this.saveDb('notes', db);
         if (this.state.user && window.supabaseClient) {
-            supabaseClient.from('notes').delete().eq('id', noteId).then();
+            supabaseClient.from('notes').delete().eq('id', noteId).then(({error}) => {
+                if (error) console.error("Failed to delete note from Supabase:", error);
+            });
         }
         this.renderNotes();
         this.showToast("Note deleted", "trash-2");

@@ -57,7 +57,7 @@ class DatabaseMixin {
       const { data: notes, error: notesError } = await supabaseClient.from('notes').select('*').eq('user_id', this.state.user.id);
       if (notesError) {
         console.error("Notes sync error:", notesError);
-      } else if (notes && notes.length > 0) {
+      } else if (notes) {
         const cloudNotes = {};
         notes.forEach(n => {
           const vId = `${n.platform}_${n.video_id}`;
