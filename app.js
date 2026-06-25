@@ -3723,6 +3723,34 @@ class WatchOnRepeat {
       `;
       this.elements.notesList.appendChild(div);
     });
+    
+    this.renderNoteMarkers();
+    this.renderActiveNotesSummary(db, vId);
+  }
+
+  renderActiveNotesSummary(db, currentVId) {
+    const listEl = document.getElementById('active-notes-list');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    
+    const uniqueVideos = Object.keys(db).filter(k => k !== '__titles');
+    if (uniqueVideos.length === 0) {
+      listEl.innerHTML = '<div class="empty-state-list"><i data-lucide="file-text"></i><p>No active notes for any videos.</p></div>';
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    uniqueVideos.forEach(id => {
+      const title = (db.__titles && db.__titles[id]) ? db.__titles[id] : 'Unknown Video';
+      const noteCount = db[id].length;
+      const div = document.createElement('div');
+      div.className = 'note-item';
+      div.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px;";
+      div.innerHTML = `
+        <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <strong style="color: var(--primary-color);">${this.escapeHtml(title)}</strong>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${noteCount} saved note${noteCount !== 1 ? 's' : ''}</div>
+        </div>
         <button class="icon-btn text-red-500" onclick="app.clearNotesForVideo('${id}')" title="Clear all notes for this video" style="padding: 4px; margin-left: 8px;">
           <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
         </button>
