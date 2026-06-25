@@ -7,6 +7,8 @@ const SUPABASE_KEY = 'sb_publishable_e1gQuU0n8FofmTkitqTEQQ_pi1g8fqD';
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 window.supabaseClient = supabaseClient;
 
+const DEBUG_MODE = false;
+
 if (typeof lucide === 'undefined') {
   window.lucide = { createIcons: () => {} };
 }
@@ -102,7 +104,7 @@ class WatchOnRepeat {
         if (insertError) {
           if (insertError.code === '23505') {
             // Race condition: another tab already inserted the user. Safe to ignore.
-            console.log("User already exists (race condition handled).");
+            if (DEBUG_MODE) console.log("User already exists (race condition handled).");
           } else {
             console.error("Failed to insert new user:", insertError);
             this.showToast("DB Insert Error: " + insertError.message, "alert-circle");
@@ -444,7 +446,7 @@ class WatchOnRepeat {
       
       // Global callback for YT
       window.onYouTubeIframeAPIReady = () => {
-        console.log("YouTube Player API Ready");
+        if (DEBUG_MODE) console.log("YouTube Player API Ready");
       };
     }
 
@@ -607,7 +609,7 @@ class WatchOnRepeat {
         db[`${platform}_${videoId}`] = notesArr;
         this.saveDb('notes', db);
       } catch (e) {
-        console.error("Failed to parse shared notes", e);
+        if (DEBUG_MODE) console.error("Failed to parse shared notes", e);
       }
     }
 
@@ -625,6 +627,8 @@ class WatchOnRepeat {
     this.state.currentPlatform = null;
     this.stopTimer();
     
+    document.title = "Watch On Repeat | Loop YouTube Videos & Practice Tool";
+
     // Show the player UI but leave the video area blank
     if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
     this.elements.playerLoaded.classList.remove('hidden');
@@ -724,18 +728,18 @@ class WatchOnRepeat {
           const newUrl = `${window.location.href.split('?')[0]}?v=${parsed.id}&p=${parsed.platform}`;
           window.history.pushState({ v: parsed.id, p: parsed.platform }, '', newUrl);
         } catch (err) {
-          console.warn("pushState failed, likely due to file:/// protocol restrictions.");
+          if (DEBUG_MODE) console.warn("pushState failed, likely due to file:/// protocol restrictions.");
         }
         
         this.loadVideo(parsed.id, parsed.platform).catch(err => {
-          console.error("loadVideo Error:", err);
+          if (DEBUG_MODE) console.error("loadVideo Error:", err);
           this.showToast("Failed to load video: " + err.message, "alert-circle");
         });
       } else {
         this.showToast('Invalid URL. Please enter a valid YouTube, Vimeo, Dailymotion, or other supported link.', 'alert-triangle');
       }
     } catch (err) {
-      console.error("handleSearchSubmit Error:", err);
+      if (DEBUG_MODE) console.error("handleSearchSubmit Error:", err);
       this.showToast("An error occurred: " + err.message, "alert-circle");
     }
   }
@@ -894,6 +898,7 @@ class WatchOnRepeat {
     this.fetchVideoTitleMock(id, platform).then(realTitle => {
       if (realTitle && !realTitle.includes("Cozy Coffee Shop")) {
         this.elements.videoTitle.textContent = realTitle;
+        document.title = realTitle + " | Watch On Repeat";
         if (this.state.currentVideo) this.state.currentVideo.title = realTitle;
         
         this.renderTrendsTab();
@@ -1065,7 +1070,7 @@ class WatchOnRepeat {
         }
       }
     } catch (err) {
-      console.warn("noembed proxy failed", err);
+      if (DEBUG_MODE) console.warn("noembed proxy failed", err);
     }
     
     // Generate an appealing fake title for unrecognized videos based on the ID to make it look realistic
@@ -1134,8 +1139,27 @@ class WatchOnRepeat {
           playerVars: pVars,
         events: {
           'onStateChange': this.handleYouTubeStateChange,
-          'onError': () => {
+          'onError': (event) => {
+            let reason = "An unknown error occurred.";
+            if (event.data === 2) reason = "The video ID provided is invalid.";
+            else if (event.data === 5) reason = "This video cannot be played in an HTML5 player.";
+            else if (event.data === 100) reason = "This video was deleted by the uploader, made private, or is geographically restricted.";
+            else if (event.data === 101 || event.data === 150) reason = "The creator of this video has disabled embedding on external websites.";
+
             this.showToast("Failed to load YouTube video.", "alert-circle");
+            
+            const container = document.getElementById('youtube-container');
+            if (container) {
+              container.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; background:var(--bg-card); color:var(--text-secondary); padding:2rem; text-align:center; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+                  <i data-lucide="tv-2" style="width:64px; height:64px; margin-bottom:1rem; opacity:0.5;"></i>
+                  <h3 style="font-size:1.5rem; color:var(--text-primary); margin-bottom:0.5rem; font-weight:bold;">Video Unavailable</h3>
+                  <p style="max-width:400px; line-height:1.5; margin-bottom:1.5rem;">${reason}</p>
+                  <button class="btn btn-primary" onclick="app.loadHome()">Return Home</button>
+                </div>
+              `;
+              lucide.createIcons();
+            }
           }
         }
       });
@@ -1315,7 +1339,7 @@ class WatchOnRepeat {
         if (data && data.duration) {
           this.setVideoDuration(data.duration);
         }
-      }).catch(err => console.warn("Failed to fetch DM duration", err));
+      }).catch(err => { if (DEBUG_MODE) console.warn("Failed to fetch DM duration", err); });
   }
 
   // ==========================================
@@ -1356,7 +1380,7 @@ class WatchOnRepeat {
         global_loops: this.state.currentGlobalLoops,
         global_plays: this.state.currentGlobalPlays
       }, { onConflict: 'video_id, platform' }).then(({ error }) => {
-        if (error) console.error("Global Loops Upsert Error:", error);
+        if (error && DEBUG_MODE) console.error("Global Loops Upsert Error:", error);
       });
 
       if (this.state.user) {
@@ -1368,7 +1392,7 @@ class WatchOnRepeat {
           loops_count: this.state.currentLifetimeLoops,
           last_played: new Date().toISOString()
         }, { onConflict: 'user_id, video_id, platform' }).then(({ error }) => {
-          if (error) console.error("User History Upsert Error:", error);
+          if (error && DEBUG_MODE) console.error("User History Upsert Error:", error);
           this.renderHistoryTab();
         });
       }
@@ -1398,7 +1422,7 @@ class WatchOnRepeat {
     try {
       await supabaseClient.rpc('increment_video_play', { p_video_id: id, p_platform: platform });
     } catch (e) {
-      console.warn("Could not increment global play count", e);
+      if (DEBUG_MODE) console.warn("Could not increment global play count", e);
     }
   }
 
@@ -1495,17 +1519,26 @@ class WatchOnRepeat {
     this.renderHistoryTab();
   }
 
-  clearHistory() {
+  async clearHistory() {
     if (!this.state.user) return;
     
-    const confirmClear = confirm("Are you sure you want to clear your entire loop history?");
+    const confirmClear = await this.showConfirmDialog("Clear History", "Are you sure you want to clear your entire loop history?");
     if (!confirmClear) return;
+
+    const btnEl = document.getElementById('clear-history-btn');
+    this.setButtonLoading(btnEl, true);
 
     let history = this.getDb('history');
     // Filter out records belonging to current user
     history = history.filter(h => h.userId !== this.state.user.id);
     this.saveDb('history', history);
     
+    // Also delete from Supabase if online
+    if (window.supabaseClient) {
+      await supabaseClient.from('user_history').delete().eq('user_id', this.state.user.id);
+    }
+
+    this.setButtonLoading(btnEl, false);
     this.renderHistoryTab();
     this.showToast("Your history has been cleared.");
   }
@@ -2004,7 +2037,7 @@ class WatchOnRepeat {
         this.loadVideo(firstVid.videoId || firstVid.id, firstVid.platform);
       }
     } catch (e) {
-      console.error(e);
+      if (DEBUG_MODE) console.error(e);
       this.loadHome();
     }
   }
@@ -2286,12 +2319,6 @@ class WatchOnRepeat {
   }
 
   // ==========================================
-  // CONTACT MODAL LOGIC
-  // ==========================================
-
-
-
-  // ==========================================
   // AUTHENTICATION CONTROLLER
   // ==========================================
 
@@ -2524,7 +2551,7 @@ class WatchOnRepeat {
           tier: 'free'
         });
       } catch (insertErr) {
-        console.warn("Could not insert user row:", insertErr);
+        if (DEBUG_MODE) console.warn("Could not insert user row:", insertErr);
       }
       this.showToast(`Account created successfully!`, 'shield-check');
     }
@@ -2685,17 +2712,86 @@ class WatchOnRepeat {
   showToast(message, iconName = 'info') {
     this.elements.toastIcon.innerHTML = `<i data-lucide="${iconName}"></i>`;
     this.elements.toastMessage.textContent = message;
-    
     this.elements.toast.classList.remove('hidden');
+    this.elements.toast.classList.add('fade-in');
     
     lucide.createIcons();
     
-    // Clear timeout if exists
     if (this.toastTimeout) clearTimeout(this.toastTimeout);
-    
     this.toastTimeout = setTimeout(() => {
       this.elements.toast.classList.add('hidden');
-    }, 4000);
+      this.elements.toast.classList.remove('fade-in');
+    }, 3000);
+  }
+
+  showConfirmDialog(title, message, isPrompt = false) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('custom-confirm-modal');
+      const titleEl = document.getElementById('confirm-modal-title');
+      const msgEl = document.getElementById('confirm-modal-message');
+      const inputEl = document.getElementById('confirm-modal-input');
+      const cancelBtn = document.getElementById('confirm-modal-cancel');
+      const okBtn = document.getElementById('confirm-modal-ok');
+
+      titleEl.textContent = title;
+      msgEl.textContent = message;
+      
+      if (isPrompt) {
+        inputEl.classList.remove('hidden');
+        inputEl.value = '';
+        inputEl.focus();
+        okBtn.textContent = 'Delete Account';
+        okBtn.style.background = '#ef4444'; // Red for destructive
+      } else {
+        inputEl.classList.add('hidden');
+        okBtn.textContent = 'Confirm';
+        okBtn.style.background = ''; // Default primary
+      }
+
+      modal.classList.remove('hidden');
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        cancelBtn.removeEventListener('click', onCancel);
+        okBtn.removeEventListener('click', onOk);
+      };
+
+      const onCancel = () => {
+        cleanup();
+        resolve(false);
+      };
+
+      const onOk = () => {
+        cleanup();
+        if (isPrompt) resolve(inputEl.value);
+        else resolve(true);
+      };
+
+      cancelBtn.addEventListener('click', onCancel);
+      okBtn.addEventListener('click', onOk);
+    });
+  }
+
+  setButtonLoading(btnEl, isLoading, originalHTML = '') {
+    if (!btnEl) return;
+    if (isLoading) {
+      // Store original content on the element if not provided
+      if (!originalHTML && !btnEl.hasAttribute('data-original-html')) {
+        btnEl.setAttribute('data-original-html', btnEl.innerHTML);
+      }
+      btnEl.disabled = true;
+      btnEl.innerHTML = `<i data-lucide="loader-2" class="spinning-icon" style="animation: spin 1s linear infinite;"></i> Processing...`;
+      lucide.createIcons();
+    } else {
+      btnEl.disabled = false;
+      if (originalHTML) {
+        btnEl.innerHTML = originalHTML;
+      } else if (btnEl.hasAttribute('data-original-html')) {
+        btnEl.innerHTML = btnEl.getAttribute('data-original-html');
+        btnEl.removeAttribute('data-original-html');
+      }
+      lucide.createIcons();
+    }
   }
 
   formatNumber(num) {
@@ -3059,11 +3155,11 @@ class WatchOnRepeat {
     try {
       if (p === 'youtube' && this.state.players.youtube) this.state.players.youtube.setPlaybackRate(rate);
       if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.setPlaybackRate(rate);
-      if (p === 'dailymotion' && this.state.players.dailymotion) console.warn("Dailymotion API may not support rate changes directly.");
+      if (p === 'dailymotion' && this.state.players.dailymotion) if (DEBUG_MODE) console.warn("Dailymotion API may not support rate changes directly.");
       if (p === 'html5' && this.state.players.html5) this.state.players.html5.playbackRate = rate;
       this.showToast(`Speed set to ${rate}x`);
     } catch(e) {
-      console.log("Error setting rate", e);
+      if (DEBUG_MODE) console.error("Error setting rate", e);
     }
   }
 
@@ -3814,8 +3910,11 @@ class WatchOnRepeat {
     }
   }
 
-  clearLocalCache() {
-    if (confirm("Are you sure you want to clear your local application cache? This will NOT delete your cloud data.")) {
+  async clearLocalCache() {
+    const confirmClear = await this.showConfirmDialog("Clear Local Cache", "Are you sure you want to clear your local application cache? This will NOT delete your cloud data.");
+    if (confirmClear) {
+      const btnEl = document.querySelector('button[onclick="app.clearLocalCache()"]');
+      this.setButtonLoading(btnEl, true);
       localStorage.clear();
       this.showToast("Cache cleared! Reloading...", "check-circle");
       setTimeout(() => window.location.reload(), 1500);
@@ -3824,16 +3923,20 @@ class WatchOnRepeat {
 
   async deleteAccount() {
     if (!window.supabaseClient) return;
-    const confirmation = prompt("Are you absolutely sure? This will permanently delete your account, history, and playlists. Type 'DELETE' to confirm.");
+    const confirmation = await this.showConfirmDialog("Delete Account", "Are you absolutely sure? This will permanently delete your account, history, and playlists. Type 'DELETE' to confirm.", true);
     if (confirmation === 'DELETE') {
+      const btnEl = document.querySelector('button[onclick="app.deleteAccount()"]');
+      this.setButtonLoading(btnEl, true);
       try {
         const { error } = await supabaseClient.rpc('delete_user_account');
         if (error) throw error;
         
         await supabaseClient.auth.signOut();
+        this.setButtonLoading(btnEl, false);
         this.showToast("Your account has been completely deleted.", "check-circle");
         setTimeout(() => window.location.reload(), 2000);
       } catch (e) {
+        this.setButtonLoading(btnEl, false);
         this.showToast("Failed to delete account: " + e.message, "alert-circle");
       }
     }
@@ -3841,8 +3944,12 @@ class WatchOnRepeat {
 
   async cancelSubscription() {
     if (!window.supabaseClient) return;
-    if (confirm("Are you sure you want to cancel your subscription? You will retain access until the end of your billing cycle.")) {
+    const confirmCancel = await this.showConfirmDialog("Cancel Subscription", "Are you sure you want to cancel your subscription? You will retain access until the end of your billing cycle.");
+    if (confirmCancel) {
+      const btnEl = document.getElementById('settings-cancel-sub-btn');
+      this.setButtonLoading(btnEl, true);
       const { error } = await supabaseClient.from('users').update({ cancel_at_period_end: true }).eq('id', this.state.user.id);
+      this.setButtonLoading(btnEl, false);
       
       if (error) {
         this.showToast("Failed to cancel: " + error.message, "alert-circle");

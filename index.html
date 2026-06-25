@@ -7,6 +7,7 @@
   <meta name="description" content="Watch on repeat allows you to loop YouTube, Vimeo, and Twitch videos infinitely. The best video looper to repeat sections, change speed, and practice.">
   <meta name="keywords" content="watch on repeat, watchonrepeat, loop, repeat, youtube, video, video looper, a-b loop, practice tool">
   <link rel="canonical" href="https://watchonrepeat.com/">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   
   <!-- Open Graph / Social Media -->
   <meta property="og:title" content="Watch On Repeat | Loop YouTube Videos & Practice Tool">
@@ -857,6 +858,22 @@
     </div>
   </div>
 
+  <!-- Custom Confirm/Prompt Modal -->
+  <div id="custom-confirm-modal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 400px;">
+      <h2 id="confirm-modal-title" style="margin-bottom: 8px;">Confirm</h2>
+      <p id="confirm-modal-message" style="margin-bottom: 20px; color: var(--text-secondary);">Are you sure?</p>
+      
+      <input type="text" id="confirm-modal-input" class="auth-input hidden" style="margin-bottom: 20px;" placeholder="">
+      
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button id="confirm-modal-cancel" class="btn btn-outline">Cancel</button>
+        <button id="confirm-modal-ok" class="btn btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
   <footer class="site-footer">
     <div class="footer-links">
       <a href="javascript:void(0);" onclick="app.showToast('About page coming soon!', 'info')">About</a>
