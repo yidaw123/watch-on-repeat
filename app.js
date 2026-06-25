@@ -3627,7 +3627,7 @@ class WatchOnRepeat {
     const tier = this.state.user ? this.state.user.tier : 'free';
     if (tier === 'free') {
       // 2. Max 5 videos with notes
-      const uniqueVideos = Object.keys(notes);
+      const uniqueVideos = Object.keys(notes).filter(k => k !== '__titles');
       if (!notes[vId] && uniqueVideos.length >= 5) {
         this.openUpgradeModal("Free accounts can only add notes to 5 videos total. Upgrade to keep adding notes!");
         return;
@@ -3640,6 +3640,9 @@ class WatchOnRepeat {
         return;
       }
     }
+
+    if (!notes.__titles) notes.__titles = {};
+    notes.__titles[vId] = this.state.currentVideo.title;
 
     if (!notes[vId]) notes[vId] = [];
     notes[vId].push(noteObj);
@@ -3706,11 +3709,25 @@ class WatchOnRepeat {
       `;
       this.elements.notesList.appendChild(div);
     });
+        <button class="icon-btn text-red-500" onclick="app.clearNotesForVideo('${id}')" title="Clear all notes for this video" style="padding: 4px; margin-left: 8px;">
+          <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+        </button>
+      `;
+      listEl.appendChild(div);
+    });
     
-    lucide.createIcons();
-    
-    // Also update markers whenever notes are rendered
-    this.renderNoteMarkers();
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  clearNotesForVideo(vId) {
+    const db = this.getDb('notes');
+    if (db[vId]) {
+      delete db[vId];
+      if (db.__titles && db.__titles[vId]) delete db.__titles[vId];
+      this.saveDb('notes', db);
+      this.renderNotes();
+      this.showToast("Notes cleared for video", "trash-2");
+    }
   }
 
   toggleNoteMarkers(e) {
