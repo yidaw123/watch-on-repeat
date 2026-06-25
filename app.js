@@ -33,6 +33,7 @@ class WatchOnRepeat {
       user: null,
       currentVideo: null, // { id, platform, title, duration }
       personalLoops: 0,
+      sessionTotalLoops: 0,
       currentGlobalLoops: 0,
       currentGlobalPlays: 0,
       currentLifetimeLoops: 0,
@@ -218,6 +219,7 @@ class WatchOnRepeat {
       
       // Stats
       personalLoopCount: document.getElementById('personal-loop-count'),
+      sessionTotalLoopCount: document.getElementById('session-total-loop-count'),
       personalLifetimeCount: document.getElementById('personal-lifetime-count'),
       globalLoopCount: document.getElementById('global-loop-count'),
       globalPlayCount: document.getElementById('global-play-count'),
@@ -1359,9 +1361,15 @@ class WatchOnRepeat {
     }
     this.lastLoopIncrementTime = now;
 
-    // Increment personal loops (session)
+    // Increment personal loops (this video)
     this.state.personalLoops++;
     this.elements.personalLoopCount.textContent = this.formatNumber(this.state.personalLoops);
+    
+    // Increment session total loops (all videos)
+    this.state.sessionTotalLoops++;
+    if (this.elements.sessionTotalLoopCount) {
+      this.elements.sessionTotalLoopCount.textContent = this.formatNumber(this.state.sessionTotalLoops);
+    }
 
     // If AB Loop is active, track the specific segment
     if (this.state.abLoop.active) {
