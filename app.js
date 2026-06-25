@@ -1406,6 +1406,11 @@ class WatchOnRepeat {
       this.elements.sessionTotalLoopCount.textContent = this.formatNumber(this.state.sessionTotalLoops);
     }
 
+    // Remind free/guest users to sign up every 50 loops
+    if (!this.state.user && this.state.sessionTotalLoops > 0 && this.state.sessionTotalLoops % 50 === 0) {
+      this.showToast("Loving the features? Create a free account to save your loops, notes, and playlists so you never lose them!", "heart");
+    }
+
     // If AB Loop is active, track the specific segment
     if (this.state.abLoop.active) {
       this.trackABSegment();
