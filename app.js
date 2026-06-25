@@ -967,8 +967,14 @@ class WatchOnRepeat {
     this.elements.platformBadge.className = `platform-indicator ${platform}`;
     this.elements.platformText.textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
     
-    // Always use the play-circle icon for consistency across platforms
-    let iconName = 'play-circle';
+    let iconName = 'video';
+    if (platform === 'youtube') iconName = 'youtube';
+    else if (platform === 'twitch') iconName = 'twitch';
+    else if (platform === 'vimeo') iconName = 'video';
+    else if (platform === 'dailymotion') iconName = 'play-circle';
+    else if (platform === 'soundcloud') iconName = 'music';
+    else if (platform === 'wistia') iconName = 'film';
+    else if (platform === 'html5') iconName = 'monitor-play';
     
     this.elements.platformBadge.innerHTML = `<i data-lucide="${iconName}"></i><span id="platform-text">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>`;
     if (window.lucide) window.lucide.createIcons();
@@ -3403,8 +3409,17 @@ class WatchOnRepeat {
   addLoopSegment() {
     if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
     
-    if (this.state.abLoop.multiSegments.length >= 10) {
-      this.showToast("Maximum of 10 segments reached.", "alert-circle");
+    const tier = this.state.user ? this.state.user.tier : 'free';
+    const limit = tier === 'pro' ? 10 : (tier === 'premium' ? 7 : 1);
+    
+    if (this.state.abLoop.multiSegments.length >= limit) {
+      if (tier === 'premium' && limit === 7) {
+        this.openUpgradeModal("Maximum 7 segments reached. Upgrade to Pro for 10 segments per video!");
+      } else if (tier === 'free') {
+        this.openUpgradeModal("Multiple loop segments are a Premium feature!");
+      } else {
+        this.showToast(`Maximum of ${limit} segments reached.`, "alert-circle");
+      }
       return;
     }
     
@@ -3450,9 +3465,13 @@ class WatchOnRepeat {
       list.classList.remove('hidden');
       if (isPremium && addBtn) {
         addBtn.classList.remove('hidden');
-        if (this.state.abLoop.multiSegments.length >= 10) {
+        
+        const tier = this.state.user ? this.state.user.tier : 'free';
+        const limit = tier === 'pro' ? 10 : (tier === 'premium' ? 7 : 1);
+        
+        if (this.state.abLoop.multiSegments.length >= limit) {
           addBtn.disabled = true;
-          addBtn.innerHTML = '<i data-lucide="alert-circle"></i> Max 10 Segments';
+          addBtn.innerHTML = `<i data-lucide="alert-circle"></i> Max ${limit} Segments`;
           addBtn.style.opacity = '0.5';
           addBtn.style.cursor = 'not-allowed';
         } else {

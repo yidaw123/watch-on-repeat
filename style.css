@@ -624,6 +624,9 @@ h1, h2, h3, h4, .brand-name {
 .platform-indicator.youtube { color: #ef4444; }
 .platform-indicator.vimeo { color: #06b6d4; }
 .platform-indicator.dailymotion { color: #3b82f6; }
+.platform-indicator.twitch { color: #9146FF; }
+.platform-indicator.soundcloud { color: #ff5500; }
+.platform-indicator.wistia { color: #54b2d3; }
 
 #video-title {
   font-size: 1.35rem;
