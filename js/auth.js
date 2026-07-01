@@ -292,6 +292,11 @@ class AuthMixin {
     const isPremium = this.state.user && this.state.user.isPremium;
     this.updateAdsVisibility(isPremium);
 
+    const multiSegmentBadge = document.getElementById('multi-segment-upgrade-badge');
+    if (multiSegmentBadge) {
+      multiSegmentBadge.style.display = isPremium ? 'none' : 'inline-block';
+    }
+
     if (this.state.user) {
       this.elements.authLoggedOut.classList.add('hidden');
       this.elements.authLoggedIn.classList.remove('hidden');

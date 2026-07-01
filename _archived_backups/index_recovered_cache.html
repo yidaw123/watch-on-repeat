@@ -3,71 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>Watch On Repeat (WatchOnRepeat) - Loop YouTube Videos</title>
-  <meta name="description" content="Watch On Repeat (watchonrepeat) allows you to loop YouTube, Vimeo, and Twitch videos infinitely. The best video looper to repeat sections, change speed, and practice.">
-  <meta name="keywords" content="watch on repeat, watchonrepeat, loop, repeat, youtube, video, video looper, a-b loop, practice tool">
-  <link rel="canonical" href="https://watchonrepeat.com/">
-  <link rel="icon" type="image/svg+xml" href="/logo.svg">
-  <link rel="alternate icon" href="/logo.svg">
-  <link rel="mask-icon" href="/logo.svg" color="#000000">
-  <link rel="apple-touch-icon" href="/logo.svg">
-  <!-- Open Graph / Social Media -->
-  <meta property="og:title" content="Watch On Repeat (WatchOnRepeat) - Loop YouTube Videos">
-  <meta property="og:description" content="Watch On Repeat (watchonrepeat) allows you to loop YouTube, Vimeo, and Twitch videos infinitely. The best video looper to repeat sections, change speed, and practice.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://watchonrepeat.com/">
-  <meta property="og:image" content="https://watchonrepeat.com/logo.svg">
-  
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Watch On Repeat (WatchOnRepeat) - Loop YouTube Videos">
-  <meta name="twitter:description" content="Watch on repeat allows you to loop YouTube, Vimeo, and Twitch videos infinitely. The best video looper to repeat sections, change speed, and practice.">
-
-  <!-- Structured Data (JSON-LD) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "WatchOnRepeat",
-    "alternateName": "Watch On Repeat",
-    "url": "https://watchonrepeat.com",
-    "applicationCategory": "MultimediaApplication",
-    "operatingSystem": "All",
-    "description": "Watch on repeat allows you to loop YouTube, Vimeo, and Twitch videos infinitely. The best video looper to repeat sections, change speed, and practice.",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    }
-  }
-  </script>
-  
-  <link href="style.css?v=8" rel="stylesheet" />
+  <title>WatchOnRepeat - Infinite Video Looper</title>
+  <meta name="description" content="Repeat your favorite videos from YouTube, Dailymotion, and Vimeo infinitely. Track personal and global loop counts.">
+  <link rel="stylesheet" href="style.css">
   <!-- Google Fonts: Outfit and Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4f46e5">
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Video Player APIs -->
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="https://player.vimeo.com/api/player.js"></script>
-  <script src="https://player.twitch.tv/js/embed/v1.js"></script>
-  <script src="https://w.soundcloud.com/player/api.js"></script>
-  <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E9NYZYJL0D"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-E9NYZYJL0D');
-  </script>
+  <script src="https://api.dmcdn.net/all.js"></script>
 </head>
 <body>
 
@@ -81,10 +29,12 @@
     
     <!-- Top Navigation Bar -->
     <header class="navbar">
-      <a href="/" class="brand" id="brand-logo" onclick="event.preventDefault(); app.loadHome();">
-        <img src="logo.svg" alt="WatchOnRepeat Logo" class="brand-icon" style="background: none; object-fit: cover; border-radius: var(--radius-md);">
+      <div class="brand" id="brand-logo" onclick="app.loadHome()">
+        <div class="brand-icon">
+          <i data-lucide="repeat"></i>
+        </div>
         <span class="brand-name">Watch<span>On</span>Repeat</span>
-      </a>
+      </div>
       
       <!-- Center Search/URL Input Bar -->
       <div class="search-container">
@@ -92,7 +42,7 @@
         <form id="paste-form" onsubmit="app.handleSearchSubmit(event)">
           <div class="search-wrapper">
             <i data-lucide="link-2" class="search-icon"></i>
-            <input type="text" id="video-url-input" placeholder="Paste direct link (YouTube, Vimeo, Twitch, SoundCloud, Wistia, etc.)..." autocomplete="off">
+            <input type="text" id="video-url-input" placeholder="Paste direct link (YouTube, Vimeo, Dailymotion, adult sites, etc.)..." autocomplete="off">
             <button type="submit" class="search-btn">
               <span>Loop It</span>
               <i data-lucide="play"></i>
@@ -103,18 +53,6 @@
             <input type="file" id="local-video-input" accept="video/mp4,video/webm,video/ogg" class="hidden" onchange="app.loadLocalVideo(event)">
           </div>
         </form>
-        
-        <!-- Pro Tip for URL Shortcuts -->
-        <div class="pro-tip" id="url-shortcut-tip" style="margin-top: 12px; padding: 10px 14px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; font-size: 14px; color: #d8b4fe; display: flex; align-items: flex-start; gap: 8px; position: relative; width: 950px; max-width: 95vw; left: 50%; transform: translateX(-50%); text-align: left;">
-          <i data-lucide="lightbulb" style="width: 16px; height: 16px; flex-shrink: 0; margin-top: 3px; color: #fbbf24;"></i>
-          <div style="flex: 1; line-height: 1.5;">
-            <strong>Pro Tip:</strong> Skip the copy-pasting! Just change <code style="background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 4px; color: #fff;">youtube.com</code> to <code style="background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 4px; color: #fff;">watchonrepeat.com</code> in any video's URL to instantly loop it here.
-            <span style="opacity: 0.9; margin-left: 4px;">(e.g. <code style="background: rgba(0,0,0,0.2); padding: 1px 3px; border-radius: 4px;">youtube.com/watch?v=...</code> ➡️ <code style="background: rgba(0,0,0,0.2); padding: 1px 3px; border-radius: 4px;">watchonrepeat.com/watch?v=...</code>) Works for Twitch VODs, Dailymotion, and Vimeo too!</span>
-          </div>
-          <button onclick="document.getElementById('url-shortcut-tip').style.display='none'" style="background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'" title="Dismiss">
-            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
-          </button>
-        </div>
       </div>
 
       <!-- User Auth Section -->
@@ -138,8 +76,7 @@
               <hr>
               <a href="#" onclick="app.showTab('favorites')"><i data-lucide="heart"></i> My Favorites</a>
               <a href="#" onclick="app.showTab('history')"><i data-lucide="history"></i> Loop History</a>
-              <a href="#" onclick="app.openSettingsModal()"><i data-lucide="settings"></i> Account Settings</a>
-              <a href="#" onclick="app.openShortcutsModal()"><i data-lucide="keyboard"></i> Keyboard Shortcuts</a>
+              <a href="#" onclick="app.openShortcutsModal()"><i data-lucide="keyboard"></i> Shortcuts Setting</a>
               <hr>
               <a href="#" onclick="app.handleLogout()"><i data-lucide="log-out"></i> Sign Out</a>
             </div>
@@ -173,7 +110,7 @@
 
           
           <!-- Empty State (No video loaded) -->
-          <div id="player-empty-state" class="player-card empty-state hidden">
+          <div id="player-empty-state" class="player-card empty-state">
           <div class="empty-icon">
             <i data-lucide="tv-2"></i>
           </div>
@@ -191,7 +128,7 @@
         </div>
 
         <!-- Video Player Display -->
-        <div id="player-loaded-state" class="player-card">
+        <div id="player-loaded-state" class="player-card hidden">
           <!-- The Iframe Wrapper -->
           <div class="video-wrapper">
             <div id="player-iframe-container">
@@ -227,24 +164,23 @@
               <h4 class="control-label"><i data-lucide="scissors"></i> Custom Timestamp Loop</h4>
               <div class="timeline-loop-wrapper">
                 <div class="input-group-inline">
-                  <input type="text" id="ab-start" placeholder="Start" style="width: 100px; text-align: center;">
+                  <input type="text" id="ab-start" placeholder="Start" style="width: 70px; text-align: center;">
                 </div>
                 
                 <div class="timeline-container" id="timeline-container">
                   <div class="timeline-track" id="timeline-track"></div>
-                  <!-- Segments and handles will be dynamically injected here by JS -->
-                  <div id="timeline-markers" class="timeline-markers" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
-                </div>
-                <div style="margin-top: 6px; text-align: center;">
-                  <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #aaa; cursor: pointer;">
-                    <input type="checkbox" id="toggle-note-markers" checked onchange="app.toggleNoteMarkers(event)">
-                    Show Note Markers
-                  </label>
+                  <div class="timeline-selection" id="timeline-selection"></div>
+                  <div class="timeline-handle handle-start" id="timeline-handle-start"></div>
+                  <div class="timeline-handle handle-end" id="timeline-handle-end"></div>
                 </div>
 
                 <div class="input-group-inline">
-                  <input type="text" id="ab-end" placeholder="End" style="width: 100px; text-align: center;">
+                  <input type="text" id="ab-end" placeholder="End" style="width: 70px; text-align: center;">
                 </div>
+              </div>
+              
+              <div class="timeline-actions">
+                <button class="btn btn-outline btn-sm" id="toggle-ab-loop-btn" onclick="app.toggleABLoop()">Enable Timestamp</button>
               </div>
 
               <div class="advanced-loop-controls" style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
@@ -283,14 +219,14 @@
                 </label>
                 
                 <div id="multi-segment-list" class="hidden" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-                  <!-- Dynamic segment list will go here -->
+                  <!-- Dynamic segments will go here -->
                 </div>
                 <button class="btn btn-secondary btn-sm hidden" id="add-segment-btn" onclick="app.addLoopSegment()" style="margin-top: 8px; width: 100%;"><i data-lucide="plus"></i> Add Segment</button>
               </div>
             </div>
             
             <div class="playback-controls">
-              <div class="input-group" id="save-loop-group">
+              <div class="input-group hidden" id="save-loop-group">
                 <input type="text" id="loop-name-input" placeholder="Name loop..." style="width: 110px;">
                 <button class="btn btn-primary btn-sm" onclick="app.saveNamedLoop()" title="Save Loop"><i data-lucide="save"></i></button>
               </div>
@@ -314,23 +250,10 @@
               </div>
               <div class="stat-details">
                 <div class="stat-value" id="personal-loop-count">0</div>
-                <div class="stat-label">Your Loops for Current Video (Session)</div>
+                <div class="stat-label">Your Loops (Session)</div>
               </div>
               <div class="stat-sub">
                 Lifetime: <span id="personal-lifetime-count">0</span>
-              </div>
-            </div>
-            
-            <div class="stat-card session-stats">
-              <div class="stat-icon yellow" style="background: rgba(234, 179, 8, 0.1); color: #eab308;">
-                <i data-lucide="layers"></i>
-              </div>
-              <div class="stat-details">
-                <div class="stat-value" id="session-total-loop-count">0</div>
-                <div class="stat-label">Your Loops for All Videos (Session)</div>
-              </div>
-              <div class="stat-sub">
-                Lifetime: <span id="all-time-total-count">0</span>
               </div>
             </div>
 
@@ -340,10 +263,10 @@
               </div>
               <div class="stat-details">
                 <div class="stat-value" id="global-loop-count">0</div>
-                <div class="stat-label">Global Loops (This Video)</div>
+                <div class="stat-label">Global Loops</div>
               </div>
-              <div class="stat-sub" id="loop-timer">
-                Session time: 00:00
+              <div class="stat-sub">
+                Total Plays: <span id="global-play-count">0</span>
               </div>
             </div>
 
@@ -356,8 +279,8 @@
                 <div class="stat-value text-green" id="loop-state-text">Looping</div>
                 <div class="stat-label">Playback State</div>
               </div>
-              <div class="stat-sub">
-                All-Time Total (All Users & Videos): <span id="platform-total-loops">0</span>
+              <div class="stat-sub" id="loop-timer">
+                Session time: 00:00
               </div>
             </div>
           </div>
@@ -438,31 +361,29 @@
           <div class="pricing-card" style="border: 1px solid #333; border-radius: 16px; padding: 32px; text-align: center; background: rgba(255,255,255,0.02);">
             <div class="tier-icon"><i data-lucide="crown" style="color: #FBBF24; width: 48px; height: 48px; margin: 0 auto 16px;"></i></div>
             <h4 class="text-xl font-bold mb-2">Premium</h4>
-            <div class="price text-5xl font-bold mb-2" style="font-size: 3rem; line-height: 1;">$5.99<span class="text-xl text-gray-500 font-normal" style="font-size: 1.25rem;">/mo</span></div>
-            <div class="yearly-price text-2xl text-gray-400 mb-6 font-medium" style="font-size: 1.5rem;">or $59.99/year <span class="text-xl" style="color: #10B981; font-weight: bold; margin-left: 4px;">(Save 16%)</span></div>
-            <ul class="features text-left text-base text-gray-300 space-y-4 mb-8" style="list-style: none; padding: 0;">
+            <div class="price text-4xl font-bold mb-6">$5.99<span class="text-lg text-gray-500 font-normal">/mo</span></div>
+            <ul class="features text-left text-sm text-gray-300 space-y-3 mb-8" style="list-style: none; padding: 0;">
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Ad-free experience</li>
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Multiple loop segments</li>
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Unlimited notes & history</li>
-              <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Customizable Hotkeys</li>
+              <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Cloud sync across devices</li>
             </ul>
-            <button class="btn btn-outline w-full" disabled style="justify-content: center; margin-top: 24px; opacity: 0.5; cursor: not-allowed;">Upgrade to Premium (Coming Soon)</button>
+            <button class="btn btn-outline w-full" onclick="app.processUpgrade('premium')" style="justify-content: center;">Upgrade to Premium</button>
           </div>
           
           <!-- Pro Tier -->
-          <div class="pricing-card" style="border: 1px solid #333; border-radius: 16px; padding: 32px; text-align: center; position: relative; background: rgba(255,255,255,0.02);">
-
-            <div class="tier-icon"><i data-lucide="graduation-cap" style="color: #ec4899; width: 48px; height: 48px; margin: 0 auto 16px;"></i></div>
+          <div class="pricing-card" style="border: 2px solid var(--primary-color); border-radius: 16px; padding: 32px; text-align: center; position: relative; background: rgba(var(--primary-color-rgb), 0.05);">
+            <div class="best-value" style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--primary-color); color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; letter-spacing: 1px;">BEST FOR TEACHERS</div>
+            <div class="tier-icon"><i data-lucide="zap" style="color: var(--primary-color); width: 48px; height: 48px; margin: 0 auto 16px;"></i></div>
             <h4 class="text-xl font-bold mb-2">Pro</h4>
-            <div class="price text-5xl font-bold mb-2" style="font-size: 3rem; line-height: 1;">$9.99<span class="text-xl text-gray-500 font-normal" style="font-size: 1.25rem;">/mo</span></div>
-            <div class="yearly-price text-2xl text-gray-400 mb-6 font-medium" style="font-size: 1.5rem;">or $99.99/year <span class="text-xl" style="color: #10B981; font-weight: bold; margin-left: 4px;">(Save 16%)</span></div>
-            <ul class="features text-left text-base text-gray-300 space-y-4 mb-8" style="list-style: none; padding: 0;">
-              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Everything in Premium</li>
-              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Advanced Practice Analytics</li>
-              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Team & Classroom Features</li>
-              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> API & Data Export</li>
+            <div class="price text-4xl font-bold mb-6">$9.99<span class="text-lg text-gray-500 font-normal">/mo</span></div>
+            <ul class="features text-left text-sm text-gray-300 space-y-3 mb-8" style="list-style: none; padding: 0;">
+              <li><i data-lucide="check" style="color: var(--primary-color); display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Everything in Premium</li>
+              <li><i data-lucide="check" style="color: var(--primary-color); display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Advanced Practice Analytics</li>
+              <li><i data-lucide="check" style="color: var(--primary-color); display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Team & Classroom Features</li>
+              <li><i data-lucide="check" style="color: var(--primary-color); display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> API & Data Export</li>
             </ul>
-            <button class="btn btn-primary w-full" disabled style="justify-content: center; margin-top: 24px; opacity: 0.5; cursor: not-allowed;">Upgrade to Pro (Coming Soon)</button>
+            <button class="btn btn-primary w-full" onclick="app.processUpgrade('pro')" style="justify-content: center;">Upgrade to Pro</button>
           </div>
         </div>
       </div>
@@ -481,68 +402,6 @@
       <div class="modal-body">
         <div id="playlist-select-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
           <!-- Rendered playlists go here -->
-        </div>
-        <div class="mt-4 pt-4 border-t border-gray-800">
-          <div id="create-playlist-form" class="hidden">
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="new-playlist-name" placeholder="Playlist Name" style="flex: 1; padding: 8px; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white;">
-              <button class="btn btn-primary btn-sm" onclick="app.createNewPlaylistFromModal()">Create</button>
-            </div>
-          </div>
-          <button id="show-create-playlist-btn" class="btn btn-outline w-full" onclick="document.getElementById('create-playlist-form').classList.remove('hidden'); document.getElementById('show-create-playlist-btn').classList.add('hidden'); document.getElementById('new-playlist-name').focus();" style="justify-content: center;">
-            <i data-lucide="plus" style="display:inline; width:16px; height:16px; margin-right: 8px;"></i> Create New Playlist
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings Modal -->
-  <div class="modal-overlay hidden" id="settings-modal" onclick="app.closeSettingsModal()">
-    <div class="modal-card" style="max-width: 500px; padding: 24px; text-align: left;" onclick="event.stopPropagation()">
-      <button class="modal-close-btn" onclick="app.closeSettingsModal()" style="position: absolute; top: 16px; right: 16px;">
-        <i data-lucide="x"></i>
-      </button>
-      
-      <div class="modal-header border-b pb-4 mb-4 border-gray-800">
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 4px;">Account Settings</h2>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Manage your credentials and subscription.</p>
-      </div>
-      
-      <div class="settings-section mb-6">
-        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><i data-lucide="credit-card" style="width:18px;height:18px"></i> Subscription</h3>
-        <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="color: var(--text-secondary);">Current Plan</span>
-            <span id="settings-plan-badge" class="badge" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">Free</span>
-          </div>
-          <div id="settings-plan-details" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 0.9rem;">
-            <span style="color: var(--text-secondary);">Renews On</span>
-            <span id="settings-plan-date" style="font-weight: 500;">N/A</span>
-          </div>
-          <button id="settings-cancel-sub-btn" class="btn" style="width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white;" onclick="app.cancelSubscription()">Cancel Subscription</button>
-        </div>
-      </div>
-
-      <div class="settings-section mb-6" style="margin-top: 24px;">
-        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><i data-lucide="lock" style="width:18px;height:18px"></i> Security</h3>
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-          <div>
-            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Update Email</label>
-            <div style="display: flex; gap: 8px;">
-              <input type="email" id="settings-email-input" class="input-field" placeholder="New email address" style="flex: 1;">
-              <button class="btn btn-primary" onclick="app.updateAccountEmail()">Update</button>
-            </div>
-          </div>
-          <div>
-            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Update Password</label>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-              <input type="password" id="settings-password-input" class="input-field" placeholder="New secure password" style="width: 100%;">
-              <input type="password" id="settings-password-confirm" class="input-field" placeholder="Confirm new password" style="width: 100%;">
-              <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: -4px;">Password must be at least 6 characters long.</p>
-              <button class="btn btn-primary" style="align-self: flex-end;" onclick="app.updateAccountPassword()">Update Password</button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -590,7 +449,7 @@
         </button>
       </div>
       <div class="modal-body text-center">
-        <p class="text-gray-300 text-sm mb-4">This link contains your current video, loop segments, and notes. Free users will only see one segment and up to 3 notes.</p>
+        <p class="text-gray-300 text-sm mb-4">This link contains your current video, loop segments, and notes. Free users will only see the first segment and up to 3 notes.</p>
         
         <div class="input-group mb-6" style="display:flex; gap: 8px;">
           <input type="text" id="share-link-input" readonly style="flex:1; background: #1f2937; color: #9ca3af; cursor: text;" onclick="this.select()">
@@ -630,17 +489,9 @@
               <div class="notes-container">
                 <div class="notes-input-area">
                   <textarea id="note-input" placeholder="Type a note here..."></textarea>
-                  <div style="display: flex; gap: 8px; flex-direction: column;">
-                    <button class="btn btn-primary btn-sm" onclick="app.addNote()">
-                      <i data-lucide="plus"></i> Add at Current Time
-                    </button>
-                    <div style="display: flex; gap: 8px;">
-                      <button class="btn btn-primary btn-sm" onclick="app.addNote(true)" style="flex: 1;">
-                        <i data-lucide="plus"></i> Add at Manual Time
-                      </button>
-                      <input type="text" id="manual-note-time" placeholder="0:00" class="time-input" style="width: 100px; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white; padding: 4px; font-size: 12px;">
-                    </div>
-                  </div>
+                  <button class="btn btn-primary btn-sm" onclick="app.addNote()">
+                    <i data-lucide="plus"></i> Add at Current Time
+                  </button>
                 </div>
                 <div class="notes-list" id="notes-list">
                   <!-- Notes loaded here -->
@@ -649,19 +500,20 @@
                     <p>No notes for this video yet. Add one to remember a specific timestamp!</p>
                   </div>
                 </div>
-                
-                <div class="active-notes-section" style="margin-top: 24px; border-top: 1px solid #333; padding-top: 16px;">
-                  <h4 style="margin-bottom: 12px; font-size: 14px; color: #aaa;">Active Videos with Notes</h4>
-                  <div id="active-notes-list" style="display: flex; flex-direction: column; gap: 8px;">
-                    <!-- Active notes summary rendered here -->
-                  </div>
-                </div>
               </div>
             </div>
 
             <!-- Discover Tab -->
             <div id="tab-discover" class="tab-panel active">
               
+              <!-- Resume Learning Section -->
+              <div id="resume-learning-section" class="hidden">
+                <h3 class="netflix-style-header">Resume Learning</h3>
+                <div class="resume-card" id="resume-card">
+                  <!-- Loaded dynamically via app.js -->
+                </div>
+              </div>
+
               <h3>Popular Videos to Loop</h3>
               <div class="video-grid" id="discover-list">
                 <!-- Will be loaded dynamically -->
@@ -673,7 +525,7 @@
                 <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Vimeo, Dailymotion, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
                 <a id="bookmarklet-btn" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;">
                   <i data-lucide="repeat"></i>
-                  <span>Watch On Repeat</span>
+                  <span>Loop on WatchOnRepeat</span>
                 </a>
               </div>
             </div>
@@ -708,7 +560,7 @@
             <div class="empty-state hidden" id="playlists-auth-required">
               <i data-lucide="lock" style="width:48px;height:48px;margin-bottom:16px;color:var(--text-muted)"></i>
               <h3>Sign in required</h3>
-              <p>Create and manage your playlists.</p>
+              <p>Create and manage your practice playlists.</p>
               <button class="btn btn-primary" onclick="app.openLoginModal()" style="margin-top:16px;">Sign In</button>
             </div>
             
@@ -774,7 +626,9 @@
           <i data-lucide="x"></i>
         </button>
         <div class="modal-header">
-          <img src="logo.svg" alt="Logo" class="modal-logo" style="background: none; object-fit: cover; border-radius: var(--radius-lg);">
+          <div class="modal-logo">
+            <i data-lucide="repeat"></i>
+          </div>
           <h2 id="auth-modal-title">Join WatchOnRepeat</h2>
           <p id="auth-modal-subtitle">Sync your loop counts, save favorites, and access your history anywhere.</p>
         </div>
@@ -782,32 +636,29 @@
         <div class="modal-body" id="modal-auth-options">
           
           <!-- 1. Welcome View (Decluttered) -->
-          <div id="auth-welcome-view" style="max-width: 320px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 12px;">
-            <!-- Native Google Identity Services Button Container wrapped in brand gradient -->
-            <div style="background: var(--gradient-primary); padding: 1px; border-radius: var(--radius-md);">
-              <div id="google-btn-container" style="display: flex; justify-content: center; width: 100%; border-radius: calc(var(--radius-md) - 1px); overflow: hidden; background: #131414;"></div>
-            </div>
+          <div id="auth-welcome-view">
+            <button class="btn-social google" onclick="app.handleSocialLogin('Google')" style="margin-bottom: 12px;">
+              <svg class="social-icon" viewBox="0 0 24 24" width="18" height="18">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69c-.29 1.5-.1.84-2.47 2.4l3.12 2.42c1.83-1.69 2.88-4.18 2.88-6.67z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.12-2.42c-.87.58-1.97.93-3.12.93-3.05 0-5.63-2.06-6.55-4.83l-3.23 2.5C5.87 21.14 8.7 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.45 14.77a7.148 7.148 0 0 1-.37-2.3c0-.8.13-1.57.37-2.3l-3.23-2.5C1.46 9.27 1 10.59 1 12s.46 2.73 1.22 4.27l3.23-2.5z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 8.7 0 5.87 2.86 3.97 6.33l3.23 2.5c.92-2.77 3.5-4.83 6.55-4.83z"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
             
-            <button class="btn btn-primary w-full" style="justify-content: center;" onclick="app.switchAuthView('signup')">
+            <button class="btn-social facebook" onclick="app.handleSocialLogin('Facebook')" style="margin-bottom: 12px;">
+              <svg class="social-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              <span>Continue with Facebook</span>
+            </button>
+
+            <button class="btn btn-primary w-full" style="justify-content: center; margin-bottom: 24px;" onclick="app.switchAuthView('signup')">
               <i data-lucide="mail" style="width: 18px; height: 18px; margin-right: 8px;"></i> Sign Up with Email
             </button>
 
-            <button class="btn-social w-full" onclick="app.handleSocialLogin('twitter')" style="background: #0f1419; color: #fff; border-color: rgba(255,255,255,0.1);">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="margin-right:8px;"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-              <span>Continue with X</span>
-            </button>
-
-            <button class="btn-social w-full" onclick="app.handleSocialLogin('twitch')" style="background: #9146FF; color: #fff; border-color: #a970ff;">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="margin-right:8px;"><path d="M2.149 0L.537 4.119v16.836h5.731V24h3.224l3.045-3.045h4.657l6.269-6.269V0H2.149zm19.164 13.612l-3.582 3.582h-5.731l-3.045 3.045v-3.045H4.119V2.149h17.194v11.463zm-3.582-7.343v6.262h-2.149V6.269h2.149zm-5.731 0v6.262H9.851V6.269H12z"/></svg>
-              <span>Continue with Twitch</span>
-            </button>
-
-            <button class="btn-social w-full" onclick="app.handleSocialLogin('discord')" style="background: #5865F2; color: #fff; border-color: #7289da;">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="margin-right:8px;"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-              <span>Continue with Discord</span>
-            </button>
-
-            <div style="text-align: center; font-size: 14px; color: var(--text-muted); margin-top: 12px;">
+            <div style="text-align: center; font-size: 14px; color: var(--text-muted);">
               Already have an account? <a href="#" onclick="app.switchAuthView('login'); event.preventDefault();" style="color: var(--primary); text-decoration: none; font-weight: bold;">Log In</a>
             </div>
           </div>
@@ -816,15 +667,9 @@
           <div id="auth-signup-view" class="hidden">
             <form class="auth-form" onsubmit="app.handleEmailSignUp(event)" id="auth-signup-form">
               <input type="email" id="signup-email" placeholder="Email Address" required>
-              <div style="position: relative;">
-                <input type="password" id="signup-password" placeholder="Password" required style="width: 100%;">
-                <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('signup-password')"></i>
-              </div>
+              <input type="password" id="signup-password" placeholder="Password" required>
               <div style="font-size: 11px; color: #9ca3af; margin-top: -8px; margin-bottom: 12px; padding-left: 8px;">Minimum 7 characters, must contain letters and numbers.</div>
-              <div style="position: relative;">
-                <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required style="width: 100%;">
-                <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('signup-confirm-password')"></i>
-              </div>
+              <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
               
               <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 8px;">Sign Up</button>
             </form>
@@ -837,12 +682,9 @@
           <div id="auth-login-view" class="hidden">
             <form class="auth-form" onsubmit="app.handleEmailLogin(event)" id="auth-email-form">
               <input type="email" id="login-email" placeholder="Email Address" required>
-              <div style="position: relative;">
-                <input type="password" id="login-password" placeholder="Password" required style="width: 100%;">
-                <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('login-password')"></i>
-              </div>
-              <div style="text-align: right; margin-top: 4px; margin-bottom: 16px;">
-                <a href="#" onclick="app.switchAuthView('reset'); event.preventDefault();" style="color: #9ca3af; font-size: 14px; text-decoration: none; font-weight: 500;">Forgot Password?</a>
+              <input type="password" id="login-password" placeholder="Password" required>
+              <div style="text-align: right; margin-top: -8px; margin-bottom: 16px;">
+                <a href="#" onclick="app.switchAuthView('reset'); event.preventDefault();" style="color: #9ca3af; font-size: 12px; text-decoration: none;">Forgot Password?</a>
               </div>
               <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Log In</button>
             </form>
@@ -877,22 +719,6 @@
     </div>
   </div>
 
-  <!-- Custom Confirm/Prompt Modal -->
-  <div id="custom-confirm-modal" class="modal-backdrop hidden">
-    <div class="modal-content" style="max-width: 400px;">
-      <h2 id="confirm-modal-title" style="margin-bottom: 8px;">Confirm</h2>
-      <p id="confirm-modal-message" style="margin-bottom: 20px; color: var(--text-secondary);">Are you sure?</p>
-      
-      <input type="text" id="confirm-modal-input" class="auth-input hidden" style="margin-bottom: 20px;" placeholder="">
-      
-      <div style="display: flex; gap: 12px; justify-content: flex-end;">
-        <button id="confirm-modal-cancel" class="btn btn-outline">Cancel</button>
-        <button id="confirm-modal-ok" class="btn btn-primary">Confirm</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://www.youtube.com/iframe_api"></script>
   <footer class="site-footer">
     <div class="footer-links">
       <a href="javascript:void(0);" onclick="app.showToast('About page coming soon!', 'info')">About</a>
@@ -906,28 +732,6 @@
     </div>
   </footer>
 
-  <script>
-    // SELF DESTRUCT OLD SERVICE WORKERS & CACHES
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        for (let name of names) {
-          caches.delete(name);
-        }
-      });
-    }
-  </script>
-  <script src="js/database.js?v=5"></script>
-  <script src="js/auth.js?v=3"></script>
-  <script src="js/notes.js?v=4"></script>
-  <script src="js/playlists.js?v=4"></script>
-  <script src="js/loops.js?v=42"></script>
-  <script src="app.js?v=42"></script>
+  <script src="app.js"></script>
 </body>
 </html>

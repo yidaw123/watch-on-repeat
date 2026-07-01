@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    window.onerror = function(msg, url, line, col, error) {
+      fetch('http://localhost:8081/', {
+        method: 'POST',
+        body: msg + " at line " + line + " col " + col
+      });
+    };
+  </script>
+  <script src="app.js"></script>
+</head>
+<body>
+  <h1>Waiting for JS Error...</h1>
+</body>
+</html>

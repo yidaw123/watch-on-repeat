@@ -1,0 +1,261 @@
+﻿commit 1615bfb1273ba06c1f1a05c7f61937657dcb3cdf
+Author: Yida Wang <yidaw93@hotmail.com>
+Date:   Wed Jun 24 13:16:21 2026 -0400
+
+    Fix: add try/catch around Supabase init to prevent crash in Incognito mode
+
+diff --git a/app.js b/app.js
+index cbf07ae..df50cea 100644
+--- a/app.js
++++ b/app.js
+@@ -132,19 +132,24 @@ class WatchOnRepeat {
+     
+     // Initialize Supabase Auth Session
+     if (supabaseClient) {
+-      const { data: { session } } = await supabaseClient.auth.getSession();
+-      if (session) {
+-        await this.setUserFromSession(session);
+-      }
+-      
+-      supabaseClient.auth.onAuthStateChange(async (event, session) => {
+-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+-          if (session) await this.setUserFromSession(session);
+-        } else if (event === 'SIGNED_OUT') {
+-          this.state.user = null;
+-          this.updateUserUI();
++      try {
++        const { data: { session }, error } = await supabaseClient.auth.getSession();
++        if (error) console.warn("Supabase session error:", error);
++        if (session) {
++          await this.setUserFromSession(session);
+         }
+-      });
++        
++        supabaseClient.auth.onAuthStateChange(async (event, session) => {
++          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
++            if (session) await this.setUserFromSession(session);
++          } else if (event === 'SIGNED_OUT') {
++            this.state.user = null;
++            this.updateUserUI();
++          }
++        });
++      } catch (err) {
++        console.warn("Failed to initialize Supabase auth:", err);
++      }
+     }
+ 
+     this.setupEventListeners();
+
+commit 80d07e0dec7f98996f9a10e867eaa2682a45e2d0
+Author: Yida Wang <yidaw93@hotmail.com>
+Date:   Wed Jun 24 12:46:37 2026 -0400
+
+    Implement Public Playlists feature with shareable links and downgraded user freeze
+
+diff --git a/app.js b/app.js
+index 714ead2..cbf07ae 100644
+--- a/app.js
++++ b/app.js
+@@ -320,7 +320,7 @@ class WatchOnRepeat {
+       const { data: playlists } = await supabaseClient.from('playlists').select('*').eq('user_id', this.state.user.id);
+       if (playlists) {
+         const localPlaylists = playlists.map(p => ({
+-          id: p.id, userId: p.user_id, name: p.name, videos: p.videos
++          id: p.id, userId: p.user_id, name: p.name, videos: p.videos, isPublic: p.is_public
+         }));
+         localStorage.setItem('wor_playlists', JSON.stringify(localPlaylists));
+       }
+@@ -369,7 +369,7 @@ class WatchOnRepeat {
+         const userPlaylists = data.filter(p => p.userId === this.state.user.id);
+         for (const p of userPlaylists) {
+           const { error } = await supabaseClient.from('playlists').upsert({
+-            id: p.id, user_id: p.userId, name: p.name, videos: p.videos
++            id: p.id, user_id: p.userId, name: p.name, videos: p.videos, is_public: p.isPublic || false
+           });
+           if (error && error.message.includes('limited to 5')) {
+              this.showToast("Free tier limit: Max 5 playlists. Please upgrade to Pro.", "alert-circle");
+@@ -467,6 +467,12 @@ class WatchOnRepeat {
+ 
+   handleRouting() {
+     const urlParams = new URLSearchParams(window.location.search);
++    const playlistId = urlParams.get('playlist');
++    if (playlistId) {
++      this.fetchSharedPlaylist(playlistId);
++      return;
++    }
++
+     let videoId = urlParams.get('v');
+     let rawUrl = urlParams.get('url');
+     let platform = urlParams.get('p') || 'youtube';
+@@ -1702,6 +1708,62 @@ class WatchOnRepeat {
+     const content = document.getElementById('playlists-content');
+     const badge = document.getElementById('playlists-count-badge');
+     const list = document.getElementById('playlists-list');
++
++    // --- TRANSIENT SHARED PLAYLIST VIEW ---
++    if (this.state.sharedPlaylist) {
++      const playlist = this.state.sharedPlaylist;
++      if (authRequired) authRequired.classList.add('hidden');
++      if (content) content.classList.remove('hidden');
++      if (badge) badge.textContent = playlist.videos ? playlist.videos.length : 0;
++
++      const createRow = content.querySelector('div[style*="margin-bottom: 24px"]');
++      if (createRow) createRow.style.display = 'none';
++
++      list.innerHTML = `
++        <div style="background: rgba(147, 51, 234, 0.1); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--primary-color);">
++          <h3 style="color: var(--primary-color); margin-bottom: 4px; display:flex; align-items:center; gap:8px;">
++            <i data-lucide="share-2"></i> Shared: ${this.escapeHtml(playlist.name)}
++          </h3>
++          <p style="font-size: 13px; color: var(--text-muted);">This is a read-only shared playlist. It is not saved to your account.</p>
++          <button class="btn btn-sm btn-outline" style="margin-top: 12px;" onclick="app.exitSharedPlaylist()">Exit Shared View</button>
++        </div>
++      `;
++
++      if (!playlist.videos || playlist.videos.length === 0) {
++        list.innerHTML += '<div class="empty-state"><p>This shared playlist is empty.</p></div>';
++        lucide.createIcons();
++        return;
++      }
++
++      playlist.videos.forEach((v, index) => {
++        const card = document.createElement('div');
++        card.className = 'video-card';
++        card.style.cursor = 'pointer';
++        card.onclick = () => {
++          this.loadVideo(v.videoId || v.id, v.platform);
++          this.showToast(`Playing: ${this.escapeHtml(v.title)}`, 'play');
++        };
++
++        const thumbUrl = v.thumbnail || this.getThumbnailUrl(v.platform, v.videoId || v.id);
++
++        card.innerHTML = `
++          <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" alt="${this.escapeHtml(v.title)}">
++          <div class="video-card-details">
++            <h4 class="video-card-title">${index + 1}. ${this.escapeHtml(v.title)}</h4>
++            <div class="video-card-meta">
++              <span class="badge">${v.platform}</span>
++            </div>
++          </div>
++        `;
++        list.appendChild(card);
++      });
++      lucide.createIcons();
++      return;
++    }
++    // --- END TRANSIENT VIEW ---
++
++    const createRow = content.querySelector('div[style*="margin-bottom: 24px"]');
++    if (createRow) createRow.style.display = 'flex'; // restore
+     
+     if (!this.state.user) {
+       authRequired.classList.remove('hidden');
+@@ -1727,9 +1789,19 @@ class WatchOnRepeat {
+       card.className = 'video-card';
+       card.innerHTML = `
+         <div class="video-info" style="width: 100%;">
+-          <h3 class="video-title">${this.escapeHtml(p.name)}</h3>
+-          <div class="video-meta">
++          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
++            <h3 class="video-title">${this.escapeHtml(p.name)}</h3>
++            <button class="icon-btn text-red-500" onclick="app.deletePlaylist('${p.id}')" style="padding:0; margin-left:8px;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
++          </div>
++          <div class="video-meta" style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+             <span class="platform-indicator" style="background: rgba(255,255,255,0.1)">${p.videos ? p.videos.length : 0} Videos</span>
++            
++            <div style="display:flex; gap:8px; align-items:center;">
++              ${p.isPublic ? `<button class="btn btn-outline" style="padding:4px 8px; font-size:11px;" onclick="app.copyPlaylistLink('${p.id}')"><i data-lucide="link" style="width:12px;height:12px;"></i> Copy Link</button>` : ''}
++              <label style="display:flex; align-items:center; gap:4px; font-size:12px; cursor:pointer;">
++                <input type="checkbox" ${p.isPublic ? 'checked' : ''} onchange="app.togglePlaylistPublic('${p.id}', this.checked)"> Public
++              </label>
++            </div>
+           </div>
+         </div>
+       `;
+@@ -1737,6 +1809,69 @@ class WatchOnRepeat {
+     });
+   }
+ 
++  togglePlaylistPublic(id, isPublic) {
++    if (!this.state.user || !this.state.user.isPremium) {
++      this.openUpgradeModal("Sharing public playlists is a Pro feature! Upgrade to share your playlists with the world.");
++      this.renderPlaylistsTab(); // Reset checkbox UI
++      return;
++    }
++    const playlists = this.getDb('playlists');
++    const index = playlists.findIndex(p => p.id === id && p.userId === this.state.user.id);
++    if (index !== -1) {
++      playlists[index].isPublic = isPublic;
++      this.saveDb('playlists', playlists);
++      this.renderPlaylistsTab();
++      if (isPublic) this.showToast("Playlist is now public!", "globe");
++      else this.showToast("Playlist is now private", "lock");
++    }
++  }
++
++  copyPlaylistLink(id) {
++    const url = new URL(window.location.href);
++    url.search = '?playlist=' + id;
++    navigator.clipboard.writeText(url.toString());
++    this.showToast("Copied share link!", "check");
++  }
++
++  async fetchSharedPlaylist(playlistId) {
++    if (!window.supabaseClient) {
++      this.showToast("Cannot load shared playlist without database connection.", "alert-triangle");
++      this.loadHome();
++      return;
++    }
++
++    try {
++      this.showToast("Loading shared playlist...", "loader");
++      const { data, error } = await supabaseClient.from('playlists').select('*').eq('id', playlistId).single();
++
++      if (error || !data) {
++        this.showToast("Playlist not found or is private.", "alert-triangle");
++        this.loadHome();
++        return;
++      }
++
++      this.state.sharedPlaylist = data;
++      this.switchTab('playlists');
++      
++      // Auto-play the first video
++      if (data.videos && data.videos.length > 0) {
++        const firstVid = data.videos[0];
++        this.loadVideo(firstVid.videoId || firstVid.id, firstVid.platform);
++      }
++    } catch (e) {
++      console.error(e);
++      this.loadHome();
++    }
++  }
++
++  exitSharedPlaylist() {
++    this.state.sharedPlaylist = null;
++    const url = new URL(window.location);
++    url.searchParams.delete('playlist');
++    window.history.pushState({}, '', url);
++    this.renderPlaylistsTab();
++  }
++
+   createPlaylist() {
+     if (!this.state.user) {
+       this.openLoginModal();
+@@ -1857,6 +1992,16 @@ class WatchOnRepeat {
+ 
+   addVideoToPlaylist(playlistId) {
+     const playlists = this.getDb('playlists');
++    const userPlaylists = playlists.filter(p => p.userId === this.state.user.id);
++    const tier = this.state.user.tier || 'free';
++    
++    // Check for downgraded user freeze
++    if (tier === 'free' && userPlaylists.length > 5) {
++      this.closePlaylistModal();
++      this.openUpgradeModal("Your account has exceeded the Free tier limit of 5 playlists. Please upgrade to Pro to modify your frozen playlists.");
++      return;
++    }
++
+     const pIndex = playlists.findIndex(p => p.id === playlistId && p.userId === this.state.user.id);
+     if (pIndex === -1) return;
+     

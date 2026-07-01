@@ -14,7 +14,7 @@ class LoopsMixin {
     if (!this.state.abLoop.active) {
       this.state.abLoop.active = true;
       this.state.abLoop.start = 0;
-      this.state.abLoop.end = this.state.currentVideoDuration || 10;
+      this.state.abLoop.end = this.state.currentVideoDuration || 0;
     }
     
     let newStart = this.state.abLoop.start;
@@ -43,7 +43,7 @@ class LoopsMixin {
     if (!this.state.abLoop.active) {
       this.state.abLoop.active = true;
       this.state.abLoop.start = 0;
-      this.state.abLoop.end = this.state.currentVideoDuration || 10;
+      this.state.abLoop.end = this.state.currentVideoDuration || 0;
     }
     
     const duration = this.state.abLoop.end - this.state.abLoop.start;
@@ -74,7 +74,7 @@ class LoopsMixin {
     if (!this.state.abLoop.active) {
       this.state.abLoop.active = true;
       this.state.abLoop.start = 0;
-      this.state.abLoop.end = this.state.currentVideoDuration || 10;
+      this.state.abLoop.end = this.state.currentVideoDuration || 0;
     }
     
     const duration = this.state.abLoop.end - this.state.abLoop.start;
@@ -109,7 +109,7 @@ class LoopsMixin {
     const t = await this.getCurrentTime();
     
     if (!this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
-      this.state.abLoop.multiSegments = [{ start: this.state.abLoop.start || 0, end: this.state.abLoop.end || this.state.currentVideoDuration || 10 }];
+      this.state.abLoop.multiSegments = [{ start: this.state.abLoop.start || 0, end: this.state.abLoop.end || this.state.currentVideoDuration || 0 }];
     }
     
     const segments = this.state.abLoop.multiSegments;
@@ -164,6 +164,14 @@ class LoopsMixin {
       list.classList.remove('hidden');
       addBtn.classList.remove('hidden');
       
+      // Option 1: Hide the main inputs completely when multi-segments is active
+      if (this.elements && this.elements.abStart && this.elements.abStart.parentElement) {
+        this.elements.abStart.parentElement.style.display = 'none';
+      }
+      if (this.elements && this.elements.abEnd && this.elements.abEnd.parentElement) {
+        this.elements.abEnd.parentElement.style.display = 'none';
+      }
+      
       if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
       if (this.state.abLoop.multiSegments.length === 0) {
         this.addLoopSegment();
@@ -171,6 +179,15 @@ class LoopsMixin {
     } else {
       list.classList.add('hidden');
       addBtn.classList.add('hidden');
+      
+      // Restore main inputs
+      if (this.elements && this.elements.abStart && this.elements.abStart.parentElement) {
+        this.elements.abStart.parentElement.style.display = '';
+      }
+      if (this.elements && this.elements.abEnd && this.elements.abEnd.parentElement) {
+        this.elements.abEnd.parentElement.style.display = '';
+      }
+      
       // Revert to single segment
       if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 1) {
         this.state.abLoop.multiSegments = [this.state.abLoop.multiSegments[0]];
@@ -197,18 +214,37 @@ class LoopsMixin {
       return;
     }
     
-    const duration = this.state.currentVideoDuration || 10;
+    const duration = this.state.currentVideoDuration || 0;
     
     let newStart = 0;
+    let newEnd = 0;
     if (this.state.abLoop.multiSegments.length > 0) {
       const lastSeg = this.state.abLoop.multiSegments[this.state.abLoop.multiSegments.length - 1];
+      
+      // If the last segment goes all the way to the end, shrink it to 10s if possible
+      if (lastSeg.end >= duration - 0.5) {
+        if (duration > 10) {
+          lastSeg.end = lastSeg.start + 10;
+          if (lastSeg.end > duration) lastSeg.end = duration;
+        } else {
+          // Video is very short, no room to shrink
+          this.showToast("No space left at the end of the video!", "alert-circle");
+          return;
+        }
+      }
+      
       newStart = lastSeg.end;
     }
     
-    if (newStart >= duration) newStart = duration - 1;
-    if (newStart < 0) newStart = 0;
+    if (newStart >= duration - 0.5) {
+      this.showToast("No space left at the end of the video! Adjust previous segments.", "alert-circle");
+      return;
+    }
     
-    this.state.abLoop.multiSegments.push({ start: newStart, end: duration });
+    newEnd = newStart + 10;
+    if (newEnd > duration) newEnd = duration;
+    
+    this.state.abLoop.multiSegments.push({ start: newStart, end: newEnd });
     this.state.abLoop.currentSegmentIndex = this.state.abLoop.multiSegments.length - 1;
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
@@ -217,7 +253,7 @@ class LoopsMixin {
   removeLoopSegment(index) {
     this.state.abLoop.multiSegments.splice(index, 1);
     if (this.state.abLoop.multiSegments.length === 0) {
-      this.state.abLoop.multiSegments.push({ start: 0, end: this.state.currentVideoDuration || 10 });
+      this.state.abLoop.multiSegments.push({ start: 0, end: this.state.currentVideoDuration || 0 });
     }
     if (this.state.abLoop.currentSegmentIndex >= this.state.abLoop.multiSegments.length) {
       this.state.abLoop.currentSegmentIndex = 0;
@@ -237,6 +273,15 @@ class LoopsMixin {
     if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
       if (checkbox) checkbox.checked = true;
       list.classList.remove('hidden');
+      
+      // Hide the main inputs when multi-segments is active (Option 1)
+      if (this.elements && this.elements.abStart && this.elements.abStart.parentElement) {
+        this.elements.abStart.parentElement.style.display = 'none';
+      }
+      if (this.elements && this.elements.abEnd && this.elements.abEnd.parentElement) {
+        this.elements.abEnd.parentElement.style.display = 'none';
+      }
+
       if (isPremium && addBtn) {
         addBtn.classList.remove('hidden');
         
@@ -261,10 +306,24 @@ class LoopsMixin {
       if (checkbox && !checkbox.checked) {
         list.classList.add('hidden');
         if (addBtn) addBtn.classList.add('hidden');
+        
+        // Restore the main inputs
+        if (this.elements && this.elements.abStart && this.elements.abStart.parentElement) {
+          this.elements.abStart.parentElement.style.display = '';
+        }
+        if (this.elements && this.elements.abEnd && this.elements.abEnd.parentElement) {
+          this.elements.abEnd.parentElement.style.display = '';
+        }
       }
     }
 
-    list.innerHTML = '';
+    list.innerHTML = `
+      <div class="text-xs text-yellow-500 mb-2" style="opacity: 0.8;">
+        <i data-lucide="alert-triangle" style="width: 12px; height: 12px; display: inline;"></i> 
+        Overlapping segments may cause playback issues.
+      </div>
+    `;
+    
     this.state.abLoop.multiSegments.forEach((seg, index) => {
       const row = document.createElement('div');
       row.style.display = 'flex';
@@ -276,13 +335,25 @@ class LoopsMixin {
       
       row.innerHTML = `
         <span class="text-xs text-gray-500 w-4">${index + 1}</span>
-        <input type="text" class="multi-seg-input" data-index="${index}" data-type="start" value="${this.formatTime(seg.start)}" style="width: 100px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
+        <input type="text" class="multi-seg-input" data-index="${index}" data-type="start" value="${this.formatTime(seg.start)}" placeholder="START TIME" style="width: 100px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
         <span class="text-gray-500">to</span>
-        <input type="text" class="multi-seg-input" data-index="${index}" data-type="end" value="${this.formatTime(seg.end)}" style="width: 100px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
-        <button class="icon-btn text-red-500" onclick="app.removeLoopSegment(${index})" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+        <input type="text" class="multi-seg-input" data-index="${index}" data-type="end" value="${this.formatTime(seg.end)}" placeholder="END TIME" style="width: 100px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
+        <button class="icon-btn text-red-500 delete-segment-btn" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
       `;
+      const deleteBtn = row.querySelector('.delete-segment-btn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.removeLoopSegment(index);
+        });
+      }
       list.appendChild(row);
     });
+    
+    let errorContainer = document.createElement('div');
+    errorContainer.id = 'multi-segment-error';
+    errorContainer.className = 'text-xs text-red-500 mt-1 hidden';
+    list.appendChild(errorContainer);
     
     list.querySelectorAll('.multi-seg-input').forEach(input => {
       this.applyTimeMask(input, (e) => {
@@ -293,19 +364,52 @@ class LoopsMixin {
         const duration = this.state.currentVideoDuration || 3600;
         const segs = this.state.abLoop.multiSegments;
         
+        let hasError = false;
+        let errorMsg = '';
+        
         if (type === 'start') {
           let minStart = idx > 0 ? segs[idx - 1].end : 0;
           let maxStart = segs[idx].end;
-          segs[idx].start = Math.max(minStart, Math.min(val, maxStart));
+          
+          if (val < minStart) {
+            hasError = true;
+            errorMsg = `Start time must be >= end of previous segment (${this.formatTime(minStart)})`;
+          } else if (val >= maxStart) {
+            hasError = true;
+            errorMsg = `Start time must be < end time (${this.formatTime(maxStart)})`;
+          }
         } else {
           let minEnd = segs[idx].start;
           let maxEnd = idx < segs.length - 1 ? segs[idx + 1].start : duration;
-          segs[idx].end = Math.max(minEnd, Math.min(val, maxEnd));
+          
+          if (val <= minEnd) {
+            hasError = true;
+            errorMsg = `End time must be > start time (${this.formatTime(minEnd)})`;
+          } else if (val > maxEnd) {
+            hasError = true;
+            errorMsg = `End time must be <= start of next segment (${this.formatTime(maxEnd)})`;
+          }
         }
         
-        this.state.abLoop.currentSegmentIndex = idx;
-        this.saveLoopData();
-        if (this.updateTimelineUI) this.updateTimelineUI();
+        const errorEl = document.getElementById('multi-segment-error');
+        if (hasError) {
+          e.target.style.borderColor = 'red';
+          if (errorEl) {
+            errorEl.textContent = errorMsg;
+            errorEl.classList.remove('hidden');
+          }
+          return; // Do not save or update state
+        } else {
+          e.target.style.borderColor = '';
+          if (errorEl) errorEl.classList.add('hidden');
+          
+          if (type === 'start') segs[idx].start = val;
+          else segs[idx].end = val;
+          
+          this.state.abLoop.currentSegmentIndex = idx;
+          this.saveLoopData();
+          if (this.updateTimelineUI) this.updateTimelineUI();
+        }
       });
     });
     

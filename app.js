@@ -13,6 +13,8 @@ if (typeof lucide === 'undefined') {
   window.lucide = { createIcons: () => {} };
 }
 
+
+
 window.addEventListener('error', function(e) {
   console.error("Global Error Caught:", e.error);
   if (window.app && typeof window.app.showToast === 'function') {
@@ -64,6 +66,49 @@ class WatchOnRepeat {
     
     // Bind methods
     this.handleYouTubeStateChange = this.handleYouTubeStateChange.bind(this);
+  }
+
+  setupNetworkListeners() {
+    window.addEventListener('online', () => {
+      this.state.isOffline = false;
+      this.showToast('Back online! Reconnecting...', 'wifi');
+    });
+    window.addEventListener('offline', () => {
+      this.state.isOffline = true;
+      this.showToast('You are offline. Only Local Video is available.', 'wifi-off');
+    });
+  }
+
+  // ==========================================
+  // EVENT TRACKING (SUPABASE)
+  // ==========================================
+
+  getOrCreateSessionId() {
+    let sid = localStorage.getItem('wor_session_id');
+    if (!sid) {
+      sid = 'anon_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('wor_session_id', sid);
+    }
+    return sid;
+  }
+
+  logEvent(eventName, metadata = {}) {
+    if (!window.supabaseClient) return;
+    const userId = this.state.user ? this.state.user.id : this.getOrCreateSessionId();
+    
+    // Attempt to add video title if we are tracking a video event
+    if (this.state.currentVideo && this.state.currentVideo.title) {
+      metadata.video_title = this.state.currentVideo.title;
+    }
+
+    supabaseClient.from('events').insert({
+      event_name: eventName,
+      user_id: userId,
+      metadata: metadata,
+      created_at: new Date().toISOString()
+    }).catch(err => {
+      if (DEBUG_MODE) console.error("Error logging event:", err);
+    });
   }
 
   async setUserFromSession(session) {
@@ -908,14 +953,35 @@ class WatchOnRepeat {
     const data = savedLoops[id];
     
     if (data) {
+      const dur = this.state.currentVideoDuration || 0;
+      
       this.state.abLoop.start = data.start || 0;
-      this.state.abLoop.end = data.end || this.state.currentVideoDuration;
-      if (this.state.abLoop.end > this.state.currentVideoDuration && this.state.currentVideoDuration > 0) {
-        this.state.abLoop.end = this.state.currentVideoDuration;
+      this.state.abLoop.end = data.end || dur;
+      
+      // If saved end is 0 or nonsensically small (corrupted save), use full duration
+      if (this.state.abLoop.end <= 0 && dur > 0) {
+        this.state.abLoop.end = dur;
+      }
+      
+      // Clamp end to video duration if it exceeds it
+      if (dur > 0 && this.state.abLoop.end > dur) {
+        this.state.abLoop.end = dur;
       }
       
       const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
       this.state.abLoop.multiSegments = isPremium ? (data.multiSegments || []) : [];
+      
+      // Heal any multi-segment with end=0
+      if (this.state.abLoop.multiSegments.length > 0 && dur > 0) {
+        this.state.abLoop.multiSegments.forEach(seg => {
+          if (!seg.end || seg.end <= 0) {
+            seg.end = dur;
+          }
+          if (seg.end > dur) {
+            seg.end = dur;
+          }
+        });
+      }
       
       this.state.abLoop.active = data.enabled !== false;
       
@@ -926,23 +992,53 @@ class WatchOnRepeat {
         this.updateTimelineUI();
       }
       this.renderMultiSegments();
+      
+      // Re-save to clean up any corrupted data in localStorage
+      this.saveLoopData();
     }
   }
 
   setVideoDuration(duration) {
     this.state.currentVideoDuration = duration;
     
-    if (this.elements.abStart && (!this.elements.abStart.value || this.elements.abStart.value === "")) {
-      this.elements.abStart.value = "0:00";
-    }
-    if (this.elements.abEnd && (!this.elements.abEnd.value || this.elements.abEnd.value === "")) {
-      if (duration && !isNaN(duration)) {
-        this.elements.abEnd.value = this.formatTime(duration);
-      } else {
-        this.elements.abEnd.value = "End";
+    // If the end time is 0 or not set, or is a stale placeholder value,
+    // force it to the full video duration. This is the core fix for the
+    // "10 second / 0:00 end time" bug — duration arrives async from the
+    // player after the UI has already rendered with end=0.
+    if (duration && !isNaN(duration) && duration > 0) {
+      if (!this.state.abLoop.end || this.state.abLoop.end <= 0) {
+        this.state.abLoop.end = duration;
+      }
+      // Also fix multiSegments if the first (default) segment has end=0
+      if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+        const firstSeg = this.state.abLoop.multiSegments[0];
+        if (firstSeg.start === 0 && (!firstSeg.end || firstSeg.end <= 0)) {
+          firstSeg.end = duration;
+        }
       }
     }
     
+    // Always update the input fields to reflect the current state
+    if (this.elements.abStart) {
+      if (!this.elements.abStart.value || this.elements.abStart.value === "" || this.elements.abStart.value === "00:00:00" || this.elements.abStart.value === "00:00:00.000") {
+        this.elements.abStart.placeholder = "START TIME";
+        this.elements.abStart.value = "";
+      }
+    }
+    if (this.elements.abEnd) {
+      const curVal = this.elements.abEnd.value;
+      // Update if empty, zero, or was never properly set
+      if (!curVal || curVal === "" || curVal === "00:00:00" || curVal === "00:00:00.000" || curVal === "End") {
+        if (duration && !isNaN(duration) && duration > 0) {
+          this.elements.abEnd.value = this.formatTime(duration);
+        } else {
+          this.elements.abEnd.placeholder = "END TIME";
+          this.elements.abEnd.value = "";
+        }
+      }
+    }
+    
+    // Load any saved loop data for this video (may override the defaults above)
     if (this.state.currentVideo && this.state.currentVideo.id) {
       this.loadLoopData(this.state.currentVideo.id);
     }
@@ -954,9 +1050,6 @@ class WatchOnRepeat {
     
     if (this.updateTimelineUI) {
       this.updateTimelineUI();
-    }
-    if (this.renderNoteMarkers) {
-      this.renderNoteMarkers();
     }
   }
 
@@ -1287,6 +1380,13 @@ class WatchOnRepeat {
     // If AB Loop is active, track the specific segment
     if (this.state.abLoop.active) {
       this.trackABSegment();
+      this.logEvent('loop_completed', { 
+        start: this.state.abLoop.start, 
+        end: this.state.abLoop.end,
+        platform: this.state.currentPlatform 
+      });
+    } else {
+      this.logEvent('loop_completed', { platform: this.state.currentPlatform });
     }
 
     // Optimistic UI updates
@@ -1647,6 +1747,7 @@ class WatchOnRepeat {
     if (window.supabaseClient) {
       const { data } = await supabaseClient.from('global_stats')
         .select('*')
+        .neq('platform', 'local')
         .order('global_loops', { ascending: false })
         .limit(10);
       
@@ -1693,8 +1794,12 @@ class WatchOnRepeat {
       this.elements.favoritesList.innerHTML = '';
       this.elements.favoritesList.classList.remove('hidden');
       
+      const historyDb = this.getDb('history').filter(h => h.userId === this.state.user.id);
+      
       favorites.forEach(f => {
-        const card = this.createVideoCard(f);
+        const historyItem = historyDb.find(h => h.videoId === f.videoId && h.platform === f.platform);
+        f.loopsCount = historyItem ? historyItem.loopsCount : 0;
+        const card = this.createVideoCard(f, true); // true to show loopsCount instead of global
         this.elements.favoritesList.appendChild(card);
       });
       lucide.createIcons();
@@ -1741,7 +1846,7 @@ class WatchOnRepeat {
   async renderTrendsTab() {
     let trends = [];
     if (window.supabaseClient) {
-      const { data } = await supabaseClient.from('global_stats').select('*').order('global_loops', { ascending: false }).limit(10);
+      const { data } = await supabaseClient.from('global_stats').select('*').neq('platform', 'local').order('global_loops', { ascending: false }).limit(10);
       if (data) {
         trends = data.map(d => ({ videoId: d.video_id, platform: d.platform, globalLoops: d.global_loops, globalPlays: d.global_plays, title: `Trending ${d.platform} video` }));
       }
@@ -1766,7 +1871,7 @@ class WatchOnRepeat {
     // Resolve thumbnail
     let thumbUrl = '';
     if (video.platform === 'youtube') {
-      thumbUrl = `https://img.youtube.com/vi/${video.videoId || video.id}/mqdefault.jpg`;
+      thumbUrl = `https://img.youtube.com/vi/${video.videoId || video.id}/hqdefault.jpg`;
     } else {
       // Gradient SVG placeholder for non-youtube to maintain a sleek UI (using single quotes to prevent HTML attribute breaking)
       thumbUrl = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60' viewBox='0 0 90 60'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%238b5cf6'/><stop offset='100%' stop-color='%23ec4899'/></linearGradient></defs><rect width='90' height='60' fill='url(%23g)' opacity='0.85'/><text x='45' y='35' font-family='Outfit,sans-serif' font-size='10' font-weight='bold' fill='white' text-anchor='middle'>${video.platform.toUpperCase()}</text></svg>`;
@@ -1983,10 +2088,15 @@ class WatchOnRepeat {
       if (track) container.appendChild(track);
       
       if (!this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
+        const segEnd = this.state.abLoop.end || this.state.currentVideoDuration || 0;
         this.state.abLoop.multiSegments = [{
           start: this.state.abLoop.start || 0,
-          end: this.state.abLoop.end || this.state.currentVideoDuration || 10
+          end: segEnd
         }];
+        // Sync back so abLoop.end is never left as 0 when duration is available
+        if (segEnd > 0) {
+          this.state.abLoop.end = segEnd;
+        }
       }
       
       const duration = this.state.currentVideoDuration || 3600;
@@ -2027,20 +2137,30 @@ class WatchOnRepeat {
       
       const activeIdx = this.state.abLoop.currentSegmentIndex || 0;
       if (this.state.abLoop.multiSegments[activeIdx]) {
-        if (this.elements.abStart) this.elements.abStart.value = this.formatTime(this.state.abLoop.multiSegments[activeIdx].start);
-        if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(this.state.abLoop.multiSegments[activeIdx].end);
+        const activeSeg = this.state.abLoop.multiSegments[activeIdx];
         
-        this.state.abLoop.start = this.state.abLoop.multiSegments[activeIdx].start;
-        this.state.abLoop.end = this.state.abLoop.multiSegments[activeIdx].end;
+        // Only update input fields if the segment has meaningful values.
+        // Writing formatTime(0) = "00:00:00" into the input would prevent
+        // setVideoDuration from later correcting it to the real duration.
+        if (activeSeg.end > 0) {
+          if (this.elements.abStart) this.elements.abStart.value = this.formatTime(activeSeg.start);
+          if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(activeSeg.end);
+        }
+        
+        this.state.abLoop.start = activeSeg.start;
+        this.state.abLoop.end = activeSeg.end;
       }
       
       this.renderMultiSegments();
     };
 
     this.updateTimelineUI = () => {
-      this.state.abLoop.active = true;
+      // Only mark the loop as active if we have a meaningful end time.
+      // Setting active=true with end=0 causes the video to loop at 0 seconds.
+      if (this.state.abLoop.end > 0 || this.state.currentVideoDuration > 0) {
+        this.state.abLoop.active = true;
+      }
       renderTimelineHandles();
-      this.saveLoopData();
     };
 
     const handlePointerDown = (e) => {
