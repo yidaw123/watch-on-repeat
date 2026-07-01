@@ -1245,7 +1245,23 @@ class WatchOnRepeat {
       this.elements.loopStateText.className = "stat-value text-green";
 
       if (!this.state.currentVideoDuration && this.state.players.youtube) {
-        this.setVideoDuration(this.state.players.youtube.getDuration());
+        const dur = this.state.players.youtube.getDuration();
+        if (dur > 0) {
+          this.setVideoDuration(dur);
+        } else {
+          // YouTube sometimes returns 0 duration immediately after PLAYING event. Poll until it's ready.
+          const checkDur = setInterval(() => {
+            if (this.state.players.youtube && this.state.players.youtube.getDuration) {
+              const d = this.state.players.youtube.getDuration();
+              if (d > 0) {
+                this.setVideoDuration(d);
+                clearInterval(checkDur);
+              }
+            } else {
+              clearInterval(checkDur);
+            }
+          }, 200);
+        }
       }
     } else if (event.data === YT.PlayerState.PAUSED) {
       this.elements.loopStateText.textContent = "Paused";

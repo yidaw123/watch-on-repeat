@@ -257,7 +257,9 @@ class LoopsMixin {
     const addBtn = document.getElementById('add-segment-btn');
     const isPremium = this.state.user && this.state.user.isPremium;
 
-    if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+    const isMultiActive = (checkbox && checkbox.checked) || (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 1);
+
+    if (isMultiActive && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
       if (checkbox) checkbox.checked = true;
       list.classList.remove('hidden');
       
