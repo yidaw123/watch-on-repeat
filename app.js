@@ -228,6 +228,35 @@ class WatchOnRepeat {
     this.generateBookmarklet();
     this.initHotkeys();
     
+    // One-time cleanup of corrupted loop saves from the old || 10 bug.
+    // This runs once and sets a flag so it never runs again.
+    if (!localStorage.getItem('wor_loops_cleaned_v1')) {
+      try {
+        const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+        let cleaned = false;
+        for (const videoId in savedLoops) {
+          const loop = savedLoops[videoId];
+          if (loop.start === 0 && loop.end > 0 && loop.end <= 10.5) {
+            delete savedLoops[videoId]; // Remove corrupted entry entirely
+            cleaned = true;
+          }
+          // Also clean corrupted multiSegments
+          if (loop.multiSegments && loop.multiSegments.length > 0) {
+            loop.multiSegments.forEach(seg => {
+              if (seg.start === 0 && seg.end > 0 && seg.end <= 10.5) {
+                seg.end = 0; // Will be corrected to duration when video loads
+                cleaned = true;
+              }
+            });
+          }
+        }
+        if (cleaned) {
+          localStorage.setItem('wor_saved_loops', JSON.stringify(savedLoops));
+        }
+        localStorage.setItem('wor_loops_cleaned_v1', '1');
+      } catch(e) { /* ignore */ }
+    }
+    
     if (!this.timelineInitialized) {
       this.initTimeline();
       this.timelineInitialized = true;
@@ -1041,6 +1070,21 @@ class WatchOnRepeat {
     // Load any saved loop data for this video (may override the defaults above)
     if (this.state.currentVideo && this.state.currentVideo.id) {
       this.loadLoopData(this.state.currentVideo.id);
+    }
+    
+    // CRITICAL: After loading saved data, verify end time is sane.
+    // The old code had a bug where it saved {start: 0, end: 10} for every video
+    // (due to a `|| 10` fallback). Those corrupted saves persist in localStorage.
+    // If start=0 and end is tiny compared to the actual video duration, fix it.
+    if (duration > 0 && this.state.abLoop.start === 0 && 
+        this.state.abLoop.end > 0 && this.state.abLoop.end <= 10.5 && 
+        duration > this.state.abLoop.end * 2) {
+      this.state.abLoop.end = duration;
+      if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+        this.state.abLoop.multiSegments[0].end = duration;
+      }
+      if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(duration);
+      this.saveLoopData(); // Overwrite the corrupted save
     }
     
     // Once duration is known, we can accurately plot the note markers
