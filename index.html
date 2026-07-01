@@ -227,10 +227,10 @@
               <h4 class="control-label"><i data-lucide="scissors"></i> Custom Timestamp Loop</h4>
               <div class="timeline-loop-wrapper">
                 <div class="input-group-inline">
-                  <input type="text" id="ab-start" placeholder="Start" style="width: 100px; text-align: center;">
+                  <input type="text" id="ab-start" placeholder="START TIME" value="START TIME" disabled style="width: 100px; text-align: center; pointer-events: none; opacity: 0.5;">
                 </div>
                 
-                <div class="timeline-container" id="timeline-container">
+                <div class="timeline-container" id="timeline-container" style="pointer-events: none; opacity: 0.5;">
                   <div class="timeline-track" id="timeline-track"></div>
                   <!-- Segments and handles will be dynamically injected here by JS -->
                   <div id="timeline-markers" class="timeline-markers" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
@@ -243,7 +243,7 @@
                 </div>
 
                 <div class="input-group-inline">
-                  <input type="text" id="ab-end" placeholder="End" style="width: 100px; text-align: center;">
+                  <input type="text" id="ab-end" placeholder="END TIME" value="END TIME" disabled style="width: 100px; text-align: center; pointer-events: none; opacity: 0.5;">
                 </div>
               </div>
 
@@ -927,7 +927,7 @@
   <script src="js/auth.js?v=3"></script>
   <script src="js/notes.js?v=4"></script>
   <script src="js/playlists.js?v=4"></script>
-  <script src="js/loops.js?v=44"></script>
-  <script src="app.js?v=44"></script>
+  <script src="js/loops.js?v=45"></script>
+  <script src="app.js?v=45"></script>
 </body>
 </html>

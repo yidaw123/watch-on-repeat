@@ -824,12 +824,20 @@ class WatchOnRepeat {
     }
     
     if (this.elements.abStart) {
-      this.elements.abStart.value = "";
-      this.elements.abStart.placeholder = "Start";
+      this.elements.abStart.value = "START TIME";
+      this.elements.abStart.disabled = true;
+      this.elements.abStart.style.pointerEvents = 'none';
+      this.elements.abStart.style.opacity = '0.5';
     }
     if (this.elements.abEnd) {
-      this.elements.abEnd.value = "";
-      this.elements.abEnd.placeholder = "End";
+      this.elements.abEnd.value = "END TIME";
+      this.elements.abEnd.disabled = true;
+      this.elements.abEnd.style.pointerEvents = 'none';
+      this.elements.abEnd.style.opacity = '0.5';
+    }
+    if (this.elements.timelineContainer) {
+      this.elements.timelineContainer.style.pointerEvents = 'none';
+      this.elements.timelineContainer.style.opacity = '0.5';
     }
     
     // Reset loop state completely for the new video
@@ -1041,9 +1049,19 @@ class WatchOnRepeat {
     // Set the input fields
     if (this.elements.abStart) {
       this.elements.abStart.value = this.formatTime(this.state.abLoop.start || 0);
+      this.elements.abStart.disabled = false;
+      this.elements.abStart.style.pointerEvents = 'auto';
+      this.elements.abStart.style.opacity = '1';
     }
     if (this.elements.abEnd) {
       this.elements.abEnd.value = this.formatTime(duration);
+      this.elements.abEnd.disabled = false;
+      this.elements.abEnd.style.pointerEvents = 'auto';
+      this.elements.abEnd.style.opacity = '1';
+    }
+    if (this.elements.timelineContainer) {
+      this.elements.timelineContainer.style.pointerEvents = 'auto';
+      this.elements.timelineContainer.style.opacity = '1';
     }
     
     // Fix multiSegments — if there's a default segment with end=0 or end=10, fix it
@@ -2123,10 +2141,11 @@ class WatchOnRepeat {
       }
       
       const duration = this.state.currentVideoDuration || 3600;
+      const safeDuration = duration || 1;
       
       this.state.abLoop.multiSegments.forEach((seg, index) => {
-        let sPct = (seg.start / duration) * 100;
-        let ePct = (seg.end / duration) * 100;
+        let sPct = Math.max(0, Math.min(100, (seg.start / safeDuration) * 100));
+        let ePct = Math.max(0, Math.min(100, (seg.end / safeDuration) * 100));
         
         const sel = document.createElement('div');
         sel.className = 'timeline-selection';
