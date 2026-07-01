@@ -827,13 +827,21 @@ class WatchOnRepeat {
       this.elements.abStart.value = "START TIME";
       this.elements.abStart.disabled = true;
       this.elements.abStart.style.pointerEvents = 'none';
-      this.elements.abStart.style.opacity = '0.5';
+      this.elements.abStart.style.opacity = '0.8';
+      this.elements.abStart.style.color = '#000';
+      this.elements.abStart.style.backgroundColor = '#cbd5e1';
+      this.elements.abStart.style.border = '1px solid #94a3b8';
+      this.elements.abStart.style.fontWeight = 'bold';
     }
     if (this.elements.abEnd) {
       this.elements.abEnd.value = "END TIME";
       this.elements.abEnd.disabled = true;
       this.elements.abEnd.style.pointerEvents = 'none';
-      this.elements.abEnd.style.opacity = '0.5';
+      this.elements.abEnd.style.opacity = '0.8';
+      this.elements.abEnd.style.color = '#000';
+      this.elements.abEnd.style.backgroundColor = '#cbd5e1';
+      this.elements.abEnd.style.border = '1px solid #94a3b8';
+      this.elements.abEnd.style.fontWeight = 'bold';
     }
     if (this.elements.timelineContainer) {
       this.elements.timelineContainer.style.pointerEvents = 'none';
@@ -1052,12 +1060,20 @@ class WatchOnRepeat {
       this.elements.abStart.disabled = false;
       this.elements.abStart.style.pointerEvents = 'auto';
       this.elements.abStart.style.opacity = '1';
+      this.elements.abStart.style.color = '';
+      this.elements.abStart.style.backgroundColor = '';
+      this.elements.abStart.style.border = '';
+      this.elements.abStart.style.fontWeight = '';
     }
     if (this.elements.abEnd) {
       this.elements.abEnd.value = this.formatTime(duration);
       this.elements.abEnd.disabled = false;
       this.elements.abEnd.style.pointerEvents = 'auto';
       this.elements.abEnd.style.opacity = '1';
+      this.elements.abEnd.style.color = '';
+      this.elements.abEnd.style.backgroundColor = '';
+      this.elements.abEnd.style.border = '';
+      this.elements.abEnd.style.fontWeight = '';
     }
     if (this.elements.timelineContainer) {
       this.elements.timelineContainer.style.pointerEvents = 'auto';

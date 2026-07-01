@@ -227,7 +227,7 @@
               <h4 class="control-label"><i data-lucide="scissors"></i> Custom Timestamp Loop</h4>
               <div class="timeline-loop-wrapper">
                 <div class="input-group-inline">
-                  <input type="text" id="ab-start" placeholder="START TIME" value="START TIME" disabled style="width: 100px; text-align: center; pointer-events: none; opacity: 0.5;">
+                  <input type="text" id="ab-start" placeholder="START TIME" value="START TIME" disabled style="width: 100px; text-align: center; pointer-events: none; color: #000; font-weight: bold; background-color: #cbd5e1; border: 1px solid #94a3b8; opacity: 0.8;">
                 </div>
                 
                 <div class="timeline-container" id="timeline-container" style="pointer-events: none; opacity: 0.5;">
@@ -243,7 +243,7 @@
                 </div>
 
                 <div class="input-group-inline">
-                  <input type="text" id="ab-end" placeholder="END TIME" value="END TIME" disabled style="width: 100px; text-align: center; pointer-events: none; opacity: 0.5;">
+                  <input type="text" id="ab-end" placeholder="END TIME" value="END TIME" disabled style="width: 100px; text-align: center; pointer-events: none; color: #000; font-weight: bold; background-color: #cbd5e1; border: 1px solid #94a3b8; opacity: 0.8;">
                 </div>
               </div>
 
@@ -422,13 +422,13 @@
             </div>
 
             <!-- Upgrade/Paywall Modal -->
-  <div class="upgrade-takeover hidden" id="upgrade-modal">
+  <div class="upgrade-takeover hidden" id="upgrade-modal" onclick="if(event.target === this) app.closeUpgradeModal()">
     <div class="upgrade-container">
+      <button class="modal-close-btn" onclick="app.closeUpgradeModal()">
+        <i data-lucide="x"></i>
+      </button>
       <div class="modal-header border-b pb-4 mb-6 border-gray-800">
         <h3 id="upgrade-title" class="text-2xl font-bold">Unlock Premium Features</h3>
-        <button class="icon-btn" onclick="app.closeUpgradeModal()">
-          <i data-lucide="x"></i>
-        </button>
       </div>
       <div class="modal-body">
         <p id="upgrade-message" class="text-gray-400 mb-8 text-center text-lg">You've hit a limit! Upgrade your account to continue.</p>
