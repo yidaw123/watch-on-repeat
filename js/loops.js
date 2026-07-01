@@ -221,28 +221,15 @@ class LoopsMixin {
     if (this.state.abLoop.multiSegments.length > 0) {
       const lastSeg = this.state.abLoop.multiSegments[this.state.abLoop.multiSegments.length - 1];
       
-      // If the last segment goes all the way to the end, shrink it to 10s if possible
       if (lastSeg.end >= duration - 0.5) {
-        if (duration > 10) {
-          lastSeg.end = lastSeg.start + 10;
-          if (lastSeg.end > duration) lastSeg.end = duration;
-        } else {
-          // Video is very short, no room to shrink
-          this.showToast("No space left at the end of the video!", "alert-circle");
-          return;
-        }
+        this.showToast("No space left at the end of the video! Adjust previous segments.", "alert-circle");
+        return;
       }
       
       newStart = lastSeg.end;
     }
     
-    if (newStart >= duration - 0.5) {
-      this.showToast("No space left at the end of the video! Adjust previous segments.", "alert-circle");
-      return;
-    }
-    
-    newEnd = newStart + 10;
-    if (newEnd > duration) newEnd = duration;
+    newEnd = duration;
     
     this.state.abLoop.multiSegments.push({ start: newStart, end: newEnd });
     this.state.abLoop.currentSegmentIndex = this.state.abLoop.multiSegments.length - 1;

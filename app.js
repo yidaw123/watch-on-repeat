@@ -988,7 +988,8 @@ class WatchOnRepeat {
       this.state.abLoop.end = data.end || dur;
       
       // If saved end is 0 or nonsensically small (corrupted save), use full duration
-      if (this.state.abLoop.end <= 0 && dur > 0) {
+      if (dur > 0 && (this.state.abLoop.end <= 0 || 
+          (this.state.abLoop.start === 0 && this.state.abLoop.end <= 10.5 && dur > 20))) {
         this.state.abLoop.end = dur;
       }
       
@@ -1028,63 +1029,41 @@ class WatchOnRepeat {
   }
 
   setVideoDuration(duration) {
+    if (!duration || isNaN(duration) || duration <= 0) return;
+    
     this.state.currentVideoDuration = duration;
     
-    // If the end time is 0 or not set, or is a stale placeholder value,
-    // force it to the full video duration. This is the core fix for the
-    // "10 second / 0:00 end time" bug — duration arrives async from the
-    // player after the UI has already rendered with end=0.
-    if (duration && !isNaN(duration) && duration > 0) {
-      if (!this.state.abLoop.end || this.state.abLoop.end <= 0) {
-        this.state.abLoop.end = duration;
-      }
-      // Also fix multiSegments if the first (default) segment has end=0
-      if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
-        const firstSeg = this.state.abLoop.multiSegments[0];
-        if (firstSeg.start === 0 && (!firstSeg.end || firstSeg.end <= 0)) {
+    // ALWAYS set end to full video duration. No conditions. No checks.
+    // This is the default — loadLoopData below will override if the user
+    // previously saved a custom range.
+    this.state.abLoop.end = duration;
+    
+    // Set the input fields
+    if (this.elements.abStart) {
+      this.elements.abStart.value = this.formatTime(this.state.abLoop.start || 0);
+    }
+    if (this.elements.abEnd) {
+      this.elements.abEnd.value = this.formatTime(duration);
+    }
+    
+    // Fix multiSegments — if there's a default segment with end=0 or end=10, fix it
+    if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+      const firstSeg = this.state.abLoop.multiSegments[0];
+      if (firstSeg.start === 0 && firstSeg.end < duration) {
+        // Only auto-fix if it looks like the default segment (not user-customized)
+        if (firstSeg.end <= 10.5 || firstSeg.end <= 0) {
           firstSeg.end = duration;
         }
       }
+    } else {
+      // No segments exist yet — create the default full-video segment
+      this.state.abLoop.multiSegments = [{ start: 0, end: duration }];
     }
     
-    // Always update the input fields to reflect the current state
-    if (this.elements.abStart) {
-      if (!this.elements.abStart.value || this.elements.abStart.value === "" || this.elements.abStart.value === "00:00:00" || this.elements.abStart.value === "00:00:00.000") {
-        this.elements.abStart.placeholder = "START TIME";
-        this.elements.abStart.value = "";
-      }
-    }
-    if (this.elements.abEnd) {
-      const curVal = this.elements.abEnd.value;
-      // Update if empty, zero, or was never properly set
-      if (!curVal || curVal === "" || curVal === "00:00:00" || curVal === "00:00:00.000" || curVal === "End") {
-        if (duration && !isNaN(duration) && duration > 0) {
-          this.elements.abEnd.value = this.formatTime(duration);
-        } else {
-          this.elements.abEnd.placeholder = "END TIME";
-          this.elements.abEnd.value = "";
-        }
-      }
-    }
-    
-    // Load any saved loop data for this video (may override the defaults above)
+    // Now load saved data — this may override everything above with
+    // the user's real custom range, if they saved one previously.
     if (this.state.currentVideo && this.state.currentVideo.id) {
       this.loadLoopData(this.state.currentVideo.id);
-    }
-    
-    // CRITICAL: After loading saved data, verify end time is sane.
-    // The old code had a bug where it saved {start: 0, end: 10} for every video
-    // (due to a `|| 10` fallback). Those corrupted saves persist in localStorage.
-    // If start=0 and end is tiny compared to the actual video duration, fix it.
-    if (duration > 0 && this.state.abLoop.start === 0 && 
-        this.state.abLoop.end > 0 && this.state.abLoop.end <= 10.5 && 
-        duration > this.state.abLoop.end * 2) {
-      this.state.abLoop.end = duration;
-      if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
-        this.state.abLoop.multiSegments[0].end = duration;
-      }
-      if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(duration);
-      this.saveLoopData(); // Overwrite the corrupted save
     }
     
     // Once duration is known, we can accurately plot the note markers
