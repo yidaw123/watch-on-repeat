@@ -262,7 +262,11 @@ class LoopsMixin {
         this.elements.abEnd.style.cursor = 'not-allowed';
       }
 
-      if (isPremium && addBtn) {
+      const isReadOnly = this.state.isReadOnlyShared;
+      
+      if (isReadOnly && addBtn) {
+        addBtn.classList.add('hidden');
+      } else if (isPremium && addBtn) {
         addBtn.classList.remove('hidden');
         
         const tier = this.state.user ? this.state.user.tier : 'free';
@@ -287,15 +291,17 @@ class LoopsMixin {
         list.classList.add('hidden');
         if (addBtn) addBtn.classList.add('hidden');
         
+        const isReadOnly = this.state.isReadOnlyShared;
+        
         if (this.elements && this.elements.abStart) {
-          this.elements.abStart.disabled = false;
-          this.elements.abStart.style.opacity = '1';
-          this.elements.abStart.style.cursor = 'text';
+          this.elements.abStart.disabled = isReadOnly;
+          this.elements.abStart.style.opacity = isReadOnly ? '0.5' : '1';
+          this.elements.abStart.style.cursor = isReadOnly ? 'not-allowed' : 'text';
         }
         if (this.elements && this.elements.abEnd) {
-          this.elements.abEnd.disabled = false;
-          this.elements.abEnd.style.opacity = '1';
-          this.elements.abEnd.style.cursor = 'text';
+          this.elements.abEnd.disabled = isReadOnly;
+          this.elements.abEnd.style.opacity = isReadOnly ? '0.5' : '1';
+          this.elements.abEnd.style.cursor = isReadOnly ? 'not-allowed' : 'text';
         }
       }
     }
@@ -316,22 +322,26 @@ class LoopsMixin {
       const isActive = index === (this.state.abLoop.currentSegmentIndex || 0);
       const activeStyle = isActive ? 'border-color: var(--color-primary); box-shadow: 0 0 5px var(--color-primary);' : 'border-color: #333;';
       
+      const isReadOnly = this.state.isReadOnlyShared;
+      const groupClass = isReadOnly ? 'time-split-group disabled multi-seg-group' : 'time-split-group enabled multi-seg-group';
+      const inputAttr = isReadOnly ? 'disabled style="opacity: 0.6; cursor: not-allowed;"' : '';
+      
       row.innerHTML = `
         <span class="text-xs text-gray-500 w-4">${index + 1}</span>
-        <div class="time-split-group enabled multi-seg-group" data-index="${index}" data-type="start" style="${activeStyle}">
-          <input type="text" class="ts-h" placeholder="HH" maxlength="2"><span class="ts-sep">:</span>
-          <input type="text" class="ts-m" placeholder="MM" maxlength="2"><span class="ts-sep">:</span>
-          <input type="text" class="ts-s" placeholder="SS" maxlength="2"><span class="ts-sep">.</span>
-          <input type="text" class="ts-ms" placeholder="sss" maxlength="3">
+        <div class="${groupClass}" data-index="${index}" data-type="start" style="${activeStyle}">
+          <input type="text" class="ts-h" placeholder="HH" maxlength="2" ${inputAttr}><span class="ts-sep">:</span>
+          <input type="text" class="ts-m" placeholder="MM" maxlength="2" ${inputAttr}><span class="ts-sep">:</span>
+          <input type="text" class="ts-s" placeholder="SS" maxlength="2" ${inputAttr}><span class="ts-sep">.</span>
+          <input type="text" class="ts-ms" placeholder="sss" maxlength="3" ${inputAttr}>
         </div>
         <span class="text-gray-500" style="margin: 0 4px;">to</span>
-        <div class="time-split-group enabled multi-seg-group" data-index="${index}" data-type="end" style="${activeStyle}">
-          <input type="text" class="ts-h" placeholder="HH" maxlength="2"><span class="ts-sep">:</span>
-          <input type="text" class="ts-m" placeholder="MM" maxlength="2"><span class="ts-sep">:</span>
-          <input type="text" class="ts-s" placeholder="SS" maxlength="2"><span class="ts-sep">.</span>
-          <input type="text" class="ts-ms" placeholder="sss" maxlength="3">
+        <div class="${groupClass}" data-index="${index}" data-type="end" style="${activeStyle}">
+          <input type="text" class="ts-h" placeholder="HH" maxlength="2" ${inputAttr}><span class="ts-sep">:</span>
+          <input type="text" class="ts-m" placeholder="MM" maxlength="2" ${inputAttr}><span class="ts-sep">:</span>
+          <input type="text" class="ts-s" placeholder="SS" maxlength="2" ${inputAttr}><span class="ts-sep">.</span>
+          <input type="text" class="ts-ms" placeholder="sss" maxlength="3" ${inputAttr}>
         </div>
-        <button class="icon-btn text-red-500 delete-segment-btn" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+        ${isReadOnly ? '' : '<button class="icon-btn text-red-500 delete-segment-btn" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>'}
       `;
       const deleteBtn = row.querySelector('.delete-segment-btn');
       if (deleteBtn) {

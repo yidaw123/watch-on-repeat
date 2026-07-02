@@ -509,8 +509,9 @@ class WatchOnRepeat {
   }
 
   handleSharedPayload(videoId, platform, segmentsParam, notesParam) {
-    let hasLimitedFeatures = false;
     const isPremium = this.state.user && this.state.user.isPremium;
+    this.state.isReadOnlyShared = false;
+    let hasProFeatures = false;
     
     // 1. Process Segments
     if (segmentsParam) {
@@ -519,13 +520,11 @@ class WatchOnRepeat {
         return { start: parseFloat(parts[0]), end: parseFloat(parts[1]) };
       });
       
-      let segmentsToLoad = segPairs;
-      if (!isPremium && segPairs.length > 1) {
-        hasLimitedFeatures = true;
-        segmentsToLoad = [segPairs[0]];
+      if (segPairs.length > 1) {
+        hasProFeatures = true;
       }
       
-      this.state.abLoops = segmentsToLoad;
+      this.state.abLoops = segPairs;
       this.state.isMultiSegment = true;
       if (this.elements.multiSegmentCheckbox) this.elements.multiSegmentCheckbox.checked = true;
     }
@@ -536,9 +535,8 @@ class WatchOnRepeat {
         const decodedStr = decodeURIComponent(atob(notesParam));
         let notesArr = JSON.parse(decodedStr);
         
-        if (!isPremium && notesArr.length > 3) {
-          hasLimitedFeatures = true;
-          notesArr = notesArr.slice(0, 3);
+        if (notesArr.length > 3) {
+          hasProFeatures = true;
         }
         
         // Save to DB so when loadVideo renders it reads these
@@ -550,11 +548,11 @@ class WatchOnRepeat {
       }
     }
 
-    // 3. Notify Free Users
-    if (hasLimitedFeatures) {
-      // Delay toast slightly to appear after player load
+    // 3. Enable Read-Only Mode for Free Users viewing Pro content
+    if (!isPremium && hasProFeatures) {
+      this.state.isReadOnlyShared = true;
       setTimeout(() => {
-        this.showToast("Premium Shared Link: Showing only 1 segment and 3 notes. Upgrade to unlock all!", "crown");
+        this.showToast("Viewing a Shared Pro Link (Read-Only Mode). Upgrade to unlock editing!", "lock");
       }, 1500);
     }
   }
@@ -778,6 +776,10 @@ class WatchOnRepeat {
   // ==========================================
 
   async  loadVideo(id, platform = 'youtube') {
+    if (this.state.currentVideo && (this.state.currentVideo.id !== id || this.state.currentVideo.platform !== platform)) {
+      this.state.isReadOnlyShared = false;
+    }
+    
     if (platform === 'local') {
       this.showToast("For security, please re-select your local file to continue.", "folder");
       const input = document.getElementById('local-video-input');
@@ -2298,6 +2300,10 @@ class WatchOnRepeat {
     };
 
     const handlePointerDown = (e) => {
+      if (this.state.isReadOnlyShared) {
+        this.showToast("Viewing a Shared Pro Link (Read-Only Mode). Upgrade to edit!", "lock");
+        return;
+      }
       if (e.cancelable) e.preventDefault();
       draggingHandle = {
         index: parseInt(e.target.dataset.index),

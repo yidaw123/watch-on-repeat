@@ -92,6 +92,27 @@ window.NotesMixin = {
     const db = this.getDb('notes');
     const notes = db[vId] || [];
     
+    const isReadOnly = this.state.isReadOnlyShared;
+    const noteInput = document.getElementById('note-input');
+    const addNoteBtn = document.querySelector('button[onclick="app.addNote()"]');
+    const clearNotesBtn = document.querySelector('button[onclick="app.clearVideoNotes()"]');
+    
+    if (noteInput) {
+      noteInput.disabled = isReadOnly;
+      if (isReadOnly) noteInput.placeholder = "Viewing Shared Link (Read-Only)";
+      else noteInput.placeholder = "Type a note here...";
+    }
+    if (addNoteBtn) {
+       addNoteBtn.disabled = isReadOnly;
+       addNoteBtn.style.opacity = isReadOnly ? '0.5' : '1';
+       addNoteBtn.style.cursor = isReadOnly ? 'not-allowed' : 'pointer';
+    }
+    if (clearNotesBtn) {
+       clearNotesBtn.disabled = isReadOnly;
+       clearNotesBtn.style.opacity = isReadOnly ? '0.5' : '1';
+       clearNotesBtn.style.cursor = isReadOnly ? 'not-allowed' : 'pointer';
+    }
+    
     this.elements.notesList.innerHTML = '';
     
     if (notes.length === 0) {
@@ -107,10 +128,11 @@ window.NotesMixin = {
       const timeStr = `${m}:${s}`;
       const div = document.createElement('div');
       div.className = 'note-item';
+      const isReadOnly = this.state.isReadOnlyShared;
       div.innerHTML = `
         <div class="note-header">
           <span class="note-timestamp" onclick="app.seekToTime(${note.time})">[${timeStr}]</span>
-          <button class="note-delete" onclick="app.deleteNote('${note.id}')" title="Delete note"><i data-lucide="trash-2"></i></button>
+          ${isReadOnly ? '' : `<button class="note-delete" onclick="app.deleteNote('${note.id}')" title="Delete note"><i data-lucide="trash-2"></i></button>`}
         </div>
         <div class="note-content">${this.escapeHtml(note.text)}</div>
       `;
