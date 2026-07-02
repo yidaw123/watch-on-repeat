@@ -2431,12 +2431,16 @@ class WatchOnRepeat {
       const segs = this.state.abLoop.multiSegments;
       
       if (draggingHandle.type === 'start') {
-        let minStart = idx > 0 ? segs[idx - 1].end : 0;
-        let maxStart = segs[idx].end;
+        let minStart = (idx > 0 && segs[idx - 1].end !== null) ? segs[idx - 1].end : 0;
+        let maxStart = (segs[idx].end !== null) ? segs[idx].end : duration;
+        minStart = Math.max(0, minStart);
+        maxStart = Math.min(maxStart, duration);
         segs[idx].start = Math.max(minStart, Math.min(val, maxStart));
       } else {
-        let minEnd = segs[idx].start;
-        let maxEnd = idx < segs.length - 1 ? segs[idx + 1].start : duration;
+        let minEnd = (segs[idx].start !== null) ? segs[idx].start : 0;
+        let maxEnd = (idx < segs.length - 1 && segs[idx + 1].start !== null) ? segs[idx + 1].start : duration;
+        minEnd = Math.max(0, minEnd);
+        maxEnd = Math.min(maxEnd, duration);
         segs[idx].end = Math.max(minEnd, Math.min(val, maxEnd));
       }
       
@@ -2478,10 +2482,13 @@ class WatchOnRepeat {
       
       if (e === 0) e = duration;
       
-      let minStart = idx > 0 ? this.state.abLoop.multiSegments[idx - 1].end : 0;
-      let maxEnd = idx < this.state.abLoop.multiSegments.length - 1 ? this.state.abLoop.multiSegments[idx + 1].start : duration;
+      let minStart = (idx > 0 && this.state.abLoop.multiSegments[idx - 1].end !== null) ? this.state.abLoop.multiSegments[idx - 1].end : 0;
+      let nextStart = (idx < this.state.abLoop.multiSegments.length - 1 && this.state.abLoop.multiSegments[idx + 1].start !== null) ? this.state.abLoop.multiSegments[idx + 1].start : duration;
       
-      s = Math.max(minStart, s);
+      minStart = Math.max(0, minStart);
+      let maxEnd = Math.min(nextStart, duration);
+      
+      s = Math.max(minStart, Math.min(s, duration));
       e = Math.min(e, maxEnd);
       
       if (type === 'start' && s > e) {

@@ -40,9 +40,11 @@ class LoopsMixin {
       let maxTime = this.state.currentVideoDuration || newEnd;
       newEnd = Math.min(maxTime, newEnd + amount);
       if (newEnd <= newStart) newEnd = newStart + 0.1;
-      this.state.abLoop.end = newEnd;
-      this.elements.abEnd.value = this.formatTime(newEnd);
-      this.seekToTime(newEnd - 0.5);
+      target.end = newEnd;
+      if (!isMulti) {
+        this.elements.abEnd.value = this.formatTime(newEnd);
+        this.seekToTime(newEnd - 0.5);
+      }
     }
     
     if (this.updateTimelineUI) this.updateTimelineUI();
