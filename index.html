@@ -285,7 +285,7 @@
               <div class="multi-segment-wrapper" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                   <input type="checkbox" id="multi-segment-checkbox" onchange="app.toggleMultiSegment(event)">
-                  <span class="text-sm font-bold text-white" style="display:flex; align-items:center;"><i data-lucide="layers" style="width:14px; height:14px; display:inline-block; margin-right:4px;"></i> Advanced Loop Segments <i data-lucide="info" class="tooltip" data-tip="When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments." style="width:14px;height:14px;color:var(--text-muted);cursor:help;margin-left:6px;margin-right:6px;"></i> <span class="premium-badge">Upgrade</span></span>
+                  <span class="text-sm font-bold text-white" style="display:flex; align-items:center;"><i data-lucide="layers" style="width:14px; height:14px; display:inline-block; margin-right:4px;"></i> Advanced Loop Segments <i data-lucide="info" class="tooltip" data-tip="When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments." onclick="event.preventDefault();" style="width:14px;height:14px;color:var(--text-muted);cursor:help;margin-left:6px;margin-right:6px;"></i> <span class="premium-badge">Upgrade</span></span>
                 </label>
                 
                 <div id="multi-segment-list" class="hidden" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
