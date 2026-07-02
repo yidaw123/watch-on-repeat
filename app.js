@@ -2120,18 +2120,12 @@ class WatchOnRepeat {
 
   formatTime(seconds) {
     if (isNaN(seconds)) return "00:00:00";
-    const isPremium = this.state.user && this.state.user.isPremium;
     
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = Math.floor(seconds % 60);
     
-    if (isPremium) {
-      const ms = Math.floor((seconds % 1) * 1000);
-      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
-    } else {
-      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
 
   applyTimeMask(input, onChangeCallback) {

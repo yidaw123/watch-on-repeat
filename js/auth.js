@@ -369,7 +369,7 @@ class AuthMixin {
       return false;
     }
     if (type === 'multiple_segments') {
-      this.openUpgradeModal("Multiple loop segments are a Premium feature.");
+      this.openUpgradeModal("Advanced loop segments are a Premium feature.");
       return false;
     }
     return true;

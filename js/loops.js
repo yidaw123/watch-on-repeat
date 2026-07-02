@@ -173,7 +173,7 @@ class LoopsMixin {
     const addBtn = document.getElementById('add-segment-btn');
     
     if (e.target.checked) {
-      if (!this.enforcePremiumFeature("Multiple loop segments are a Premium feature.")) {
+      if (!this.enforcePremiumFeature("Advanced loop segments are a Premium feature.")) {
         e.target.checked = false;
         return;
       }
@@ -212,7 +212,7 @@ class LoopsMixin {
       if (tier === 'premium' && limit === 7) {
         this.openUpgradeModal("Maximum 7 segments reached. Upgrade to Pro for 10 segments per video!");
       } else if (tier === 'free') {
-        this.openUpgradeModal("Multiple loop segments are a Premium feature!");
+        this.openUpgradeModal("Advanced loop segments are a Premium feature!");
       } else {
         this.showToast(`Maximum of ${limit} segments reached.`, "alert-circle");
       }
