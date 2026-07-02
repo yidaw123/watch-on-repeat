@@ -201,10 +201,8 @@ class LoopsMixin {
     let currentSegIndex = this.state.abLoop.currentSegmentIndex || 0;
     
     if (!segments[currentSegIndex] || segments[currentSegIndex].start === null || segments[currentSegIndex].end === null) {
-      currentSegIndex = segments.findIndex(seg => seg.start !== null && seg.end !== null);
-      if (currentSegIndex === -1) return;
-      this.state.abLoop.currentSegmentIndex = currentSegIndex;
-      this.seekToTime(segments[currentSegIndex].start);
+      // The user is currently focused on an uninitialized segment (e.g. they just clicked Add Segment).
+      // Let the video play normally so they can find their timestamps. Do not force a seek.
       return;
     }
     
