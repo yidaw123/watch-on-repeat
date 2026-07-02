@@ -1959,6 +1959,24 @@ class WatchOnRepeat {
       </div>
     `;
 
+    if (video.platform === 'youtube') {
+      const img = card.querySelector('.video-card-thumb');
+      if (img) {
+        img.onload = () => {
+          if (img.naturalWidth === 120) {
+            card.style.display = 'none';
+            if (window.supabaseClient && !isHistory) {
+              window.supabaseClient.from('global_stats')
+                .delete()
+                .eq('video_id', video.videoId || video.id)
+                .then()
+                .catch(e => console.warn('Failed to clean up dead video', e));
+            }
+          }
+        };
+      }
+    }
+
     card.addEventListener('click', () => {
       const vidId = video.videoId || video.id;
       
