@@ -134,6 +134,21 @@ class LoopsMixin {
       return;
     }
     this.state.isAutoTempoEnabled = e.target.checked;
+    
+    // Freeze playback speed dropdown to prevent conflicts
+    const speedSelect = document.getElementById('playback-speed');
+    if (speedSelect) {
+      if (this.state.isAutoTempoEnabled) {
+        speedSelect.disabled = true;
+        speedSelect.parentElement.style.opacity = '0.4';
+        speedSelect.parentElement.title = "Playback Speed is frozen while Gradual Tempo is active";
+      } else {
+        speedSelect.disabled = false;
+        speedSelect.parentElement.style.opacity = '1';
+        speedSelect.parentElement.title = "";
+      }
+    }
+    
     if (this.state.isAutoTempoEnabled) {
       this.showToast("Gradual Tempo enabled! Speed increases slightly each loop.", "trending-up");
     }

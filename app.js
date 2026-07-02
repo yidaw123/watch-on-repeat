@@ -2744,6 +2744,19 @@ class WatchOnRepeat {
     if (modal) modal.classList.add('hidden');
   }
 
+  openProControlsModal() {
+    const modal = document.getElementById('pro-controls-modal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+  }
+  
+  closeProControlsModal() {
+    const modal = document.getElementById('pro-controls-modal');
+    if (modal) modal.classList.add('hidden');
+  }
+
   copyShareLink() {
     const input = document.getElementById('share-link-input');
     if (input) {
