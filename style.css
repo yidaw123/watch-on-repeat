@@ -1259,15 +1259,22 @@ h1, h2, h3, h4, .brand-name {
 }
 
 @media (max-width: 768px) {
+  body, html {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
   .navbar {
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.5rem;
+    padding: 0.75rem;
   }
   
   .search-container {
     order: 3;
+    flex: 0 0 100%;
     width: 100%;
-    margin: 0;
+    margin: 0.5rem 0 0 0;
     max-width: 100%;
   }
   
@@ -1318,12 +1325,29 @@ h1, h2, h3, h4, .brand-name {
     font-size: 0.7rem;
   }
   
+  .timeline-container {
+    min-width: 100px !important;
+  }
+  .timeline-loop-wrapper {
+    gap: 4px !important;
+  }
+  #ab-start, #ab-end {
+    width: 75px !important;
+    font-size: 0.75rem !important;
+    padding: 2px !important;
+  }
+  .playback-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
   .auth-section {
     order: 2;
   }
   
   .brand {
     order: 1;
+    flex: 1;
   }
   
   .stats-dashboard {
