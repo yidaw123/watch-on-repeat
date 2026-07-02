@@ -297,8 +297,12 @@ class LoopsMixin {
       return;
     }
     
-    const dur = this.state.currentVideoDuration || 0;
-    this.state.abLoop.multiSegments.push({ start: 0, end: dur });
+    if (this.state.abLoop.multiSegments.length === 0) {
+      const dur = this.state.currentVideoDuration || 0;
+      this.state.abLoop.multiSegments.push({ start: 0, end: dur });
+    } else {
+      this.state.abLoop.multiSegments.push({ start: null, end: null });
+    }
     this.state.abLoop.currentSegmentIndex = this.state.abLoop.multiSegments.length - 1;
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
