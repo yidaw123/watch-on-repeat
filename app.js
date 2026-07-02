@@ -2099,18 +2099,24 @@ class WatchOnRepeat {
     if (video.platform === 'youtube') {
       const img = card.querySelector('.video-card-thumb');
       if (img) {
-        img.onload = () => {
+        const checkDead = () => {
           if (img.naturalWidth === 120) {
             card.style.display = 'none';
             if (window.supabaseClient && !isHistory) {
               window.supabaseClient.from('global_stats')
                 .delete()
                 .eq('video_id', video.videoId || video.id)
-                .then()
-                .catch(e => console.warn('Failed to clean up dead video', e));
+                .then(({ error }) => {
+                  if (error) console.warn('Failed to clean up dead video', error);
+                });
             }
           }
         };
+        if (img.complete) {
+          checkDead();
+        } else {
+          img.onload = checkDead;
+        }
       }
     }
 
