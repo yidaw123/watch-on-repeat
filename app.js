@@ -1463,7 +1463,8 @@ class WatchOnRepeat {
       supabaseClient.from('global_stats').upsert({
         video_id: video.id,
         platform: video.platform,
-        global_loops: this.state.currentGlobalLoops
+        global_loops: this.state.currentGlobalLoops,
+        video_title: video.title || ''
       }, { onConflict: 'video_id, platform' }).then(({ error }) => {
         if (!error) this.fetchPlatformTotalLoops(); // Refresh the massive platform number
         if (error && DEBUG_MODE) console.error("Global Loops Upsert Error:", error);
