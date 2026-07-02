@@ -2387,7 +2387,7 @@ class WatchOnRepeat {
       const duration = this.state.currentVideoDuration || 3600;
       const safeDuration = duration || 1;
       
-      const segmentsToRender = this.state.isMultiSegment ? this.state.abLoop.multiSegments : [this.state.abLoop.multiSegments[0] || { start: this.state.abLoop.start || 0, end: this.state.abLoop.end || duration }];
+      const segmentsToRender = this.state.isMultiSegment ? this.state.abLoop.multiSegments : [{ start: this.state.abLoop.start !== null ? this.state.abLoop.start : 0, end: this.state.abLoop.end !== null ? this.state.abLoop.end : duration }];
 
       segmentsToRender.forEach((seg, index) => {
         if (seg.start === null || seg.end === null) return;
@@ -2422,20 +2422,24 @@ class WatchOnRepeat {
       
       if (markers) container.appendChild(markers);
       
-      const activeIdx = this.state.abLoop.currentSegmentIndex || 0;
-      if (this.state.abLoop.multiSegments[activeIdx]) {
-        const activeSeg = this.state.abLoop.multiSegments[activeIdx];
-        
-        // Only update input fields if the segment has meaningful values.
-        // Writing formatTime(0) = "00:00:00" into the input would prevent
-        // setVideoDuration from later correcting it to the real duration.
-        if (activeSeg.end > 0) {
-          if (this.elements.abStart) this.elements.abStart.value = this.formatTime(activeSeg.start);
-          if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(activeSeg.end);
+      if (this.state.isMultiSegment) {
+        const activeIdx = this.state.abLoop.currentSegmentIndex || 0;
+        if (this.state.abLoop.multiSegments[activeIdx]) {
+          const activeSeg = this.state.abLoop.multiSegments[activeIdx];
+          
+          if (activeSeg.end > 0) {
+            if (this.elements.abStart) this.elements.abStart.value = this.formatTime(activeSeg.start);
+            if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(activeSeg.end);
+          }
+          
+          this.state.abLoop.start = activeSeg.start;
+          this.state.abLoop.end = activeSeg.end;
         }
-        
-        this.state.abLoop.start = activeSeg.start;
-        this.state.abLoop.end = activeSeg.end;
+      } else {
+        if (this.state.abLoop.end > 0) {
+          if (this.elements.abStart) this.elements.abStart.value = this.formatTime(this.state.abLoop.start);
+          if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(this.state.abLoop.end);
+        }
       }
       
       this.renderMultiSegments();
@@ -2482,20 +2486,30 @@ class WatchOnRepeat {
       let val = pct * duration;
       
       const idx = draggingHandle.index;
-      const segs = this.state.abLoop.multiSegments;
       
-      if (draggingHandle.type === 'start') {
-        let minStart = (idx > 0 && segs[idx - 1].end !== null) ? segs[idx - 1].end : 0;
-        let maxStart = (segs[idx].end !== null) ? segs[idx].end : duration;
-        minStart = Math.max(0, minStart);
-        maxStart = Math.min(maxStart, duration);
-        segs[idx].start = Math.max(minStart, Math.min(val, maxStart));
+      if (this.state.isMultiSegment) {
+        const segs = this.state.abLoop.multiSegments;
+        if (draggingHandle.type === 'start') {
+          let minStart = (idx > 0 && segs[idx - 1].end !== null) ? segs[idx - 1].end : 0;
+          let maxStart = (segs[idx].end !== null) ? segs[idx].end : duration;
+          minStart = Math.max(0, minStart);
+          maxStart = Math.min(maxStart, duration);
+          segs[idx].start = Math.max(minStart, Math.min(val, maxStart));
+        } else {
+          let minEnd = (segs[idx].start !== null) ? segs[idx].start : 0;
+          let maxEnd = (idx < segs.length - 1 && segs[idx + 1].start !== null) ? segs[idx + 1].start : duration;
+          minEnd = Math.max(0, minEnd);
+          maxEnd = Math.min(maxEnd, duration);
+          segs[idx].end = Math.max(minEnd, Math.min(val, maxEnd));
+        }
       } else {
-        let minEnd = (segs[idx].start !== null) ? segs[idx].start : 0;
-        let maxEnd = (idx < segs.length - 1 && segs[idx + 1].start !== null) ? segs[idx + 1].start : duration;
-        minEnd = Math.max(0, minEnd);
-        maxEnd = Math.min(maxEnd, duration);
-        segs[idx].end = Math.max(minEnd, Math.min(val, maxEnd));
+        if (draggingHandle.type === 'start') {
+          let maxStart = (this.state.abLoop.end !== null && this.state.abLoop.end > 0) ? this.state.abLoop.end : duration;
+          this.state.abLoop.start = Math.max(0, Math.min(val, maxStart));
+        } else {
+          let minEnd = (this.state.abLoop.start !== null) ? this.state.abLoop.start : 0;
+          this.state.abLoop.end = Math.max(minEnd, Math.min(val, duration));
+        }
       }
       
       renderTimelineHandles();
@@ -2505,7 +2519,12 @@ class WatchOnRepeat {
       if (!draggingHandle) return;
       
       const idx = draggingHandle.index;
-      const val = draggingHandle.type === 'start' ? this.state.abLoop.multiSegments[idx].start : this.state.abLoop.multiSegments[idx].end;
+      let val;
+      if (this.state.isMultiSegment) {
+        val = draggingHandle.type === 'start' ? this.state.abLoop.multiSegments[idx].start : this.state.abLoop.multiSegments[idx].end;
+      } else {
+        val = draggingHandle.type === 'start' ? this.state.abLoop.start : this.state.abLoop.end;
+      }
       
       if (this.state.currentPlatform) {
         if (draggingHandle.type === 'start') {
@@ -2527,34 +2546,60 @@ class WatchOnRepeat {
     };
 
     const updateActiveFromInputs = (type) => {
-      const idx = this.state.abLoop.currentSegmentIndex || 0;
-      if (!this.state.abLoop.multiSegments[idx]) return;
+      const valStr = type === 'start' ? this.elements.abStart.value : this.elements.abEnd.value;
+      const v = this.parseTime(valStr);
+      if (isNaN(v)) return;
+      
       const duration = this.state.currentVideoDuration || 3600;
       
-      let s = this.parseTime(this.elements.abStart.value);
-      let e = this.elements.abEnd.value ? this.parseTime(this.elements.abEnd.value) : duration;
-      
-      if (e === 0) e = duration;
-      
-      let minStart = (idx > 0 && this.state.abLoop.multiSegments[idx - 1].end !== null) ? this.state.abLoop.multiSegments[idx - 1].end : 0;
-      let nextStart = (idx < this.state.abLoop.multiSegments.length - 1 && this.state.abLoop.multiSegments[idx + 1].start !== null) ? this.state.abLoop.multiSegments[idx + 1].start : duration;
-      
-      minStart = Math.max(0, minStart);
-      let maxEnd = Math.min(nextStart, duration);
-      
-      s = Math.max(minStart, Math.min(s, duration));
-      e = Math.min(e, maxEnd);
-      
-      if (type === 'start' && s > e) {
-        e = Math.min(s, duration);
-      } else if (type === 'end' && e < s) {
-        s = Math.max(e, 0);
-      } else if (s > e) {
-        s = e;
+      if (this.state.isMultiSegment) {
+        const idx = this.state.abLoop.currentSegmentIndex || 0;
+        if (!this.state.abLoop.multiSegments[idx]) return;
+        
+        let s = type === 'start' ? v : this.state.abLoop.multiSegments[idx].start;
+        let e = type === 'end' ? v : this.state.abLoop.multiSegments[idx].end;
+        
+        if (e === 0) e = duration;
+        
+        let minStart = (idx > 0 && this.state.abLoop.multiSegments[idx - 1].end !== null) ? this.state.abLoop.multiSegments[idx - 1].end : 0;
+        let nextStart = (idx < this.state.abLoop.multiSegments.length - 1 && this.state.abLoop.multiSegments[idx + 1].start !== null) ? this.state.abLoop.multiSegments[idx + 1].start : duration;
+        
+        minStart = Math.max(0, minStart);
+        let maxEnd = Math.min(nextStart, duration);
+        
+        s = Math.max(minStart, Math.min(s, duration));
+        e = Math.min(e, maxEnd);
+        
+        if (type === 'start' && s > e) {
+          e = Math.min(s, duration);
+        } else if (type === 'end' && e < s) {
+          s = Math.max(e, 0);
+        } else if (s > e) {
+          s = e;
+        }
+        
+        this.state.abLoop.multiSegments[idx].start = s;
+        this.state.abLoop.multiSegments[idx].end = e;
+      } else {
+        let s = type === 'start' ? v : this.state.abLoop.start;
+        let e = type === 'end' ? v : this.state.abLoop.end;
+        
+        if (e === 0) e = duration;
+        
+        s = Math.max(0, Math.min(s, duration));
+        e = Math.max(0, Math.min(e, duration));
+        
+        if (type === 'start' && s > e) {
+          e = Math.min(s, duration);
+        } else if (type === 'end' && e < s) {
+          s = Math.max(e, 0);
+        } else if (s > e) {
+          s = e;
+        }
+        
+        this.state.abLoop.start = s;
+        this.state.abLoop.end = e;
       }
-      
-      this.state.abLoop.multiSegments[idx].start = s;
-      this.state.abLoop.multiSegments[idx].end = e;
       this.updateTimelineUI();
     };
 

@@ -185,7 +185,7 @@ class LoopsMixin {
     if (!this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
       this.state.abLoop.multiSegments = [{ start: null, end: null }];
     }
-    const segments = this.state.isMultiSegment ? this.state.abLoop.multiSegments : [this.state.abLoop.multiSegments[0] || { start: this.state.abLoop.start || 0, end: this.state.abLoop.end || this.state.currentVideoDuration || 0 }];
+    const segments = this.state.isMultiSegment ? this.state.abLoop.multiSegments : [{ start: this.state.abLoop.start !== null ? this.state.abLoop.start : 0, end: this.state.abLoop.end !== null ? this.state.abLoop.end : (this.state.currentVideoDuration || 0) }];
     const validSegmentsCount = segments.filter(seg => seg.start !== null && seg.end !== null).length;
     
     if (validSegmentsCount === 0) {
