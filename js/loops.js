@@ -209,37 +209,52 @@ class LoopsMixin {
     const seg = segments[currentSegIndex];
     
     if (t >= seg.end && seg.end > 0) {
-      let nextIndex = currentSegIndex + 1;
-      
-      while (nextIndex < segments.length && (segments[nextIndex].start === null || segments[nextIndex].end === null)) {
-        nextIndex++;
-      }
-      
-      if (nextIndex >= segments.length) {
-        nextIndex = segments.findIndex(s => s.start !== null && s.end !== null);
-        
-        if (this.state.isAutoTempoEnabled) {
-          let speed = this.state.playbackRate || 1.0;
-          speed = Math.min(2.0, speed + 0.05);
-          this.setPlaybackSpeed(speed.toFixed(2));
-        }
-        
-        if (this.incrementLoops()) return;
-      }
-      
-      this.state.abLoop.currentSegmentIndex = nextIndex;
-      
-      const newSegSpeed = segments[nextIndex].speed || 1.0;
-      if (this.state.playbackRate !== newSegSpeed) {
-        this.setPlaybackSpeed(newSegSpeed, true);
-      }
-      
-      if (segments[nextIndex].start !== seg.end) {
-        this.seekToTime(segments[nextIndex].start);
-      }
+      // If we seamlessly transition to the very next timestamp, we can avoid seeking
+      const currentEnd = seg.end;
+      this.advanceLoopSegment();
+      // Optimization: if the next segment starts exactly where this one ended, we could theoretically skip the seek
+      // But advanceLoopSegment already handles the seek, which is safe.
     } else if (t < seg.start - 0.5) {
       this.seekToTime(seg.start);
     }
+  }
+
+  advanceLoopSegment() {
+    if (!this.state.isMultiSegment || !this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
+      if (this.incrementLoops()) return;
+      this.seekToTime(this.state.abLoop.start || 0);
+      return;
+    }
+    
+    const segments = this.state.abLoop.multiSegments;
+    let currentSegIndex = this.state.abLoop.currentSegmentIndex || 0;
+    let nextIndex = currentSegIndex + 1;
+    
+    while (nextIndex < segments.length && (segments[nextIndex].start === null || segments[nextIndex].end === null)) {
+      nextIndex++;
+    }
+    
+    if (nextIndex >= segments.length) {
+      nextIndex = segments.findIndex(s => s.start !== null && s.end !== null);
+      
+      if (this.state.isAutoTempoEnabled) {
+        let speed = this.state.playbackRate || 1.0;
+        speed = Math.min(2.0, speed + 0.05);
+        this.setPlaybackSpeed(speed.toFixed(2));
+      }
+      
+      if (this.incrementLoops()) return;
+    }
+    
+    this.state.abLoop.currentSegmentIndex = nextIndex;
+    
+    const newSegSpeed = segments[nextIndex].speed || 1.0;
+    if (this.state.playbackRate !== newSegSpeed) {
+      this.setPlaybackSpeed(newSegSpeed, true);
+    }
+    
+    this.seekToTime(segments[nextIndex].start);
+    if (this.updateTimelineUI) this.updateTimelineUI();
   }
 
   toggleMultiSegment(e) {

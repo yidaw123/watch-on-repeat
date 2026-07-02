@@ -1323,7 +1323,12 @@ class WatchOnRepeat {
       this.elements.loopStateText.textContent = "Restarting...";
       this.elements.loopStateText.className = "stat-value text-muted";
       
-      if (this.incrementLoops()) return;
+      if (typeof this.advanceLoopSegment === 'function') {
+        this.advanceLoopSegment();
+      } else {
+        if (this.incrementLoops()) return;
+        this.seekToTime(this.state.abLoop.start || 0);
+      }
       
       // Re-play video
       this.state.players.youtube.playVideo();
