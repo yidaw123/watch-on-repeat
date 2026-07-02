@@ -228,7 +228,7 @@ class LoopsMixin {
   removeLoopSegment(index) {
     this.state.abLoop.multiSegments.splice(index, 1);
     if (this.state.abLoop.multiSegments.length === 0) {
-      this.state.abLoop.multiSegments.push({ start: 0, end: this.state.currentVideoDuration || 0 });
+      this.state.abLoop.multiSegments.push({ start: null, end: null });
     }
     if (this.state.abLoop.currentSegmentIndex >= this.state.abLoop.multiSegments.length) {
       this.state.abLoop.currentSegmentIndex = 0;
