@@ -348,8 +348,8 @@ class WatchOnRepeat {
       analyticsEmpty: document.getElementById('analytics-empty'),
       
       // Advanced Controls
-      abStartGroup: document.getElementById('ab-start-group'),
-      abEndGroup: document.getElementById('ab-end-group'),
+      abStart: document.getElementById('ab-start'),
+      abEnd: document.getElementById('ab-end'),
       playbackSpeed: document.getElementById('playback-speed'),
       saveLoopGroup: document.getElementById('save-loop-group'),
       loopNameInput: document.getElementById('loop-name-input'),
@@ -825,13 +825,17 @@ class WatchOnRepeat {
     
     // Only disable inputs if there's no valid video ID being loaded
     const shouldDisable = !id;
-    if (this.elements.abStartGroup) {
-      this.setSplitTimeDisabled(this.elements.abStartGroup, shouldDisable);
-      this.setSplitTimeValue(this.elements.abStartGroup, 0);
+    if (this.elements.abStart) {
+      this.elements.abStart.value = "START TIME";
+      this.elements.abStart.disabled = shouldDisable;
+      this.elements.abStart.style.pointerEvents = shouldDisable ? 'none' : 'auto';
+      this.elements.abStart.style.opacity = shouldDisable ? '0.8' : '1';
     }
-    if (this.elements.abEndGroup) {
-      this.setSplitTimeDisabled(this.elements.abEndGroup, shouldDisable);
-      this.setSplitTimeValue(this.elements.abEndGroup, 0);
+    if (this.elements.abEnd) {
+      this.elements.abEnd.value = "END TIME";
+      this.elements.abEnd.disabled = shouldDisable;
+      this.elements.abEnd.style.pointerEvents = shouldDisable ? 'none' : 'auto';
+      this.elements.abEnd.style.opacity = shouldDisable ? '0.8' : '1';
     }
     if (this.elements.timelineContainer) {
       this.elements.timelineContainer.style.pointerEvents = shouldDisable ? 'none' : 'auto';
@@ -1045,13 +1049,17 @@ class WatchOnRepeat {
     this.state.abLoop.end = duration;
     
     // Set the input fields
-    if (this.elements.abStartGroup) {
-      this.setSplitTimeDisabled(this.elements.abStartGroup, false);
-      this.setSplitTimeValue(this.elements.abStartGroup, this.state.abLoop.start || 0);
+    if (this.elements.abStart) {
+      this.elements.abStart.value = this.formatTime(this.state.abLoop.start || 0);
+      this.elements.abStart.disabled = false;
+      this.elements.abStart.style.pointerEvents = 'auto';
+      this.elements.abStart.style.opacity = '1';
     }
-    if (this.elements.abEndGroup) {
-      this.setSplitTimeDisabled(this.elements.abEndGroup, false);
-      this.setSplitTimeValue(this.elements.abEndGroup, duration);
+    if (this.elements.abEnd) {
+      this.elements.abEnd.value = this.formatTime(duration);
+      this.elements.abEnd.disabled = false;
+      this.elements.abEnd.style.pointerEvents = 'auto';
+      this.elements.abEnd.style.opacity = '1';
     }
     if (this.elements.timelineContainer) {
       this.elements.timelineContainer.style.pointerEvents = 'auto';
@@ -2108,6 +2116,24 @@ class WatchOnRepeat {
     }
   }
 
+  applyTimeMask(input, onChangeCallback) {
+    input.addEventListener('focus', function() {
+      setTimeout(() => this.select(), 10);
+    });
+    
+    input.addEventListener('input', function(e) {
+      this.value = this.value.replace(/[^\d:.]/g, '');
+    });
+
+    if (onChangeCallback) {
+      input.addEventListener('change', onChangeCallback);
+      input.addEventListener('blur', () => {
+        const parsed = this.parseTime(input.value);
+        input.value = this.formatTime(parsed);
+      });
+    }
+  }
+
   getSplitTimeValue(group) {
     if (!group) return 0;
     const h = parseInt(group.querySelector('.ts-h').value) || 0;
@@ -2233,8 +2259,8 @@ class WatchOnRepeat {
         // Writing formatTime(0) = "00:00:00" into the input would prevent
         // setVideoDuration from later correcting it to the real duration.
         if (activeSeg.end > 0) {
-          if (this.elements.abStartGroup) this.setSplitTimeValue(this.elements.abStartGroup, activeSeg.start);
-          if (this.elements.abEndGroup) this.setSplitTimeValue(this.elements.abEndGroup, activeSeg.end);
+          if (this.elements.abStart) this.elements.abStart.value = this.formatTime(activeSeg.start);
+          if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(activeSeg.end);
         }
         
         this.state.abLoop.start = activeSeg.start;
@@ -2328,8 +2354,8 @@ class WatchOnRepeat {
       if (!this.state.abLoop.multiSegments[idx]) return;
       const duration = this.state.currentVideoDuration || 3600;
       
-      let s = this.getSplitTimeValue(this.elements.abStartGroup);
-      let e = this.getSplitTimeValue(this.elements.abEndGroup);
+      let s = this.parseTime(this.elements.abStart.value);
+      let e = this.elements.abEnd.value ? this.parseTime(this.elements.abEnd.value) : duration;
       
       if (e === 0) e = duration;
       
@@ -2352,11 +2378,11 @@ class WatchOnRepeat {
       this.updateTimelineUI();
     };
 
-    if (this.elements.abStartGroup) {
-      this.bindSplitTimeGroup(this.elements.abStartGroup, () => updateActiveFromInputs('start'));
+    if (this.elements.abStart) {
+      this.applyTimeMask(this.elements.abStart, () => updateActiveFromInputs('start'));
     }
-    if (this.elements.abEndGroup) {
-      this.bindSplitTimeGroup(this.elements.abEndGroup, () => updateActiveFromInputs('end'));
+    if (this.elements.abEnd) {
+      this.applyTimeMask(this.elements.abEnd, () => updateActiveFromInputs('end'));
     }
     
     // Explicitly update the timeline UI on load so it's not blank
@@ -2719,8 +2745,8 @@ class WatchOnRepeat {
       if (key === s.setStart) {
         e.preventDefault();
         this.getCurrentTime().then(t => {
-          if (this.elements.abStartGroup) {
-            this.setSplitTimeValue(this.elements.abStartGroup, t);
+          if (this.elements.abStart) {
+            this.elements.abStart.value = this.formatTime(t);
             if (this.updateTimelineUI) this.updateTimelineUI();
           }
           this.showToast("Timestamp Start marked at " + this.formatTime(t), "flag");
@@ -2728,8 +2754,8 @@ class WatchOnRepeat {
       } else if (key === s.setEnd) {
         e.preventDefault();
         this.getCurrentTime().then(t => {
-          if (this.elements.abEndGroup) {
-            this.setSplitTimeValue(this.elements.abEndGroup, t);
+          if (this.elements.abEnd) {
+            this.elements.abEnd.value = this.formatTime(t);
             if (this.updateTimelineUI) this.updateTimelineUI();
           }
           this.showToast("Timestamp End marked at " + this.formatTime(t), "flag");
