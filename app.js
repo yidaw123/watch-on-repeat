@@ -246,6 +246,7 @@ class WatchOnRepeat {
     this.loadSDKs();
     this.generateBookmarklet();
     this.initHotkeys();
+    this.initMobileLayout();
     
     // One-time cleanup of corrupted loop saves from the old || 10 bug.
     // This runs once and sets a flag so it never runs again.
@@ -1885,42 +1886,86 @@ class WatchOnRepeat {
     return '';
   }
 
-  async renderDiscoverTab() {
+  async renderDiscoverTab(page = 1) {
 
-    let discoverVideos = [
-      { id: 'aqz-KE-bpKQ', platform: 'youtube', title: 'Big Buck Bunny 60fps 4K' },
-      { id: 'jfKfPfyJRdk', platform: 'youtube', title: 'lofi hip hop radio - beats to relax/study to' },
-      { id: '76979871', platform: 'vimeo', title: 'Big Buck Bunny (High Quality Animated Film)' },
-      { id: 'x7t5vcr', platform: 'dailymotion', title: 'Introducing Dailymotion - Our brand new HTML5 player SDK' },
-      { id: 'Sagg0zTrNGA', platform: 'youtube', title: 'Epic Sax Guy - 10 Hours Loop Edition' }
-    ];
+    if (!this.state.discoverData) {
+      let discoverVideos = [
+        { id: 'aqz-KE-bpKQ', platform: 'youtube', title: 'Big Buck Bunny 60fps 4K' },
+        { id: 'jfKfPfyJRdk', platform: 'youtube', title: 'lofi hip hop radio - beats to relax/study to' },
+        { id: '76979871', platform: 'vimeo', title: 'Big Buck Bunny (High Quality Animated Film)' },
+        { id: 'x7t5vcr', platform: 'dailymotion', title: 'Introducing Dailymotion - Our brand new HTML5 player SDK' },
+        { id: 'Sagg0zTrNGA', platform: 'youtube', title: 'Epic Sax Guy - 10 Hours Loop Edition' }
+      ];
 
-    if (window.supabaseClient) {
-      const { data } = await supabaseClient.from('global_stats')
-        .select('*')
-        .neq('platform', 'local')
-        .order('global_loops', { ascending: false })
-        .limit(10);
-      
-      if (data && data.length > 0) {
-        discoverVideos = data.map(d => ({
-          videoId: d.video_id,
-          platform: d.platform,
-          title: `Trending ${d.platform} video`,
-          globalLoops: d.global_loops
-        }));
+      if (window.supabaseClient) {
+        const { data } = await supabaseClient.from('global_stats')
+          .select('*')
+          .neq('platform', 'local')
+          .order('global_loops', { ascending: false })
+          .limit(10);
+        
+        if (data && data.length > 0) {
+          discoverVideos = data.map(d => ({
+            videoId: d.video_id,
+            platform: d.platform,
+            title: `Trending ${d.platform} video`,
+            globalLoops: d.global_loops
+          }));
+        }
       }
+      this.state.discoverData = discoverVideos;
     }
 
     this.elements.discoverList.innerHTML = '';
     
-    discoverVideos.forEach((v, index) => {
+    const isMobile = window.innerWidth <= 768;
+    const itemsPerPage = isMobile ? 5 : 10;
+    const totalPages = Math.ceil(this.state.discoverData.length / itemsPerPage);
+    const startIdx = (page - 1) * itemsPerPage;
+    const pageData = this.state.discoverData.slice(startIdx, startIdx + itemsPerPage);
+    
+    pageData.forEach((v, index) => {
+      const globalIndex = startIdx + index;
       const isTrending = !!v.globalLoops;
-      const card = this.createVideoCard(v, false, isTrending ? index + 1 : null);
+      const card = this.createVideoCard(v, false, isTrending ? globalIndex + 1 : null);
       this.elements.discoverList.appendChild(card);
     });
     
-    lucide.createIcons();
+    if (totalPages > 1) {
+      const paginationDiv = document.createElement('div');
+      paginationDiv.style.display = 'flex';
+      paginationDiv.style.justifyContent = 'space-between';
+      paginationDiv.style.marginTop = '16px';
+      paginationDiv.style.padding = '0 10px';
+      
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'btn btn-secondary btn-sm';
+      prevBtn.innerHTML = '<i data-lucide="chevron-left"></i> Prev';
+      prevBtn.disabled = page === 1;
+      prevBtn.style.opacity = page === 1 ? '0.5' : '1';
+      prevBtn.onclick = () => this.renderDiscoverTab(page - 1);
+      
+      const pageInfo = document.createElement('span');
+      pageInfo.style.fontSize = '12px';
+      pageInfo.style.color = 'var(--text-muted)';
+      pageInfo.style.display = 'flex';
+      pageInfo.style.alignItems = 'center';
+      pageInfo.textContent = `Page ${page} of ${totalPages}`;
+      
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'btn btn-secondary btn-sm';
+      nextBtn.innerHTML = 'Next <i data-lucide="chevron-right"></i>';
+      nextBtn.disabled = page === totalPages;
+      nextBtn.style.opacity = page === totalPages ? '0.5' : '1';
+      nextBtn.onclick = () => this.renderDiscoverTab(page + 1);
+      
+      paginationDiv.appendChild(prevBtn);
+      paginationDiv.appendChild(pageInfo);
+      paginationDiv.appendChild(nextBtn);
+      this.elements.discoverList.appendChild(paginationDiv);
+    }
+    
+    if (window.lucide) lucide.createIcons();
   }
 
   renderFavoritesTab() {
@@ -3342,6 +3387,29 @@ class WatchOnRepeat {
       `;
       this.elements.analyticsSegmentsList.appendChild(div);
     });
+  }
+
+  initMobileLayout() {
+    const updateMobileLayout = () => {
+      const stats = document.querySelector('.stats-dashboard');
+      const sidebarTabs = document.querySelector('.sidebar-tabs');
+      const mainCol = document.querySelector('.main-column');
+      
+      if (!stats || !sidebarTabs || !mainCol) return;
+      
+      if (window.innerWidth <= 768) {
+        if (stats.parentElement === mainCol) {
+          sidebarTabs.insertAdjacentElement('afterend', stats);
+        }
+      } else {
+        if (stats.parentElement !== mainCol) {
+          mainCol.appendChild(stats);
+        }
+      }
+    };
+    
+    window.addEventListener('resize', updateMobileLayout);
+    updateMobileLayout();
   }
 }
 
