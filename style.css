@@ -1046,7 +1046,7 @@ h1, h2, h3, h4, .brand-name {
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-.upgrade-takeover {
+.premium-unlock-takeover {
   position: fixed;
   top: 0;
   left: 0;
@@ -1062,7 +1062,7 @@ h1, h2, h3, h4, .brand-name {
   padding: 40px 20px;
 }
 
-.upgrade-container {
+.premium-unlock-container {
   width: 100%;
   max-width: 900px;
   background: #111827;

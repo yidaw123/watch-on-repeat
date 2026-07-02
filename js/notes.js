@@ -98,9 +98,17 @@ window.NotesMixin = {
     const clearNotesBtn = document.querySelector('button[onclick="app.clearVideoNotes()"]');
     
     if (noteInput) {
-      noteInput.disabled = isReadOnly;
-      if (isReadOnly) noteInput.placeholder = "Viewing Shared Link (Read-Only)";
-      else noteInput.placeholder = "Type a note here...";
+      if (isReadOnly) {
+        noteInput.disabled = false;
+        noteInput.readOnly = true;
+        noteInput.placeholder = "Viewing Shared Link (Read-Only)";
+        noteInput.onclick = () => app.openUpgradeModal("Upgrade to add or edit notes on shared links!");
+      } else {
+        noteInput.disabled = false;
+        noteInput.readOnly = false;
+        noteInput.placeholder = "Type a note here...";
+        noteInput.onclick = null;
+      }
     }
     if (addNoteBtn) {
        addNoteBtn.disabled = isReadOnly;

@@ -281,8 +281,8 @@ class WatchOnRepeat {
       userName: document.getElementById('user-name'),
       userEmail: document.getElementById('user-email'),
       userMenu: document.getElementById('user-menu'),
-      upgradeModal: document.getElementById('upgrade-modal'),
-      upgradeMessage: document.getElementById('upgrade-message'),
+      upgradeModal: document.getElementById('premium-unlock-modal'),
+      upgradeMessage: document.getElementById('premium-unlock-message'),
       
       // States
       playerEmpty: document.getElementById('player-empty-state'),
@@ -2301,7 +2301,7 @@ class WatchOnRepeat {
 
     const handlePointerDown = (e) => {
       if (this.state.isReadOnlyShared) {
-        this.showToast("Viewing a Shared Pro Link (Read-Only Mode). Upgrade to edit!", "lock");
+        this.openUpgradeModal("Viewing a Shared Pro Link (Read-Only Mode). Upgrade to unlock editing!");
         return;
       }
       if (e.cancelable) e.preventDefault();

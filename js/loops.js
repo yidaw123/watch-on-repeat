@@ -294,14 +294,18 @@ class LoopsMixin {
         const isReadOnly = this.state.isReadOnlyShared;
         
         if (this.elements && this.elements.abStart) {
-          this.elements.abStart.disabled = isReadOnly;
+          this.elements.abStart.disabled = false;
+          this.elements.abStart.readOnly = isReadOnly;
           this.elements.abStart.style.opacity = isReadOnly ? '0.5' : '1';
           this.elements.abStart.style.cursor = isReadOnly ? 'not-allowed' : 'text';
+          this.elements.abStart.onclick = isReadOnly ? () => app.openUpgradeModal('Upgrade to edit timestamps on shared links!') : null;
         }
         if (this.elements && this.elements.abEnd) {
-          this.elements.abEnd.disabled = isReadOnly;
+          this.elements.abEnd.disabled = false;
+          this.elements.abEnd.readOnly = isReadOnly;
           this.elements.abEnd.style.opacity = isReadOnly ? '0.5' : '1';
           this.elements.abEnd.style.cursor = isReadOnly ? 'not-allowed' : 'text';
+          this.elements.abEnd.onclick = isReadOnly ? () => app.openUpgradeModal('Upgrade to edit timestamps on shared links!') : null;
         }
       }
     }
@@ -324,7 +328,7 @@ class LoopsMixin {
       
       const isReadOnly = this.state.isReadOnlyShared;
       const groupClass = isReadOnly ? 'time-split-group disabled multi-seg-group' : 'time-split-group enabled multi-seg-group';
-      const inputAttr = isReadOnly ? 'disabled style="opacity: 0.6; cursor: not-allowed;"' : '';
+      const inputAttr = isReadOnly ? 'readonly style="opacity: 0.6; cursor: not-allowed;" onclick="app.openUpgradeModal(\'Upgrade to edit Advanced Loop Segments on shared links!\')"' : '';
       
       row.innerHTML = `
         <span class="text-xs text-gray-500 w-4">${index + 1}</span>
