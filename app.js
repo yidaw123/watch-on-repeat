@@ -58,7 +58,14 @@ class WatchOnRepeat {
         timer: null
       },
       playbackRate: 1,
-      guestPromptShown: false
+      guestPromptShown: false,
+      analyticsSession: {
+        videoId: null,
+        platform: null,
+        title: null,
+        loops: 0,
+        startTime: null
+      }
     };
 
     // DOM Elements Cache
@@ -77,6 +84,9 @@ class WatchOnRepeat {
       this.state.isOffline = true;
       this.showToast('You are offline. Only Local Video is available.', 'wifi-off');
     });
+    window.addEventListener('beforeunload', () => {
+      this.flushAnalytics();
+    });
   }
 
   // ==========================================
@@ -92,24 +102,32 @@ class WatchOnRepeat {
     return sid;
   }
 
-  logEvent(eventName, metadata = {}) {
+  flushAnalytics() {
     if (!window.supabaseClient) return;
-    if (metadata && metadata.platform === 'local') return;
+    const session = this.state.analyticsSession;
+    if (session.loops === 0 || !session.videoId || session.platform === 'local') return;
+
     const userId = this.state.user ? this.state.user.id : this.getOrCreateSessionId();
-    
-    // Attempt to add video title if we are tracking a video event
-    if (this.state.currentVideo && this.state.currentVideo.title) {
-      metadata.video_title = this.state.currentVideo.title;
-    }
+    const duration = Math.floor((Date.now() - session.startTime) / 1000);
 
     supabaseClient.from('events').insert({
-      event_name: eventName,
+      event_name: 'batched_session',
       user_id: userId,
-      metadata: metadata,
+      metadata: {
+        video_id: session.videoId,
+        video_title: session.title,
+        platform: session.platform,
+        loops: session.loops,
+        watch_time_seconds: duration
+      },
       created_at: new Date().toISOString()
     }).catch(err => {
-      if (DEBUG_MODE) console.error("Error logging event:", err);
+      if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Error logging batched session:", err);
     });
+
+    // Reset loop count but keep the session active
+    this.state.analyticsSession.loops = 0;
+    this.state.analyticsSession.startTime = Date.now();
   }
 
   async setUserFromSession(session) {
@@ -717,6 +735,13 @@ class WatchOnRepeat {
       platform: 'local'
     };
 
+    // Initialize the analytics session for this local video
+    this.state.analyticsSession.videoId = this.state.currentVideo.id;
+    this.state.analyticsSession.platform = 'local';
+    this.state.analyticsSession.title = file.name;
+    this.state.analyticsSession.loops = 0;
+    this.state.analyticsSession.startTime = Date.now();
+
     if (this.elements.abStart) {
       this.elements.abStart.value = "";
       this.elements.abStart.placeholder = "Start";
@@ -789,6 +814,8 @@ class WatchOnRepeat {
   // ==========================================
 
   async  loadVideo(id, platform = 'youtube') {
+    this.flushAnalytics();
+
     if (this.state.currentVideo && (this.state.currentVideo.id !== id || this.state.currentVideo.platform !== platform)) {
       this.state.isReadOnlyShared = false;
     }
@@ -883,6 +910,13 @@ class WatchOnRepeat {
       platform: platform,
       title: videoTitle
     };
+
+    // Initialize the analytics session for this video
+    this.state.analyticsSession.videoId = id;
+    this.state.analyticsSession.platform = platform;
+    this.state.analyticsSession.title = videoTitle;
+    this.state.analyticsSession.loops = 0;
+    this.state.analyticsSession.startTime = Date.now();
 
     // Update UI Elements immediately
     this.elements.videoTitle.textContent = videoTitle;
@@ -1465,17 +1499,8 @@ class WatchOnRepeat {
       this.showToast("Loving the features? Create a free account to save your loops, notes, and playlists so you never lose them!", "heart");
     }
 
-    // If AB Loop is active, track the specific segment
-    if (this.state.abLoop.active) {
-      this.trackABSegment();
-      this.logEvent('loop_completed', { 
-        start: this.state.abLoop.start, 
-        end: this.state.abLoop.end,
-        platform: this.state.currentPlatform 
-      });
-    } else {
-      this.logEvent('loop_completed', { platform: this.state.currentPlatform });
-    }
+    // Batch analytics locally
+    this.state.analyticsSession.loops++;
 
     // Optimistic UI updates
     this.state.currentGlobalLoops++;
