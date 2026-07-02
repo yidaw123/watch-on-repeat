@@ -121,8 +121,8 @@ class WatchOnRepeat {
         watch_time_seconds: duration
       },
       created_at: new Date().toISOString()
-    }).catch(err => {
-      if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Error logging batched session:", err);
+    }).then(({ error }) => {
+      if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Error logging batched session:", error);
     });
 
     // Reset loop count but keep the session active
