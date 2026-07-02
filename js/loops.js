@@ -251,7 +251,16 @@ class LoopsMixin {
       if (checkbox) checkbox.checked = true;
       list.classList.remove('hidden');
       
-
+      if (this.elements && this.elements.abStart) {
+        this.elements.abStart.disabled = true;
+        this.elements.abStart.style.opacity = '0.5';
+        this.elements.abStart.style.cursor = 'not-allowed';
+      }
+      if (this.elements && this.elements.abEnd) {
+        this.elements.abEnd.disabled = true;
+        this.elements.abEnd.style.opacity = '0.5';
+        this.elements.abEnd.style.cursor = 'not-allowed';
+      }
 
       if (isPremium && addBtn) {
         addBtn.classList.remove('hidden');
@@ -278,7 +287,16 @@ class LoopsMixin {
         list.classList.add('hidden');
         if (addBtn) addBtn.classList.add('hidden');
         
-
+        if (this.elements && this.elements.abStart) {
+          this.elements.abStart.disabled = false;
+          this.elements.abStart.style.opacity = '1';
+          this.elements.abStart.style.cursor = 'text';
+        }
+        if (this.elements && this.elements.abEnd) {
+          this.elements.abEnd.disabled = false;
+          this.elements.abEnd.style.opacity = '1';
+          this.elements.abEnd.style.cursor = 'text';
+        }
       }
     }
 
