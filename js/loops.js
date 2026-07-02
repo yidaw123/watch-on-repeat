@@ -558,14 +558,7 @@ class LoopsMixin {
           return;
         }
 
-        const proposedStart = type === 'start' ? val : segs[idx].start;
-        const proposedEnd = type === 'end' ? val : segs[idx].end;
-
-        if (proposedStart !== null && proposedEnd !== null && proposedStart >= proposedEnd) {
-          this.showToast("Start time must be before End time. Input rejected.", "alert-triangle");
-          this.setSplitTimeValue(group, segs[idx][type]);
-          return;
-        }
+        let boundedVal = Math.max(0, Math.min(val, duration));
 
         let maxPriorEnd = 0;
         for (let i = 0; i < idx; i++) {
@@ -581,20 +574,19 @@ class LoopsMixin {
           }
         }
 
-        if (proposedStart !== null && proposedStart < maxPriorEnd) {
-          this.showToast("Overlapping segments detected. Input rejected.", "alert-triangle");
-          this.setSplitTimeValue(group, segs[idx][type]);
-          return;
+        if (type === 'start') {
+          boundedVal = Math.max(maxPriorEnd, boundedVal);
+          if (segs[idx].end !== null) boundedVal = Math.min(boundedVal, segs[idx].end);
+          segs[idx].start = boundedVal;
+        } else {
+          boundedVal = Math.min(minNextStart, boundedVal);
+          if (segs[idx].start !== null) boundedVal = Math.max(boundedVal, segs[idx].start);
+          segs[idx].end = boundedVal;
         }
 
-        if (proposedEnd !== null && proposedEnd > minNextStart) {
-          this.showToast("Overlapping segments detected. Input rejected.", "alert-triangle");
-          this.setSplitTimeValue(group, segs[idx][type]);
-          return;
+        if (boundedVal !== val) {
+          this.setSplitTimeValue(group, boundedVal);
         }
-
-        if (type === 'start') segs[idx].start = val;
-        else segs[idx].end = val;
 
         group.style.borderColor = '';
         const errorEl = document.getElementById('multi-segment-error');
