@@ -303,7 +303,12 @@
                 </div>
                 
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding-left: 12px; border-left: 1px solid var(--border-color);">
-                  <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Gradual Tempo</span>
+                  <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+                    Gradual Tempo
+                    <span title="Disabled when using Custom Playback Speeds or Advanced Loop Segments." tabindex="0" onclick="app.showToast(this.title, 'info')" style="outline:none; cursor:pointer;">
+                      <i data-lucide="info" style="width:12px; height:12px; color:var(--text-muted);"></i>
+                    </span>
+                  </span>
                   <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
                     <input type="checkbox" id="auto-tempo-checkbox" onchange="app.toggleAutoTempo(event)">
                     <span class="text-xs font-bold text-gray-300">Tempo <i data-lucide="trending-up" style="display:inline; width:12px; height:12px;"></i></span>
