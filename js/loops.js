@@ -9,23 +9,33 @@ class LoopsMixin {
     return true;
   }
 
-  fineTuneLoop(point, amount) {
+  fineTuneLoop(point, amount, segIndex = null) {
     if (!this.enforcePremiumFeature()) return;
-    if (!this.state.abLoop.active) {
-      this.state.abLoop.active = true;
-      this.state.abLoop.start = 0;
-      this.state.abLoop.end = this.state.currentVideoDuration || 0;
+    
+    let target = this.state.abLoop;
+    let isMulti = false;
+    if (segIndex !== null && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments[segIndex]) {
+      target = this.state.abLoop.multiSegments[segIndex];
+      isMulti = true;
+    } else {
+      if (!this.state.abLoop.active) {
+        this.state.abLoop.active = true;
+        this.state.abLoop.start = 0;
+        this.state.abLoop.end = this.state.currentVideoDuration || 0;
+      }
     }
     
-    let newStart = this.state.abLoop.start;
-    let newEnd = this.state.abLoop.end;
+    let newStart = target.start;
+    let newEnd = target.end;
     
     if (point === 'start') {
       newStart = Math.max(0, newStart + amount);
       if (newStart >= newEnd) newStart = newEnd - 0.1;
-      this.state.abLoop.start = newStart;
-      this.elements.abStart.value = this.formatTime(newStart);
-      this.seekToTime(newStart);
+      target.start = newStart;
+      if (!isMulti) {
+        this.elements.abStart.value = this.formatTime(newStart);
+        this.seekToTime(newStart);
+      }
     } else {
       let maxTime = this.state.currentVideoDuration || newEnd;
       newEnd = Math.min(maxTime, newEnd + amount);
@@ -38,17 +48,25 @@ class LoopsMixin {
     if (this.updateTimelineUI) this.updateTimelineUI();
   }
 
-  shiftLoop(direction) {
+  shiftLoop(direction, segIndex = null) {
     if (!this.enforcePremiumFeature()) return;
-    if (!this.state.abLoop.active) {
-      this.state.abLoop.active = true;
-      this.state.abLoop.start = 0;
-      this.state.abLoop.end = this.state.currentVideoDuration || 0;
+    
+    let target = this.state.abLoop;
+    let isMulti = false;
+    if (segIndex !== null && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments[segIndex]) {
+      target = this.state.abLoop.multiSegments[segIndex];
+      isMulti = true;
+    } else {
+      if (!this.state.abLoop.active) {
+        this.state.abLoop.active = true;
+        this.state.abLoop.start = 0;
+        this.state.abLoop.end = this.state.currentVideoDuration || 0;
+      }
     }
     
-    const duration = this.state.abLoop.end - this.state.abLoop.start;
-    let newStart = this.state.abLoop.start + (duration * direction);
-    let newEnd = this.state.abLoop.end + (duration * direction);
+    const duration = target.end - target.start;
+    let newStart = target.start + (duration * direction);
+    let newEnd = target.end + (duration * direction);
     
     const maxTime = this.state.currentVideoDuration || newEnd;
     
@@ -60,34 +78,53 @@ class LoopsMixin {
       newStart = maxTime - duration;
     }
     
-    this.state.abLoop.start = newStart;
-    this.state.abLoop.end = newEnd;
+    target.start = newStart;
+    target.end = newEnd;
     
-    this.elements.abStart.value = this.formatTime(newStart);
-    this.elements.abEnd.value = this.formatTime(newEnd);
-    if (this.updateTimelineUI) this.updateTimelineUI();
-    this.seekToTime(newStart);
-  }
-
-  scaleLoop(multiplier) {
-    if (!this.enforcePremiumFeature()) return;
-    if (!this.state.abLoop.active) {
-      this.state.abLoop.active = true;
-      this.state.abLoop.start = 0;
-      this.state.abLoop.end = this.state.currentVideoDuration || 0;
+    if (isMulti) {
+      this.renderMultiSegments();
+    } else {
+      this.elements.abStart.value = this.formatTime(newStart);
+      this.elements.abEnd.value = this.formatTime(newEnd);
+      this.seekToTime(newStart);
     }
     
-    const duration = this.state.abLoop.end - this.state.abLoop.start;
+    if (this.updateTimelineUI) this.updateTimelineUI();
+  }
+
+  scaleLoop(multiplier, segIndex = null) {
+    if (!this.enforcePremiumFeature()) return;
+    
+    let target = this.state.abLoop;
+    let isMulti = false;
+    if (segIndex !== null && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments[segIndex]) {
+      target = this.state.abLoop.multiSegments[segIndex];
+      isMulti = true;
+    } else {
+      if (!this.state.abLoop.active) {
+        this.state.abLoop.active = true;
+        this.state.abLoop.start = 0;
+        this.state.abLoop.end = this.state.currentVideoDuration || 0;
+      }
+    }
+    
+    const duration = target.end - target.start;
     const newDuration = duration * multiplier;
     
-    let newEnd = this.state.abLoop.start + newDuration;
+    let newEnd = target.start + newDuration;
     const maxTime = this.state.currentVideoDuration || newEnd;
     
     if (newEnd > maxTime) newEnd = maxTime;
-    if (newEnd <= this.state.abLoop.start) newEnd = this.state.abLoop.start + 0.1;
+    if (newEnd <= target.start) newEnd = target.start + 0.1;
     
-    this.state.abLoop.end = newEnd;
-    this.elements.abEnd.value = this.formatTime(newEnd);
+    target.end = newEnd;
+    
+    if (isMulti) {
+      this.renderMultiSegments();
+    } else {
+      this.elements.abEnd.value = this.formatTime(newEnd);
+    }
+    
     if (this.updateTimelineUI) this.updateTimelineUI();
   }
 
@@ -310,6 +347,17 @@ class LoopsMixin {
       }
     }
 
+    const mainControls = document.getElementById('main-pro-controls');
+    if (mainControls) {
+      if (isMultiActive && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+        mainControls.style.opacity = '0.3';
+        mainControls.style.pointerEvents = 'none';
+      } else {
+        mainControls.style.opacity = '1';
+        mainControls.style.pointerEvents = 'auto';
+      }
+    }
+
     list.innerHTML = `
       <div class="text-xs text-yellow-500 mb-2" style="opacity: 0.8;">
         <i data-lucide="alert-triangle" style="width: 12px; height: 12px; display: inline;"></i> 
@@ -354,7 +402,47 @@ class LoopsMixin {
           this.removeLoopSegment(index);
         });
       }
-      list.appendChild(row);
+      
+      const controlsRow = document.createElement('div');
+      controlsRow.style.display = 'flex';
+      controlsRow.style.gap = '4px';
+      controlsRow.style.paddingLeft = '24px';
+      controlsRow.style.marginTop = '4px';
+      if (!isReadOnly) {
+        controlsRow.innerHTML = `
+          <div style="display:flex; gap:2px;" class="tooltip" data-tip="Fine-tune Start">
+            <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('start', -0.05, ${index})"><i data-lucide="minus" style="width:12px;height:12px;"></i></button>
+            <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('start', 0.05, ${index})"><i data-lucide="plus" style="width:12px;height:12px;"></i></button>
+          </div>
+          <div style="display:flex; gap:2px;">
+            <button class="btn btn-secondary btn-sm tooltip" data-tip="Shift Left" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.shiftLoop(-1, ${index})"><i data-lucide="arrow-left" style="width:12px;height:12px;"></i></button>
+            <button class="btn btn-secondary btn-sm tooltip" data-tip="Shift Right" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.shiftLoop(1, ${index})"><i data-lucide="arrow-right" style="width:12px;height:12px;"></i></button>
+          </div>
+          <div style="display:flex; gap:2px;">
+            <button class="btn btn-secondary btn-sm tooltip" data-tip="Halve Duration" style="padding: 0 6px; height:24px; min-height:24px; font-size:11px;" onclick="app.scaleLoop(0.5, ${index})">½x</button>
+            <button class="btn btn-secondary btn-sm tooltip" data-tip="Double Duration" style="padding: 0 6px; height:24px; min-height:24px; font-size:11px;" onclick="app.scaleLoop(2, ${index})">2x</button>
+          </div>
+          <div style="display:flex; gap:2px;" class="tooltip" data-tip="Fine-tune End">
+            <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', -0.05, ${index})"><i data-lucide="minus" style="width:12px;height:12px;"></i></button>
+            <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', 0.05, ${index})"><i data-lucide="plus" style="width:12px;height:12px;"></i></button>
+          </div>
+        `;
+      }
+      
+      const container = document.createElement('div');
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+      container.style.background = 'rgba(255,255,255,0.02)';
+      container.style.borderRadius = '6px';
+      container.style.padding = '8px';
+      container.style.border = '1px solid var(--border-color)';
+      
+      container.appendChild(row);
+      if (!isReadOnly) {
+        container.appendChild(controlsRow);
+      }
+      
+      list.appendChild(container);
     });
     
     let errorContainer = document.createElement('div');
