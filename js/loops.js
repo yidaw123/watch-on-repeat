@@ -113,11 +113,27 @@ class LoopsMixin {
     }
     
     const segments = this.state.abLoop.multiSegments;
-    const currentSegIndex = this.state.abLoop.currentSegmentIndex || 0;
+    const validSegmentsCount = segments.filter(seg => seg.start !== null && seg.end !== null).length;
     
-    // Safety fallback
-    if (!segments[currentSegIndex]) {
-      this.state.abLoop.currentSegmentIndex = 0;
+    if (validSegmentsCount === 0) {
+      const start = this.state.abLoop.start || 0;
+      const end = this.state.abLoop.end || this.state.currentVideoDuration || 0;
+      if (end > 0 && t >= end) {
+        this.seekToTime(start);
+        this.incrementLoops();
+      } else if (t < start - 0.5) {
+        this.seekToTime(start);
+      }
+      return;
+    }
+    
+    let currentSegIndex = this.state.abLoop.currentSegmentIndex || 0;
+    
+    if (!segments[currentSegIndex] || segments[currentSegIndex].start === null || segments[currentSegIndex].end === null) {
+      currentSegIndex = segments.findIndex(seg => seg.start !== null && seg.end !== null);
+      if (currentSegIndex === -1) return;
+      this.state.abLoop.currentSegmentIndex = currentSegIndex;
+      this.seekToTime(segments[currentSegIndex].start);
       return;
     }
     
@@ -126,10 +142,13 @@ class LoopsMixin {
     if (t >= seg.end && seg.end > 0) {
       let nextIndex = currentSegIndex + 1;
       
+      while (nextIndex < segments.length && (segments[nextIndex].start === null || segments[nextIndex].end === null)) {
+        nextIndex++;
+      }
+      
       if (nextIndex >= segments.length) {
-        nextIndex = 0; // loop back to first
+        nextIndex = segments.findIndex(s => s.start !== null && s.end !== null);
         
-        // Auto Tempo applies when a full cycle completes
         if (this.state.isAutoTempoEnabled) {
           let speed = this.state.playbackRate || 1.0;
           speed = Math.min(2.0, speed + 0.05);
@@ -141,8 +160,6 @@ class LoopsMixin {
       
       this.state.abLoop.currentSegmentIndex = nextIndex;
       
-      // If the next segment starts exactly where this one ended, we don't even need to seek!
-      // This allows contiguous segments to play seamlessly.
       if (segments[nextIndex].start !== seg.end) {
         this.seekToTime(segments[nextIndex].start);
       }
@@ -202,24 +219,7 @@ class LoopsMixin {
       return;
     }
     
-    const duration = this.state.currentVideoDuration || 0;
-    
-    let newStart = 0;
-    let newEnd = 0;
-    if (this.state.abLoop.multiSegments.length > 0) {
-      const lastSeg = this.state.abLoop.multiSegments[this.state.abLoop.multiSegments.length - 1];
-      
-      if (lastSeg.end >= duration - 0.5) {
-        this.showToast("No space left at the end of the video! Adjust previous segments.", "alert-circle");
-        return;
-      }
-      
-      newStart = lastSeg.end;
-    }
-    
-    newEnd = duration;
-    
-    this.state.abLoop.multiSegments.push({ start: newStart, end: newEnd });
+    this.state.abLoop.multiSegments.push({ start: null, end: null });
     this.state.abLoop.currentSegmentIndex = this.state.abLoop.multiSegments.length - 1;
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
@@ -341,53 +341,66 @@ class LoopsMixin {
         const duration = this.state.currentVideoDuration || 3600;
         const segs = this.state.abLoop.multiSegments;
         
-        let hasError = false;
-        let errorMsg = '';
-        
-        if (type === 'start') {
-          let minStart = idx > 0 ? segs[idx - 1].end : 0;
-          let maxStart = segs[idx].end;
-          
-          if (val < minStart) {
-            hasError = true;
-            errorMsg = `Start time must be >= end of previous segment (${this.formatTime(minStart)})`;
-          } else if (val > maxStart) {
-            // Push end forward instead of error
-            segs[idx].end = Math.min(val, duration);
-          }
-        } else {
-          let minEnd = segs[idx].start;
-          let maxEnd = idx < segs.length - 1 ? segs[idx + 1].start : duration;
-          
-          if (val < minEnd) {
-            // Push start backward instead of error
-            segs[idx].start = Math.max(val, 0);
-          } else if (val > maxEnd) {
-            hasError = true;
-            errorMsg = `End time must be <= start of next segment (${this.formatTime(maxEnd)})`;
-          }
-        }
-        
-        const errorEl = document.getElementById('multi-segment-error');
-        if (hasError) {
-          group.style.borderColor = 'red';
-          if (errorEl) {
-            errorEl.textContent = errorMsg;
-            errorEl.classList.remove('hidden');
-          }
-          return;
-        } else {
-          group.style.borderColor = '';
-          if (errorEl) errorEl.classList.add('hidden');
-          
-          if (type === 'start') segs[idx].start = val;
-          else segs[idx].end = val;
+        if (val === null) {
+          if (type === 'start') segs[idx].start = null;
+          else segs[idx].end = null;
           
           this.state.abLoop.currentSegmentIndex = idx;
           this.saveLoopData();
           if (this.updateTimelineUI) this.updateTimelineUI();
           this.renderMultiSegments();
+          return;
         }
+
+        const proposedStart = type === 'start' ? val : segs[idx].start;
+        const proposedEnd = type === 'end' ? val : segs[idx].end;
+
+        if (proposedStart !== null && proposedEnd !== null && proposedStart >= proposedEnd) {
+          this.showToast("Start time must be before End time. Input rejected.", "alert-triangle");
+          this.setSplitTimeValue(group, segs[idx][type]);
+          return;
+        }
+
+        let maxPriorEnd = 0;
+        for (let i = 0; i < idx; i++) {
+          if (segs[i].start !== null && segs[i].end !== null) {
+            maxPriorEnd = Math.max(maxPriorEnd, segs[i].end);
+          }
+        }
+
+        let minNextStart = duration;
+        for (let i = idx + 1; i < segs.length; i++) {
+          if (segs[i].start !== null && segs[i].end !== null) {
+            minNextStart = Math.min(minNextStart, segs[i].start);
+          }
+        }
+
+        if (proposedStart !== null && proposedStart < maxPriorEnd) {
+          this.showToast("Overlapping segments detected. Input rejected.", "alert-triangle");
+          this.setSplitTimeValue(group, segs[idx][type]);
+          return;
+        }
+
+        if (proposedEnd !== null && proposedEnd > minNextStart) {
+          this.showToast("Overlapping segments detected. Input rejected.", "alert-triangle");
+          this.setSplitTimeValue(group, segs[idx][type]);
+          return;
+        }
+
+        if (type === 'start') segs[idx].start = val;
+        else segs[idx].end = val;
+
+        group.style.borderColor = '';
+        const errorEl = document.getElementById('multi-segment-error');
+        if (errorEl) {
+          errorEl.textContent = '';
+          errorEl.classList.add('hidden');
+        }
+        
+        this.state.abLoop.currentSegmentIndex = idx;
+        this.saveLoopData();
+        if (this.updateTimelineUI) this.updateTimelineUI();
+        this.renderMultiSegments();
       });
     });
     

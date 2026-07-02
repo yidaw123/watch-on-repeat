@@ -2136,16 +2136,23 @@ class WatchOnRepeat {
 
   getSplitTimeValue(group) {
     if (!group) return 0;
-    const h = parseInt(group.querySelector('.ts-h').value) || 0;
-    const m = parseInt(group.querySelector('.ts-m').value) || 0;
-    const s = parseInt(group.querySelector('.ts-s').value) || 0;
-    const ms = parseInt(group.querySelector('.ts-ms').value) || 0;
-    return h * 3600 + m * 60 + s + (ms / 1000);
+    const hStr = group.querySelector('.ts-h').value;
+    const mStr = group.querySelector('.ts-m').value;
+    const sStr = group.querySelector('.ts-s').value;
+    const msStr = group.querySelector('.ts-ms').value;
+    if (!hStr && !mStr && !sStr && !msStr) return null;
+    return (parseInt(hStr)||0) * 3600 + (parseInt(mStr)||0) * 60 + (parseInt(sStr)||0) + ((parseInt(msStr)||0) / 1000);
   }
 
   setSplitTimeValue(group, seconds) {
     if (!group) return;
-    if (isNaN(seconds)) seconds = 0;
+    if (seconds === null || seconds === undefined || isNaN(seconds)) {
+      group.querySelector('.ts-h').value = '';
+      group.querySelector('.ts-m').value = '';
+      group.querySelector('.ts-s').value = '';
+      group.querySelector('.ts-ms').value = '';
+      return;
+    }
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = Math.floor(seconds % 60);
@@ -2218,6 +2225,7 @@ class WatchOnRepeat {
       const safeDuration = duration || 1;
       
       this.state.abLoop.multiSegments.forEach((seg, index) => {
+        if (seg.start === null || seg.end === null) return;
         let sPct = Math.max(0, Math.min(100, (seg.start / safeDuration) * 100));
         let ePct = Math.max(0, Math.min(100, (seg.end / safeDuration) * 100));
         
