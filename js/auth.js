@@ -335,24 +335,7 @@ class AuthMixin {
     if (this.elements.upgradeModal) this.elements.upgradeModal.classList.add('hidden');
   }
 
-  processUpgrade(tier) {
-    if (!this.state.user) {
-      this.closeUpgradeModal();
-      this.openLoginModal();
-      this.showToast("Please sign in to upgrade.", "alert-triangle");
-      return;
-    }
-    
-    this.state.user.tier = tier;
-    this.state.user.isPremium = true;
-    this.updateUserUI();
-    this.closeUpgradeModal();
-    this.showToast(`Upgraded to ${tier.toUpperCase()} successfully!`, 'crown');
-    this.updateAdsVisibility(true);
-    
-    // Check if multiple segments should be visible now
-    if (this.updateTimelineUI) this.updateTimelineUI();
-  }
+
 
   checkLimit(type) {
     const tier = this.state.user ? this.state.user.tier : 'free';
