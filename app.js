@@ -2030,14 +2030,22 @@ class WatchOnRepeat {
     this.elements.toastIcon.innerHTML = `<i data-lucide="${iconName}"></i>`;
     this.elements.toastMessage.textContent = message;
     this.elements.toast.classList.remove('hidden');
-    this.elements.toast.classList.add('fade-in');
+    
+    // Force browser reflow to ensure the CSS transition triggers
+    void this.elements.toast.offsetWidth;
+    
+    this.elements.toast.classList.add('show');
     
     lucide.createIcons();
     
     if (this.toastTimeout) clearTimeout(this.toastTimeout);
     this.toastTimeout = setTimeout(() => {
-      this.elements.toast.classList.add('hidden');
-      this.elements.toast.classList.remove('fade-in');
+      this.elements.toast.classList.remove('show');
+      setTimeout(() => {
+        if (!this.elements.toast.classList.contains('show')) {
+          this.elements.toast.classList.add('hidden');
+        }
+      }, 300);
     }, 3000);
   }
 
