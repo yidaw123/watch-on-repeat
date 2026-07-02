@@ -1075,9 +1075,12 @@ class WatchOnRepeat {
       const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
       this.state.abLoop.multiSegments = isPremium ? (data.multiSegments || []) : [];
       
-      // Heal any multi-segment with end=0
+      // Heal any corrupted segments
       if (this.state.abLoop.multiSegments.length > 0 && dur > 0) {
-        this.state.abLoop.multiSegments.forEach(seg => {
+        this.state.abLoop.multiSegments.forEach((seg, index) => {
+          if (index === 0 && seg.start === null) {
+            seg.start = 0;
+          }
           if (!seg.end || seg.end <= 0) {
             seg.end = dur;
           }
