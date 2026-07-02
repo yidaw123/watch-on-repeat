@@ -3405,7 +3405,8 @@ class WatchOnRepeat {
       
       if (window.innerWidth <= 768) {
         if (stats.parentElement === mainCol) {
-          sidebarTabs.insertAdjacentElement('afterend', stats);
+          const sidebarCol = document.querySelector('.sidebar-column');
+          if (sidebarCol) sidebarCol.appendChild(stats);
         }
       } else {
         if (stats.parentElement !== mainCol) {
