@@ -1271,6 +1271,37 @@ h1, h2, h3, h4, .brand-name {
     max-width: 100%;
   }
   
+  /* Mobile UI Overhaul */
+  .main-container {
+    padding: 0.5rem;
+    gap: 1rem;
+  }
+  
+  .ad-gutter {
+    display: none !important;
+  }
+  
+  #url-shortcut-tip {
+    display: none !important;
+  }
+  #url-shortcut-tip.mobile-expanded {
+    display: flex !important;
+    margin-top: 8px;
+  }
+  #mobile-pro-tip-btn {
+    display: inline-flex !important;
+  }
+  
+  .advanced-loop-controls {
+    padding: 8px !important;
+    gap: 4px !important;
+    justify-content: center;
+  }
+  .advanced-loop-controls button.btn-sm {
+    padding: 0 6px;
+    font-size: 0.7rem;
+  }
+  
   .auth-section {
     order: 2;
   }
@@ -1663,6 +1694,7 @@ h1, h2, h3, h4, .brand-name {
   transform: translate(-50%, -50%);
   cursor: grab;
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  touch-action: none;
   border: 2px solid var(--accent-pink);
   z-index: 2;
   left: 0%;
