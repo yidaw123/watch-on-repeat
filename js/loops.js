@@ -324,9 +324,19 @@ class LoopsMixin {
       
       row.innerHTML = `
         <span class="text-xs text-gray-500 w-4">${index + 1}</span>
-        <input type="text" class="multi-seg-input" data-index="${index}" data-type="start" value="${this.formatTime(seg.start)}" placeholder="START TIME" style="width: 100px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
-        <span class="text-gray-500">to</span>
-        <input type="text" class="multi-seg-input" data-index="${index}" data-type="end" value="${this.formatTime(seg.end)}" placeholder="END TIME" style="width: 100px; padding: 4px; font-size: 12px; background: rgba(0,0,0,0.2); border: 1px solid; border-radius: 4px; color: white; text-align: center; ${activeStyle}">
+        <div class="time-split-group enabled multi-seg-group" data-index="${index}" data-type="start" style="${activeStyle}">
+          <input type="text" class="ts-h" placeholder="HH" maxlength="2"><span class="ts-sep">:</span>
+          <input type="text" class="ts-m" placeholder="MM" maxlength="2"><span class="ts-sep">:</span>
+          <input type="text" class="ts-s" placeholder="SS" maxlength="2"><span class="ts-sep">.</span>
+          <input type="text" class="ts-ms" placeholder="ms" maxlength="3">
+        </div>
+        <span class="text-gray-500" style="margin: 0 4px;">to</span>
+        <div class="time-split-group enabled multi-seg-group" data-index="${index}" data-type="end" style="${activeStyle}">
+          <input type="text" class="ts-h" placeholder="HH" maxlength="2"><span class="ts-sep">:</span>
+          <input type="text" class="ts-m" placeholder="MM" maxlength="2"><span class="ts-sep">:</span>
+          <input type="text" class="ts-s" placeholder="SS" maxlength="2"><span class="ts-sep">.</span>
+          <input type="text" class="ts-ms" placeholder="ms" maxlength="3">
+        </div>
         <button class="icon-btn text-red-500 delete-segment-btn" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
       `;
       const deleteBtn = row.querySelector('.delete-segment-btn');
@@ -344,12 +354,14 @@ class LoopsMixin {
     errorContainer.className = 'text-xs text-red-500 mt-1 hidden';
     list.appendChild(errorContainer);
     
-    list.querySelectorAll('.multi-seg-input').forEach(input => {
-      this.applyTimeMask(input, (e) => {
-        const idx = parseInt(e.target.dataset.index, 10);
-        const type = e.target.dataset.type;
-        const val = this.parseTime(e.target.value);
-        
+    list.querySelectorAll('.multi-seg-group').forEach(group => {
+      const idx = parseInt(group.dataset.index, 10);
+      const type = group.dataset.type;
+      const seg = this.state.abLoop.multiSegments[idx];
+      this.setSplitTimeValue(group, seg[type]);
+      
+      this.bindSplitTimeGroup(group, () => {
+        const val = this.getSplitTimeValue(group);
         const duration = this.state.currentVideoDuration || 3600;
         const segs = this.state.abLoop.multiSegments;
         
@@ -363,17 +375,17 @@ class LoopsMixin {
           if (val < minStart) {
             hasError = true;
             errorMsg = `Start time must be >= end of previous segment (${this.formatTime(minStart)})`;
-          } else if (val >= maxStart) {
-            hasError = true;
-            errorMsg = `Start time must be < end time (${this.formatTime(maxStart)})`;
+          } else if (val > maxStart) {
+            // Push end forward instead of error
+            segs[idx].end = Math.min(val, duration);
           }
         } else {
           let minEnd = segs[idx].start;
           let maxEnd = idx < segs.length - 1 ? segs[idx + 1].start : duration;
           
-          if (val <= minEnd) {
-            hasError = true;
-            errorMsg = `End time must be > start time (${this.formatTime(minEnd)})`;
+          if (val < minEnd) {
+            // Push start backward instead of error
+            segs[idx].start = Math.max(val, 0);
           } else if (val > maxEnd) {
             hasError = true;
             errorMsg = `End time must be <= start of next segment (${this.formatTime(maxEnd)})`;
@@ -382,14 +394,14 @@ class LoopsMixin {
         
         const errorEl = document.getElementById('multi-segment-error');
         if (hasError) {
-          e.target.style.borderColor = 'red';
+          group.style.borderColor = 'red';
           if (errorEl) {
             errorEl.textContent = errorMsg;
             errorEl.classList.remove('hidden');
           }
-          return; // Do not save or update state
+          return;
         } else {
-          e.target.style.borderColor = '';
+          group.style.borderColor = '';
           if (errorEl) errorEl.classList.add('hidden');
           
           if (type === 'start') segs[idx].start = val;
@@ -398,6 +410,7 @@ class LoopsMixin {
           this.state.abLoop.currentSegmentIndex = idx;
           this.saveLoopData();
           if (this.updateTimelineUI) this.updateTimelineUI();
+          this.renderMultiSegments();
         }
       });
     });

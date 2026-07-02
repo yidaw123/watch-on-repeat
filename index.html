@@ -227,7 +227,15 @@
               <h4 class="control-label"><i data-lucide="scissors"></i> Custom Timestamp Loop</h4>
               <div class="timeline-loop-wrapper">
                 <div class="input-group-inline">
-                  <input type="text" id="ab-start" placeholder="START TIME" value="START TIME" disabled style="width: 100px; text-align: center; pointer-events: none; color: #000; font-weight: bold; background-color: #cbd5e1; border: 1px solid #94a3b8; opacity: 0.8;">
+                  <div class="time-split-group disabled" id="ab-start-group" data-type="start">
+                    <input type="text" class="ts-h" placeholder="HH" maxlength="2">
+                    <span class="ts-sep">:</span>
+                    <input type="text" class="ts-m" placeholder="MM" maxlength="2">
+                    <span class="ts-sep">:</span>
+                    <input type="text" class="ts-s" placeholder="SS" maxlength="2">
+                    <span class="ts-sep">.</span>
+                    <input type="text" class="ts-ms" placeholder="ms" maxlength="3">
+                  </div>
                 </div>
                 
                 <div class="timeline-container" id="timeline-container" style="pointer-events: none; opacity: 0.5;">
@@ -243,7 +251,15 @@
                 </div>
 
                 <div class="input-group-inline">
-                  <input type="text" id="ab-end" placeholder="END TIME" value="END TIME" disabled style="width: 100px; text-align: center; pointer-events: none; color: #000; font-weight: bold; background-color: #cbd5e1; border: 1px solid #94a3b8; opacity: 0.8;">
+                  <div class="time-split-group disabled" id="ab-end-group" data-type="end">
+                    <input type="text" class="ts-h" placeholder="HH" maxlength="2">
+                    <span class="ts-sep">:</span>
+                    <input type="text" class="ts-m" placeholder="MM" maxlength="2">
+                    <span class="ts-sep">:</span>
+                    <input type="text" class="ts-s" placeholder="SS" maxlength="2">
+                    <span class="ts-sep">.</span>
+                    <input type="text" class="ts-ms" placeholder="ms" maxlength="3">
+                  </div>
                 </div>
               </div>
 

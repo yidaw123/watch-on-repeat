@@ -348,8 +348,8 @@ class WatchOnRepeat {
       analyticsEmpty: document.getElementById('analytics-empty'),
       
       // Advanced Controls
-      abStart: document.getElementById('ab-start'),
-      abEnd: document.getElementById('ab-end'),
+      abStartGroup: document.getElementById('ab-start-group'),
+      abEndGroup: document.getElementById('ab-end-group'),
       playbackSpeed: document.getElementById('playback-speed'),
       saveLoopGroup: document.getElementById('save-loop-group'),
       loopNameInput: document.getElementById('loop-name-input'),
@@ -823,29 +823,19 @@ class WatchOnRepeat {
       }
     }
     
-    if (this.elements.abStart) {
-      this.elements.abStart.value = "START TIME";
-      this.elements.abStart.disabled = true;
-      this.elements.abStart.style.pointerEvents = 'none';
-      this.elements.abStart.style.opacity = '0.8';
-      this.elements.abStart.style.color = '#000';
-      this.elements.abStart.style.backgroundColor = '#cbd5e1';
-      this.elements.abStart.style.border = '1px solid #94a3b8';
-      this.elements.abStart.style.fontWeight = 'bold';
+    // Only disable inputs if there's no valid video ID being loaded
+    const shouldDisable = !id;
+    if (this.elements.abStartGroup) {
+      this.setSplitTimeDisabled(this.elements.abStartGroup, shouldDisable);
+      this.setSplitTimeValue(this.elements.abStartGroup, 0);
     }
-    if (this.elements.abEnd) {
-      this.elements.abEnd.value = "END TIME";
-      this.elements.abEnd.disabled = true;
-      this.elements.abEnd.style.pointerEvents = 'none';
-      this.elements.abEnd.style.opacity = '0.8';
-      this.elements.abEnd.style.color = '#000';
-      this.elements.abEnd.style.backgroundColor = '#cbd5e1';
-      this.elements.abEnd.style.border = '1px solid #94a3b8';
-      this.elements.abEnd.style.fontWeight = 'bold';
+    if (this.elements.abEndGroup) {
+      this.setSplitTimeDisabled(this.elements.abEndGroup, shouldDisable);
+      this.setSplitTimeValue(this.elements.abEndGroup, 0);
     }
     if (this.elements.timelineContainer) {
-      this.elements.timelineContainer.style.pointerEvents = 'none';
-      this.elements.timelineContainer.style.opacity = '0.5';
+      this.elements.timelineContainer.style.pointerEvents = shouldDisable ? 'none' : 'auto';
+      this.elements.timelineContainer.style.opacity = shouldDisable ? '0.5' : '1';
     }
     
     // Reset loop state completely for the new video
@@ -1055,25 +1045,13 @@ class WatchOnRepeat {
     this.state.abLoop.end = duration;
     
     // Set the input fields
-    if (this.elements.abStart) {
-      this.elements.abStart.value = this.formatTime(this.state.abLoop.start || 0);
-      this.elements.abStart.disabled = false;
-      this.elements.abStart.style.pointerEvents = 'auto';
-      this.elements.abStart.style.opacity = '1';
-      this.elements.abStart.style.color = '';
-      this.elements.abStart.style.backgroundColor = '';
-      this.elements.abStart.style.border = '';
-      this.elements.abStart.style.fontWeight = '';
+    if (this.elements.abStartGroup) {
+      this.setSplitTimeDisabled(this.elements.abStartGroup, false);
+      this.setSplitTimeValue(this.elements.abStartGroup, this.state.abLoop.start || 0);
     }
-    if (this.elements.abEnd) {
-      this.elements.abEnd.value = this.formatTime(duration);
-      this.elements.abEnd.disabled = false;
-      this.elements.abEnd.style.pointerEvents = 'auto';
-      this.elements.abEnd.style.opacity = '1';
-      this.elements.abEnd.style.color = '';
-      this.elements.abEnd.style.backgroundColor = '';
-      this.elements.abEnd.style.border = '';
-      this.elements.abEnd.style.fontWeight = '';
+    if (this.elements.abEndGroup) {
+      this.setSplitTimeDisabled(this.elements.abEndGroup, false);
+      this.setSplitTimeValue(this.elements.abEndGroup, duration);
     }
     if (this.elements.timelineContainer) {
       this.elements.timelineContainer.style.pointerEvents = 'auto';
@@ -2130,22 +2108,60 @@ class WatchOnRepeat {
     }
   }
 
-  applyTimeMask(input, onChangeCallback) {
-    input.addEventListener('focus', function() {
-      setTimeout(() => this.select(), 10);
-    });
-    
-    input.addEventListener('input', function(e) {
-      this.value = this.value.replace(/[^\d:.]/g, '');
-    });
+  getSplitTimeValue(group) {
+    if (!group) return 0;
+    const h = parseInt(group.querySelector('.ts-h').value) || 0;
+    const m = parseInt(group.querySelector('.ts-m').value) || 0;
+    const s = parseInt(group.querySelector('.ts-s').value) || 0;
+    const ms = parseInt(group.querySelector('.ts-ms').value) || 0;
+    return h * 3600 + m * 60 + s + (ms / 1000);
+  }
 
-    if (onChangeCallback) {
-      input.addEventListener('change', onChangeCallback);
-      input.addEventListener('blur', () => {
-        const parsed = this.parseTime(input.value);
-        input.value = this.formatTime(parsed);
-      });
+  setSplitTimeValue(group, seconds) {
+    if (!group) return;
+    if (isNaN(seconds)) seconds = 0;
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const ms = Math.floor((seconds % 1) * 1000);
+    
+    group.querySelector('.ts-h').value = h > 0 ? h.toString().padStart(2, '0') : '';
+    group.querySelector('.ts-m').value = m > 0 || h > 0 ? m.toString().padStart(2, '0') : '';
+    group.querySelector('.ts-s').value = s.toString().padStart(2, '0');
+    group.querySelector('.ts-ms').value = ms > 0 ? ms.toString().padStart(3, '0') : '';
+  }
+
+  setSplitTimeDisabled(group, disabled) {
+    if (!group) return;
+    if (disabled) {
+      group.classList.add('disabled');
+      group.classList.remove('enabled');
+    } else {
+      group.classList.remove('disabled');
+      group.classList.add('enabled');
     }
+    group.querySelectorAll('input').forEach(i => i.disabled = disabled);
+  }
+
+  bindSplitTimeGroup(group, onChangeCallback) {
+    if (!group) return;
+    const inputs = group.querySelectorAll('input');
+    inputs.forEach((input, index) => {
+      input.addEventListener('focus', function() {
+        setTimeout(() => this.select(), 10);
+      });
+      
+      input.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^\d]/g, '');
+        if (this.value.length >= this.maxLength && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+      
+      if (onChangeCallback) {
+        input.addEventListener('blur', onChangeCallback);
+      }
+    });
   }
 
   initTimeline() {
@@ -2217,8 +2233,8 @@ class WatchOnRepeat {
         // Writing formatTime(0) = "00:00:00" into the input would prevent
         // setVideoDuration from later correcting it to the real duration.
         if (activeSeg.end > 0) {
-          if (this.elements.abStart) this.elements.abStart.value = this.formatTime(activeSeg.start);
-          if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(activeSeg.end);
+          if (this.elements.abStartGroup) this.setSplitTimeValue(this.elements.abStartGroup, activeSeg.start);
+          if (this.elements.abEndGroup) this.setSplitTimeValue(this.elements.abEndGroup, activeSeg.end);
         }
         
         this.state.abLoop.start = activeSeg.start;
@@ -2307,30 +2323,40 @@ class WatchOnRepeat {
       this.saveLoopData();
     };
 
-    const updateActiveFromInputs = () => {
+    const updateActiveFromInputs = (type) => {
       const idx = this.state.abLoop.currentSegmentIndex || 0;
       if (!this.state.abLoop.multiSegments[idx]) return;
       const duration = this.state.currentVideoDuration || 3600;
       
-      let s = this.parseTime(this.elements.abStart.value);
-      let e = this.elements.abEnd.value ? this.parseTime(this.elements.abEnd.value) : duration;
+      let s = this.getSplitTimeValue(this.elements.abStartGroup);
+      let e = this.getSplitTimeValue(this.elements.abEndGroup);
+      
+      if (e === 0) e = duration;
       
       let minStart = idx > 0 ? this.state.abLoop.multiSegments[idx - 1].end : 0;
       let maxEnd = idx < this.state.abLoop.multiSegments.length - 1 ? this.state.abLoop.multiSegments[idx + 1].start : duration;
       
-      s = Math.max(minStart, Math.min(s, e));
-      e = Math.max(s, Math.min(e, maxEnd));
+      s = Math.max(minStart, s);
+      e = Math.min(e, maxEnd);
+      
+      if (type === 'start' && s > e) {
+        e = Math.min(s, duration);
+      } else if (type === 'end' && e < s) {
+        s = Math.max(e, 0);
+      } else if (s > e) {
+        s = e;
+      }
       
       this.state.abLoop.multiSegments[idx].start = s;
       this.state.abLoop.multiSegments[idx].end = e;
       this.updateTimelineUI();
     };
 
-    if (this.elements.abStart) {
-      this.applyTimeMask(this.elements.abStart, () => updateActiveFromInputs());
+    if (this.elements.abStartGroup) {
+      this.bindSplitTimeGroup(this.elements.abStartGroup, () => updateActiveFromInputs('start'));
     }
-    if (this.elements.abEnd) {
-      this.applyTimeMask(this.elements.abEnd, () => updateActiveFromInputs());
+    if (this.elements.abEndGroup) {
+      this.bindSplitTimeGroup(this.elements.abEndGroup, () => updateActiveFromInputs('end'));
     }
     
     // Explicitly update the timeline UI on load so it's not blank
@@ -2693,8 +2719,8 @@ class WatchOnRepeat {
       if (key === s.setStart) {
         e.preventDefault();
         this.getCurrentTime().then(t => {
-          if (this.elements.abStart) {
-            this.elements.abStart.value = this.formatTime(t);
+          if (this.elements.abStartGroup) {
+            this.setSplitTimeValue(this.elements.abStartGroup, t);
             if (this.updateTimelineUI) this.updateTimelineUI();
           }
           this.showToast("Timestamp Start marked at " + this.formatTime(t), "flag");
@@ -2702,8 +2728,8 @@ class WatchOnRepeat {
       } else if (key === s.setEnd) {
         e.preventDefault();
         this.getCurrentTime().then(t => {
-          if (this.elements.abEnd) {
-            this.elements.abEnd.value = this.formatTime(t);
+          if (this.elements.abEndGroup) {
+            this.setSplitTimeValue(this.elements.abEndGroup, t);
             if (this.updateTimelineUI) this.updateTimelineUI();
           }
           this.showToast("Timestamp End marked at " + this.formatTime(t), "flag");

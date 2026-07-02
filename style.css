@@ -2268,3 +2268,50 @@ input[type="checkbox"]:focus {
   font-size: 13px;
   color: var(--text-muted);
 }
+
+/* Split Time Input Group */
+.time-split-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #cbd5e1;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  padding: 2px 4px;
+  opacity: 0.8;
+  pointer-events: none;
+}
+.time-split-group:not(.disabled) {
+  background-color: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  opacity: 1;
+  pointer-events: auto;
+}
+.time-split-group input {
+  background: transparent;
+  border: none;
+  color: #000;
+  font-weight: bold;
+  text-align: center;
+  padding: 0;
+  width: 22px;
+  outline: none;
+  font-size: 13px;
+  font-family: monospace;
+}
+.time-split-group:not(.disabled) input {
+  color: #fff;
+  font-weight: normal;
+}
+.time-split-group .ts-ms {
+  width: 32px;
+}
+.time-split-group .ts-sep {
+  color: #000;
+  font-weight: bold;
+  margin: 0 2px;
+}
+.time-split-group:not(.disabled) .ts-sep {
+  color: #fff;
+  font-weight: normal;
+}
