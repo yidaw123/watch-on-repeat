@@ -792,7 +792,7 @@ class WatchOnRepeat {
     // Simulate ready
     videoEl.onloadedmetadata = () => {
       this.setVideoDuration(videoEl.duration);
-      this.onVideoReady();
+
     };
 
     if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
@@ -1275,7 +1275,7 @@ class WatchOnRepeat {
                 }
               }, 500);
             }
-            this.onVideoReady();
+
           },
           'onStateChange': this.handleYouTubeStateChange,
           'onError': (event) => {
@@ -2578,7 +2578,7 @@ class WatchOnRepeat {
 
       player.addEventListener(Twitch.Player.READY, () => {
         this.setVideoDuration(player.getDuration() || 0);
-        this.onVideoReady();
+
         player.play();
       });
       player.addEventListener(Twitch.Player.PLAYING, () => {
@@ -2621,7 +2621,7 @@ class WatchOnRepeat {
         widget.getDuration((duration) => {
           this.setVideoDuration(duration / 1000);
         });
-        this.onVideoReady();
+
       });
       widget.bind(SC.Widget.Events.PLAY, () => {
         this.elements.loopStateText.textContent = "Looping";
@@ -2649,7 +2649,7 @@ class WatchOnRepeat {
     window._wq.push({ id: id, onReady: (video) => {
       this.state.players.wistia = video;
       this.setVideoDuration(video.duration());
-      this.onVideoReady();
+
       video.play();
 
       video.bind('play', () => {
