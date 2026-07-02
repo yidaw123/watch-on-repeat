@@ -164,13 +164,7 @@ class LoopsMixin {
       list.classList.remove('hidden');
       addBtn.classList.remove('hidden');
       
-      // Option 1: Hide the main inputs completely when multi-segments is active
-      if (this.elements && this.elements.abStart && this.elements.abStart.parentElement) {
-        this.elements.abStart.parentElement.style.display = 'none';
-      }
-      if (this.elements && this.elements.abEnd && this.elements.abEnd.parentElement) {
-        this.elements.abEnd.parentElement.style.display = 'none';
-      }
+
       
       if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
       if (this.state.abLoop.multiSegments.length === 0) {
@@ -180,13 +174,7 @@ class LoopsMixin {
       list.classList.add('hidden');
       addBtn.classList.add('hidden');
       
-      // Restore main inputs
-      if (this.elements && this.elements.abStart && this.elements.abStart.parentElement) {
-        this.elements.abStart.parentElement.style.display = '';
-      }
-      if (this.elements && this.elements.abEnd && this.elements.abEnd.parentElement) {
-        this.elements.abEnd.parentElement.style.display = '';
-      }
+
       
       // Revert to single segment
       if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 1) {
@@ -263,13 +251,7 @@ class LoopsMixin {
       if (checkbox) checkbox.checked = true;
       list.classList.remove('hidden');
       
-      // Hide the main inputs when multi-segments is active (Option 1)
-      if (this.elements && this.elements.abStart && this.elements.abStart.parentElement) {
-        this.elements.abStart.parentElement.style.display = 'none';
-      }
-      if (this.elements && this.elements.abEnd && this.elements.abEnd.parentElement) {
-        this.elements.abEnd.parentElement.style.display = 'none';
-      }
+
 
       if (isPremium && addBtn) {
         addBtn.classList.remove('hidden');
@@ -296,13 +278,7 @@ class LoopsMixin {
         list.classList.add('hidden');
         if (addBtn) addBtn.classList.add('hidden');
         
-        // Restore the main inputs
-        if (this.elements && this.elements.abStart && this.elements.abStart.parentElement) {
-          this.elements.abStart.parentElement.style.display = '';
-        }
-        if (this.elements && this.elements.abEnd && this.elements.abEnd.parentElement) {
-          this.elements.abEnd.parentElement.style.display = '';
-        }
+
       }
     }
 
