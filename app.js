@@ -987,6 +987,20 @@ class WatchOnRepeat {
     };
     
     localStorage.setItem('wor_saved_loops', JSON.stringify(savedLoops));
+
+    if (this.state.user && window.supabaseClient) {
+      supabaseClient.from('user_history').upsert({
+        user_id: this.state.user.id,
+        video_id: id,
+        platform: this.state.currentVideo.platform || this.state.currentPlatform,
+        title: this.state.currentVideo.title || '',
+        loops_count: this.state.currentLifetimeLoops || 0,
+        saved_loop_data: savedLoops[id],
+        last_played: new Date().toISOString()
+      }, { onConflict: 'user_id, video_id, platform' }).then(({ error }) => {
+        if (error && DEBUG_MODE) console.error("Loop Data Sync Error:", error);
+      });
+    }
   }
 
   loadLoopData(id) {
@@ -1471,12 +1485,14 @@ class WatchOnRepeat {
       });
 
       if (this.state.user) {
+        const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
         supabaseClient.from('user_history').upsert({
           user_id: this.state.user.id,
           video_id: video.id,
           platform: video.platform,
           title: video.title || '',
           loops_count: this.state.currentLifetimeLoops,
+          saved_loop_data: savedLoops[video.id],
           last_played: new Date().toISOString()
         }, { onConflict: 'user_id, video_id, platform' }).then(({ error }) => {
           if (error && DEBUG_MODE) console.error("User History Upsert Error:", error);

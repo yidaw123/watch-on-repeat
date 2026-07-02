@@ -91,6 +91,23 @@ class DatabaseMixin {
         const existingHistory = JSON.parse(localStorage.getItem('wor_history') || '[]');
         const otherUsersHistory = existingHistory.filter(h => h.userId !== this.state.user.id);
         localStorage.setItem('wor_history', JSON.stringify([...otherUsersHistory, ...localHistory]));
+        
+        // Also sync any saved_loop_data (A-B timestamps) attached to their history
+        const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+        let loopsUpdated = false;
+        fullHistory.forEach(h => {
+          if (h.saved_loop_data) {
+            savedLoops[h.video_id] = h.saved_loop_data;
+            loopsUpdated = true;
+          }
+        });
+        if (loopsUpdated) {
+          localStorage.setItem('wor_saved_loops', JSON.stringify(savedLoops));
+          // If the currently playing video got synced, reload its timestamps!
+          if (this.state.currentVideo && savedLoops[this.state.currentVideo.id]) {
+            this.loadLoopData(this.state.currentVideo.id);
+          }
+        }
 
         const localFavs = fullHistory.filter(h => h.is_favorite).map(h => ({
           id: 'fav_' + h.video_id, userId: h.user_id, videoId: h.video_id,
