@@ -1271,6 +1271,22 @@ h1, h2, h3, h4, .brand-name {
     max-width: 100%;
   }
   
+  .search-btn span {
+    display: none;
+  }
+  .search-btn {
+    padding: 0.6rem 1rem;
+  }
+  .search-wrapper {
+    padding-left: 0.75rem;
+  }
+  .search-icon {
+    margin-right: 0.5rem;
+  }
+  .search-wrapper input {
+    font-size: 0.85rem;
+  }
+  
   /* Mobile UI Overhaul */
   .main-container {
     padding: 0.5rem;
