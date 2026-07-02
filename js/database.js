@@ -49,7 +49,8 @@ class DatabaseMixin {
       const { data: playlists } = await supabaseClient.from('playlists').select('*').eq('user_id', this.state.user.id);
       if (playlists) {
         const localPlaylists = playlists.map(p => ({
-          id: p.id, userId: p.user_id, name: p.name, videos: p.videos, isPublic: p.is_public
+          id: p.id, userId: p.user_id, name: p.name, videos: p.videos, isPublic: p.is_public,
+          createdAt: p.created_at, updatedAt: p.updated_at
         }));
         localStorage.setItem('wor_playlists', JSON.stringify(localPlaylists));
       }
@@ -131,7 +132,8 @@ class DatabaseMixin {
         const userPlaylists = data.filter(p => p.userId === this.state.user.id);
         for (const p of userPlaylists) {
           const { error } = await supabaseClient.from('playlists').upsert({
-            id: p.id, user_id: p.userId, name: p.name, videos: p.videos, is_public: p.isPublic || false
+            id: p.id, user_id: p.userId, name: p.name, videos: p.videos, is_public: p.isPublic || false,
+            updated_at: p.updatedAt || new Date().toISOString()
           });
           if (error && error.message.includes('limited to 5')) {
              this.showToast("Free tier limit: Max 5 playlists. Please upgrade to Pro.", "alert-circle");

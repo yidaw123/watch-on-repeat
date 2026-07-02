@@ -125,6 +125,7 @@ class PlaylistsMixin {
           const pl = playlists.find(pll => pll.id === p.id && pll.userId === this.state.user.id);
           const moved = pl.videos.splice(this.state.draggedIndex, 1)[0];
           pl.videos.splice(index, 0, moved);
+          pl.updatedAt = new Date().toISOString();
           this.saveDb('playlists', playlists);
           this.renderPlaylistsTab();
         };
@@ -165,6 +166,16 @@ class PlaylistsMixin {
     content.classList.remove('hidden');
     
     const playlists = this.getDb('playlists').filter(p => p.userId === this.state.user.id);
+    
+    const sortSelect = document.getElementById('playlist-sort-select');
+    const sortVal = sortSelect ? sortSelect.value : 'recent';
+    playlists.sort((a, b) => {
+      if (sortVal === 'alpha') return (a.name || '').localeCompare(b.name || '');
+      if (sortVal === 'newest') return (new Date(b.createdAt || 0).getTime()) - (new Date(a.createdAt || 0).getTime());
+      // default: recent
+      return (new Date(b.updatedAt || 0).getTime()) - (new Date(a.updatedAt || 0).getTime());
+    });
+
     badge.textContent = playlists.length;
     
     list.className = 'playlist-grid';
@@ -246,6 +257,7 @@ class PlaylistsMixin {
     } else if (criteria === 'alpha') {
       p.videos.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
     }
+    p.updatedAt = new Date().toISOString();
     this.saveDb('playlists', playlists);
     this.renderPlaylistsTab();
   }
@@ -269,6 +281,7 @@ class PlaylistsMixin {
     const p = playlists.find(pl => pl.id === playlistId && pl.userId === this.state.user.id);
     if (!p || !p.videos) return;
     p.videos = p.videos.filter(v => (v.videoId || v.id) !== videoId);
+    p.updatedAt = new Date().toISOString();
     this.saveDb('playlists', playlists);
     this.renderPlaylistsTab();
     this.showToast("Video removed from playlist", "check");
@@ -284,6 +297,7 @@ class PlaylistsMixin {
     const index = playlists.findIndex(p => p.id === id && p.userId === this.state.user.id);
     if (index !== -1) {
       playlists[index].isPublic = isPublic;
+      playlists[index].updatedAt = new Date().toISOString();
       this.saveDb('playlists', playlists);
       this.renderPlaylistsTab();
       if (isPublic) this.showToast("Playlist is now public!", "globe");
@@ -361,7 +375,9 @@ class PlaylistsMixin {
       id: 'pl_' + Date.now(),
       userId: this.state.user.id,
       name: name,
-      videos: []
+      videos: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
 
     this.saveDb('playlists', playlists);
@@ -434,7 +450,9 @@ class PlaylistsMixin {
       id: 'pl_' + Date.now(),
       userId: this.state.user.id,
       name: name,
-      videos: []
+      videos: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     playlists.push(newPlaylist);
 
@@ -489,6 +507,7 @@ class PlaylistsMixin {
     
     if (!playlist.videos.find(v => v.videoId === videoObj.videoId && v.platform === videoObj.platform)) {
       playlist.videos.push(videoObj);
+      playlist.updatedAt = new Date().toISOString();
       this.saveDb('playlists', playlists);
       this.showToast(`Added to ${this.escapeHtml(playlist.name)}!`, 'check');
     } else {

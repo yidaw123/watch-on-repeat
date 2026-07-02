@@ -719,9 +719,14 @@
             </div>
             
             <div id="playlists-content" class="hidden">
-              <div style="display: flex; gap: 8px; margin-bottom: 24px;">
-                <input type="text" id="new-playlist-input" class="search-input" placeholder="New Playlist Name..." style="flex: 1;">
+              <div style="display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;">
+                <input type="text" id="new-playlist-input" class="search-input" placeholder="New Playlist Name..." style="flex: 1; min-width: 200px;">
                 <button class="btn btn-primary" onclick="app.createPlaylist()"><i data-lucide="plus"></i> Create</button>
+                <select id="playlist-sort-select" class="dropdown-select" onchange="app.renderPlaylistsTab()" style="padding: 8px; border-radius: 6px; font-size: 14px; background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border-color);">
+                  <option value="recent">Recently Edited</option>
+                  <option value="newest">Newest First</option>
+                  <option value="alpha">Alphabetical</option>
+                </select>
               </div>
 
               <div id="playlists-list" class="video-grid" style="grid-template-columns: 1fr;">
