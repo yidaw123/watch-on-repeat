@@ -2258,11 +2258,9 @@ class WatchOnRepeat {
         hEnd.dataset.index = index;
         hEnd.dataset.type = 'end';
         
-        hStart.addEventListener('mousedown', handlePointerDown);
-        hStart.addEventListener('touchstart', handlePointerDown, {passive: false});
+        hStart.addEventListener('pointerdown', handlePointerDown);
         
-        hEnd.addEventListener('mousedown', handlePointerDown);
-        hEnd.addEventListener('touchstart', handlePointerDown, {passive: false});
+        hEnd.addEventListener('pointerdown', handlePointerDown);
         
         container.appendChild(sel);
         container.appendChild(hStart);
@@ -2307,17 +2305,16 @@ class WatchOnRepeat {
       };
       this.state.abLoop.currentSegmentIndex = draggingHandle.index;
       
-      document.addEventListener('mousemove', handlePointerMove, {passive: false});
-      document.addEventListener('mouseup', handlePointerUp);
-      document.addEventListener('touchmove', handlePointerMove, {passive: false});
-      document.addEventListener('touchend', handlePointerUp);
+      document.addEventListener('pointermove', handlePointerMove, {passive: false});
+      document.addEventListener('pointerup', handlePointerUp);
+      document.addEventListener('pointercancel', handlePointerUp);
     };
 
     const handlePointerMove = (e) => {
       if (!draggingHandle) return;
       if (e.cancelable) e.preventDefault();
       
-      const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+      const clientX = e.clientX;
       const rect = this.elements.timelineContainer.getBoundingClientRect();
       let x = clientX - rect.left;
       if (x < 0) x = 0;
@@ -2361,10 +2358,9 @@ class WatchOnRepeat {
       }
       
       draggingHandle = null;
-      document.removeEventListener('mousemove', handlePointerMove);
-      document.removeEventListener('mouseup', handlePointerUp);
-      document.removeEventListener('touchmove', handlePointerMove);
-      document.removeEventListener('touchend', handlePointerUp);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
       
       this.saveLoopData();
     };

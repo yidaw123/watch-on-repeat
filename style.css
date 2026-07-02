@@ -1328,6 +1328,10 @@ h1, h2, h3, h4, .brand-name {
   .timeline-container {
     min-width: 100px !important;
   }
+  .timeline-handle {
+    width: 24px !important;
+    height: 24px !important;
+  }
   .timeline-loop-wrapper {
     gap: 4px !important;
   }
