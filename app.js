@@ -94,6 +94,7 @@ class WatchOnRepeat {
 
   logEvent(eventName, metadata = {}) {
     if (!window.supabaseClient) return;
+    if (metadata && metadata.platform === 'local') return;
     const userId = this.state.user ? this.state.user.id : this.getOrCreateSessionId();
     
     // Attempt to add video title if we are tracking a video event
@@ -1458,7 +1459,7 @@ class WatchOnRepeat {
     this.updateStatsUI();
 
     // Fire and forget direct upserts to Supabase to completely bypass RPCs
-    if (window.supabaseClient) {
+    if (window.supabaseClient && video.platform !== 'local') {
       supabaseClient.from('global_stats').upsert({
         video_id: video.id,
         platform: video.platform,
@@ -1503,7 +1504,7 @@ class WatchOnRepeat {
   }
 
   async incrementGlobalPlayCount(id, platform) {
-    if (!window.supabaseClient) return;
+    if (!window.supabaseClient || platform === 'local') return;
     try {
       await supabaseClient.rpc('increment_video_play', { p_video_id: id, p_platform: platform });
     } catch (e) {
