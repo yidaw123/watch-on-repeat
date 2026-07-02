@@ -452,14 +452,14 @@ class LoopsMixin {
           </div>
           <div style="display:flex; gap:2px; margin-left: 4px;" class="tooltip" data-tip="Segment Speed">
             <select class="select-input" style="height:24px; min-height:24px; font-size:11px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff;" onchange="app.setSegmentSpeed(${index}, this.value)">
-              <option value="0.25" ${speedValue == 0.25 ? 'selected' : ''}>0.25x</option>
-              <option value="0.5" ${speedValue == 0.5 ? 'selected' : ''}>0.5x</option>
-              <option value="0.75" ${speedValue == 0.75 ? 'selected' : ''}>0.75x</option>
-              <option value="1" ${speedValue == 1 ? 'selected' : ''}>1x Normal</option>
-              <option value="1.25" ${speedValue == 1.25 ? 'selected' : ''}>1.25x</option>
-              <option value="1.5" ${speedValue == 1.5 ? 'selected' : ''}>1.5x</option>
-              <option value="1.75" ${speedValue == 1.75 ? 'selected' : ''}>1.75x</option>
-              <option value="2" ${speedValue == 2 ? 'selected' : ''}>2x</option>
+              <option style="color: #000; background: #fff;" value="0.25" ${speedValue == 0.25 ? 'selected' : ''}>0.25x</option>
+              <option style="color: #000; background: #fff;" value="0.5" ${speedValue == 0.5 ? 'selected' : ''}>0.5x</option>
+              <option style="color: #000; background: #fff;" value="0.75" ${speedValue == 0.75 ? 'selected' : ''}>0.75x</option>
+              <option style="color: #000; background: #fff;" value="1" ${speedValue == 1 ? 'selected' : ''}>1x Normal</option>
+              <option style="color: #000; background: #fff;" value="1.25" ${speedValue == 1.25 ? 'selected' : ''}>1.25x</option>
+              <option style="color: #000; background: #fff;" value="1.5" ${speedValue == 1.5 ? 'selected' : ''}>1.5x</option>
+              <option style="color: #000; background: #fff;" value="1.75" ${speedValue == 1.75 ? 'selected' : ''}>1.75x</option>
+              <option style="color: #000; background: #fff;" value="2" ${speedValue == 2 ? 'selected' : ''}>2x</option>
             </select>
           </div>
         `;

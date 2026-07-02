@@ -254,7 +254,7 @@
               </div>
 
               <div id="main-pro-controls" class="advanced-loop-controls" style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; transition: opacity 0.3s ease;">
-                <span class="text-xs font-bold text-gray-400" style="margin-right: 4px; display: flex; align-items: center; gap: 4px;">PRO CONTROLS <i data-lucide="info" class="tooltip" data-tip="[-][+]: Fine-tune Time&#10;[&lt;-][-&gt;]: Shift Loop&#10;[½x][2x]: Scale Duration&#10;Tempo: Auto-increase speed" style="width:14px;height:14px;color:var(--text-muted);cursor:help;"></i></span>
+                <span class="text-xs font-bold text-gray-400" style="margin-right: 4px; display: flex; align-items: center; gap: 4px;">PRO CONTROLS <span class="tooltip" data-tip="[-][+]: Fine-tune Time&#10;[&lt;-][-&gt;]: Shift Loop&#10;[½x][2x]: Scale Duration&#10;Tempo: Auto-increase speed"><i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);cursor:help;"></i></span></span>
                 <div style="display: flex; gap: 4px;" class="tooltip" data-tip="Fine-tune Start">
                   <button class="btn btn-secondary btn-sm" style="padding: 0 8px;" onclick="app.fineTuneLoop('start', -0.05)"><i data-lucide="minus" style="width:14px;height:14px;"></i></button>
                   <button class="btn btn-secondary btn-sm" style="padding: 0 8px;" onclick="app.fineTuneLoop('start', 0.05)"><i data-lucide="plus" style="width:14px;height:14px;"></i></button>
@@ -290,7 +290,7 @@
                       <i data-lucide="layers" style="width:14px; height:14px; display:inline-block; margin-right:4px;"></i> Advanced Loop Segments
                     </span>
                   </label>
-                  <i data-lucide="info" class="tooltip" data-tip="When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments." tabindex="0" style="width:14px;height:14px;color:var(--text-muted);cursor:help;margin-left:6px;margin-right:6px;outline:none;"></i>
+                  <span class="tooltip" data-tip="When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments." tabindex="0" style="margin-left:6px;margin-right:6px;outline:none;"><i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);cursor:help;"></i></span>
                   <span class="premium-badge">Upgrade</span>
                 </div>
                 
