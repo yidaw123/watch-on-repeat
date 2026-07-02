@@ -158,6 +158,26 @@ class LoopsMixin {
 
   async checkABLoop() {
     if (!this.state.abLoop.active) return;
+    if (this.state.abLoop.isChecking) return;
+    
+    this.state.abLoop.isChecking = true;
+    
+    try {
+      await Promise.race([
+        this._doCheckABLoop(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1000))
+      ]);
+    } catch (e) {
+      if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.warn("checkABLoop timeout/error:", e);
+    } finally {
+      this.state.abLoop.isChecking = false;
+      if (this.state.abLoop.active) {
+        this.state.abLoop.timer = setTimeout(() => this.checkABLoop(), 100);
+      }
+    }
+  }
+
+  async _doCheckABLoop() {
     const t = await this.getCurrentTime();
     
     if (!this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
