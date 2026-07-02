@@ -685,8 +685,8 @@ class WatchOnRepeat {
   // LOCAL VIDEO (OFFLINE MODE)
   // ==========================================
   triggerLocalVideo() {
-    if (!this.state.user || !this.state.user.isPremium) {
-      this.openUpgradeModal("Offline Local Video mode is an exclusive Premium feature!");
+    if (!this.state.user || this.state.user.tier !== 'pro') {
+      this.openUpgradeModal("Offline Local Video mode is an exclusive Pro feature!");
       return;
     }
     const input = document.getElementById('local-video-input');
