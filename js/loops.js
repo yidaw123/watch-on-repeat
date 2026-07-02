@@ -183,8 +183,7 @@ class LoopsMixin {
     if (!this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
       this.state.abLoop.multiSegments = [{ start: null, end: null }];
     }
-    
-    const segments = this.state.abLoop.multiSegments;
+    const segments = this.state.isMultiSegment ? this.state.abLoop.multiSegments : [this.state.abLoop.multiSegments[0] || { start: this.state.abLoop.start || 0, end: this.state.abLoop.end || this.state.currentVideoDuration || 0 }];
     const validSegmentsCount = segments.filter(seg => seg.start !== null && seg.end !== null).length;
     
     if (validSegmentsCount === 0) {
@@ -255,6 +254,8 @@ class LoopsMixin {
         return;
       }
       
+      this.state.isMultiSegment = true;
+
       // Force disable Gradual Tempo to prevent conflicts
       if (this.state.isAutoTempoEnabled) {
         this.state.isAutoTempoEnabled = false;
@@ -265,24 +266,17 @@ class LoopsMixin {
       list.classList.remove('hidden');
       addBtn.classList.remove('hidden');
       
-
-      
       if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
       if (this.state.abLoop.multiSegments.length === 0) {
         this.addLoopSegment();
       }
     } else {
+      this.state.isMultiSegment = false;
       list.classList.add('hidden');
       addBtn.classList.add('hidden');
-      
-
-      
-      // Revert to single segment
-      if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 1) {
-        this.state.abLoop.multiSegments = [this.state.abLoop.multiSegments[0]];
-        this.saveLoopData();
-      }
     }
+    
+    this.saveLoopData(); // Save the toggle state immediately
     if (this.updateTimelineUI) this.updateTimelineUI();
   }
 

@@ -1029,7 +1029,8 @@ class WatchOnRepeat {
       start: this.state.abLoop.start,
       end: this.state.abLoop.end,
       multiSegments: this.state.abLoop.multiSegments || [],
-      enabled: this.state.abLoop.active
+      enabled: this.state.abLoop.active,
+      isMultiSegment: this.state.isMultiSegment || false
     };
     
     localStorage.setItem('wor_saved_loops', JSON.stringify(savedLoops));
@@ -1087,6 +1088,11 @@ class WatchOnRepeat {
       }
       
       this.state.abLoop.active = data.enabled !== false;
+      this.state.isMultiSegment = data.isMultiSegment || false;
+      
+      if (this.elements.multiSegmentCheckbox) {
+        this.elements.multiSegmentCheckbox.checked = this.state.isMultiSegment;
+      }
       
       if (this.elements.abStart) this.elements.abStart.value = this.formatTime(this.state.abLoop.start);
       if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(this.state.abLoop.end);
@@ -2301,7 +2307,9 @@ class WatchOnRepeat {
       const duration = this.state.currentVideoDuration || 3600;
       const safeDuration = duration || 1;
       
-      this.state.abLoop.multiSegments.forEach((seg, index) => {
+      const segmentsToRender = this.state.isMultiSegment ? this.state.abLoop.multiSegments : [this.state.abLoop.multiSegments[0] || { start: this.state.abLoop.start || 0, end: this.state.abLoop.end || duration }];
+
+      segmentsToRender.forEach((seg, index) => {
         if (seg.start === null || seg.end === null) return;
         let sPct = Math.max(0, Math.min(100, (seg.start / safeDuration) * 100));
         let ePct = Math.max(0, Math.min(100, (seg.end / safeDuration) * 100));
