@@ -1078,10 +1078,13 @@ class WatchOnRepeat {
       // Heal any corrupted segments
       if (this.state.abLoop.multiSegments.length > 0 && dur > 0) {
         this.state.abLoop.multiSegments.forEach((seg, index) => {
+          if (seg.start === null && seg.end === null) return; // Leave placeholders alone
+          
           if (index === 0 && seg.start === null) {
             seg.start = 0;
           }
-          if (!seg.end || seg.end <= 0) {
+          if (seg.end === null || seg.end <= 0) {
+            // Only heal null end if start is not null
             seg.end = dur;
           }
           if (seg.end > dur) {
