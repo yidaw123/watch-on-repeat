@@ -2610,9 +2610,30 @@ class WatchOnRepeat {
     if (p === 'wistia' && this.state.players.wistia && typeof this.state.players.wistia.time === 'function') this.state.players.wistia.time(seconds);
   }
 
-  setPlaybackSpeed(rate) {
+  setPlaybackSpeed(rate, hideToast = false) {
     rate = parseFloat(rate);
     this.state.playbackRate = rate;
+    
+    // Freeze gradual tempo if speed is not 1x
+    const tempoCheckbox = document.getElementById('auto-tempo-checkbox');
+    if (tempoCheckbox) {
+      if (rate !== 1) {
+        tempoCheckbox.disabled = true;
+        tempoCheckbox.checked = false;
+        this.state.isAutoTempoEnabled = false;
+        tempoCheckbox.parentElement.style.opacity = '0.4';
+        tempoCheckbox.parentElement.title = "Gradual Tempo requires 1x Master Speed";
+      } else {
+        tempoCheckbox.disabled = false;
+        tempoCheckbox.parentElement.style.opacity = '1';
+        tempoCheckbox.parentElement.title = "";
+      }
+    }
+    
+    if (this.elements && this.elements.playbackSpeed) {
+      this.elements.playbackSpeed.value = rate;
+    }
+    
     const p = this.state.currentPlatform;
     try {
       if (p === 'youtube' && this.state.players.youtube) this.state.players.youtube.setPlaybackRate(rate);
@@ -2620,7 +2641,7 @@ class WatchOnRepeat {
       if (p === 'dailymotion' && this.state.players.dailymotion) if (DEBUG_MODE) console.warn("Dailymotion API may not support rate changes directly.");
       if (p === 'html5' && this.state.players.html5) this.state.players.html5.playbackRate = rate;
       if (p === 'local' && this.state.players.local) this.state.players.local.setPlaybackRate(rate);
-      this.showToast(`Speed set to ${rate}x`);
+      if (!hideToast) this.showToast(`Speed set to ${rate}x`);
     } catch(e) {
       if (DEBUG_MODE) console.error("Error setting rate", e);
     }

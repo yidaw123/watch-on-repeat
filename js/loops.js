@@ -197,6 +197,11 @@ class LoopsMixin {
       
       this.state.abLoop.currentSegmentIndex = nextIndex;
       
+      const newSegSpeed = segments[nextIndex].speed || 1.0;
+      if (this.state.playbackRate !== newSegSpeed) {
+        this.setPlaybackSpeed(newSegSpeed, true);
+      }
+      
       if (segments[nextIndex].start !== seg.end) {
         this.seekToTime(segments[nextIndex].start);
       }
@@ -213,6 +218,13 @@ class LoopsMixin {
       if (!this.enforcePremiumFeature("Advanced loop segments are a Premium feature.")) {
         e.target.checked = false;
         return;
+      }
+      
+      // Force disable Gradual Tempo to prevent conflicts
+      if (this.state.isAutoTempoEnabled) {
+        this.state.isAutoTempoEnabled = false;
+        const tempoCb = document.getElementById('auto-tempo-checkbox');
+        if (tempoCb) tempoCb.checked = false;
       }
       
       list.classList.remove('hidden');
@@ -265,13 +277,23 @@ class LoopsMixin {
   removeLoopSegment(index) {
     this.state.abLoop.multiSegments.splice(index, 1);
     if (this.state.abLoop.multiSegments.length === 0) {
-      this.state.abLoop.multiSegments.push({ start: null, end: null });
+      this.state.abLoop.multiSegments.push({ start: null, end: null, speed: 1.0 });
     }
     if (this.state.abLoop.currentSegmentIndex >= this.state.abLoop.multiSegments.length) {
       this.state.abLoop.currentSegmentIndex = 0;
     }
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
+  }
+
+  setSegmentSpeed(index, speed) {
+    if (!this.state.abLoop.multiSegments[index]) return;
+    this.state.abLoop.multiSegments[index].speed = parseFloat(speed);
+    this.saveLoopData();
+    // If it's the currently active segment, apply it immediately
+    if (this.state.abLoop.currentSegmentIndex === index) {
+      this.setPlaybackSpeed(parseFloat(speed), true);
+    }
   }
 
   renderMultiSegments() {
@@ -403,6 +425,8 @@ class LoopsMixin {
         });
       }
       
+      const speedValue = seg.speed || 1.0;
+      
       const controlsRow = document.createElement('div');
       controlsRow.style.display = 'flex';
       controlsRow.style.gap = '4px';
@@ -425,6 +449,18 @@ class LoopsMixin {
           <div style="display:flex; gap:2px;" class="tooltip" data-tip="Fine-tune End">
             <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', -0.05, ${index})"><i data-lucide="minus" style="width:12px;height:12px;"></i></button>
             <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', 0.05, ${index})"><i data-lucide="plus" style="width:12px;height:12px;"></i></button>
+          </div>
+          <div style="display:flex; gap:2px; margin-left: 4px;" class="tooltip" data-tip="Segment Speed">
+            <select class="select-input" style="height:24px; min-height:24px; font-size:11px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff;" onchange="app.setSegmentSpeed(${index}, this.value)">
+              <option value="0.25" ${speedValue == 0.25 ? 'selected' : ''}>0.25x</option>
+              <option value="0.5" ${speedValue == 0.5 ? 'selected' : ''}>0.5x</option>
+              <option value="0.75" ${speedValue == 0.75 ? 'selected' : ''}>0.75x</option>
+              <option value="1" ${speedValue == 1 ? 'selected' : ''}>1x Normal</option>
+              <option value="1.25" ${speedValue == 1.25 ? 'selected' : ''}>1.25x</option>
+              <option value="1.5" ${speedValue == 1.5 ? 'selected' : ''}>1.5x</option>
+              <option value="1.75" ${speedValue == 1.75 ? 'selected' : ''}>1.75x</option>
+              <option value="2" ${speedValue == 2 ? 'selected' : ''}>2x</option>
+            </select>
           </div>
         `;
       }
