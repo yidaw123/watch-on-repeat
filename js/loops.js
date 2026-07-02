@@ -297,7 +297,8 @@ class LoopsMixin {
       return;
     }
     
-    this.state.abLoop.multiSegments.push({ start: null, end: null });
+    const dur = this.state.currentVideoDuration || 0;
+    this.state.abLoop.multiSegments.push({ start: 0, end: dur });
     this.state.abLoop.currentSegmentIndex = this.state.abLoop.multiSegments.length - 1;
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
@@ -306,7 +307,8 @@ class LoopsMixin {
   removeLoopSegment(index) {
     this.state.abLoop.multiSegments.splice(index, 1);
     if (this.state.abLoop.multiSegments.length === 0) {
-      this.state.abLoop.multiSegments.push({ start: null, end: null, speed: 1.0 });
+      const dur = this.state.currentVideoDuration || 0;
+      this.state.abLoop.multiSegments.push({ start: 0, end: dur, speed: 1.0 });
     }
     if (this.state.abLoop.currentSegmentIndex >= this.state.abLoop.multiSegments.length) {
       this.state.abLoop.currentSegmentIndex = 0;

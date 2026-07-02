@@ -1256,6 +1256,24 @@ class WatchOnRepeat {
           videoId: id,
           playerVars: pVars,
         events: {
+          'onReady': (event) => {
+            const dur = event.target.getDuration();
+            if (dur > 0) {
+              this.setVideoDuration(dur);
+            } else {
+              // YouTube sometimes returns 0 initially. Poll for it.
+              const checkDur = setInterval(() => {
+                if (event.target && event.target.getDuration) {
+                  const d = event.target.getDuration();
+                  if (d > 0) {
+                    this.setVideoDuration(d);
+                    clearInterval(checkDur);
+                  }
+                }
+              }, 500);
+            }
+            this.onVideoReady();
+          },
           'onStateChange': this.handleYouTubeStateChange,
           'onError': (event) => {
             let reason = "An unknown error occurred.";
