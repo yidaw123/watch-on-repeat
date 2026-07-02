@@ -1077,7 +1077,7 @@ class WatchOnRepeat {
       }
     } else {
       // No segments exist yet — create the default full-video segment
-      this.state.abLoop.multiSegments = [{ start: 0, end: duration }];
+      this.state.abLoop.multiSegments = [{ start: null, end: null }];
     }
     
     // Now load saved data — this may override everything above with
@@ -2230,8 +2230,8 @@ class WatchOnRepeat {
       if (!this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
         const segEnd = this.state.abLoop.end || this.state.currentVideoDuration || 0;
         this.state.abLoop.multiSegments = [{
-          start: this.state.abLoop.start || 0,
-          end: segEnd
+          start: null,
+          end: null
         }];
         // Sync back so abLoop.end is never left as 0 when duration is available
         if (segEnd > 0) {

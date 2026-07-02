@@ -109,7 +109,7 @@ class LoopsMixin {
     const t = await this.getCurrentTime();
     
     if (!this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
-      this.state.abLoop.multiSegments = [{ start: this.state.abLoop.start || 0, end: this.state.abLoop.end || this.state.currentVideoDuration || 0 }];
+      this.state.abLoop.multiSegments = [{ start: null, end: null }];
     }
     
     const segments = this.state.abLoop.multiSegments;
@@ -322,14 +322,14 @@ class LoopsMixin {
           <input type="text" class="ts-h" placeholder="HH" maxlength="2"><span class="ts-sep">:</span>
           <input type="text" class="ts-m" placeholder="MM" maxlength="2"><span class="ts-sep">:</span>
           <input type="text" class="ts-s" placeholder="SS" maxlength="2"><span class="ts-sep">.</span>
-          <input type="text" class="ts-ms" placeholder="ms" maxlength="3">
+          <input type="text" class="ts-ms" placeholder="sss" maxlength="3">
         </div>
         <span class="text-gray-500" style="margin: 0 4px;">to</span>
         <div class="time-split-group enabled multi-seg-group" data-index="${index}" data-type="end" style="${activeStyle}">
           <input type="text" class="ts-h" placeholder="HH" maxlength="2"><span class="ts-sep">:</span>
           <input type="text" class="ts-m" placeholder="MM" maxlength="2"><span class="ts-sep">:</span>
           <input type="text" class="ts-s" placeholder="SS" maxlength="2"><span class="ts-sep">.</span>
-          <input type="text" class="ts-ms" placeholder="ms" maxlength="3">
+          <input type="text" class="ts-ms" placeholder="sss" maxlength="3">
         </div>
         <button class="icon-btn text-red-500 delete-segment-btn" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
       `;
