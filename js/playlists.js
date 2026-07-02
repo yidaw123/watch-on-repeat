@@ -168,12 +168,12 @@ class PlaylistsMixin {
     const playlists = this.getDb('playlists').filter(p => p.userId === this.state.user.id);
     
     const sortSelect = document.getElementById('playlist-sort-select');
-    const sortVal = sortSelect ? sortSelect.value : 'recent';
+    const sortVal = sortSelect ? sortSelect.value : 'newest';
     playlists.sort((a, b) => {
       if (sortVal === 'alpha') return (a.name || '').localeCompare(b.name || '');
-      if (sortVal === 'newest') return (new Date(b.createdAt || 0).getTime()) - (new Date(a.createdAt || 0).getTime());
-      // default: recent
-      return (new Date(b.updatedAt || 0).getTime()) - (new Date(a.updatedAt || 0).getTime());
+      if (sortVal === 'recent') return (new Date(b.updatedAt || 0).getTime()) - (new Date(a.updatedAt || 0).getTime());
+      // default: newest
+      return (new Date(b.createdAt || 0).getTime()) - (new Date(a.createdAt || 0).getTime());
     });
 
     badge.textContent = playlists.length;
