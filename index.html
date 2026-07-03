@@ -440,6 +440,9 @@
             <button class="tab-btn" id="tab-history-btn" onclick="app.showTab('history')">
               <i data-lucide="history"></i> History
             </button>
+            <button class="tab-btn" id="tab-saved-loops-btn" onclick="app.showTab('saved-loops')">
+              <i data-lucide="bookmark"></i> Saved Loops
+            </button>
             <button class="tab-btn" id="tab-notes-btn" onclick="app.showTab('notes')">
               <i data-lucide="edit-3"></i> Notes
             </button>
@@ -715,6 +718,29 @@
   </div>
 
   <!-- Login Modal -->
+
+            <!-- Saved Loops Tab -->
+            <div id="tab-saved-loops" class="tab-panel">
+              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3>Saved Loops</h3>
+                <select id="saved-loops-sort" class="select-dropdown" onchange="app.renderSavedLoopsTab()" style="margin-left: 10px; max-width: 150px;">
+                  <option value="recent_add">Recently Added</option>
+                  <option value="recent_edit">Recently Edited</option>
+                  <option value="alpha">Alphabetical</option>
+                </select>
+              </div>
+              <div class="notes-container">
+                <div class="active-notes-section" style="padding-top: 0;">
+                  <div id="saved-loops-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Saved loops rendered here -->
+                  </div>
+                  <div class="empty-state-list hidden" id="saved-loops-empty">
+                    <i data-lucide="bookmark"></i>
+                    <p>No saved loops yet. Save segments to quickly access them later!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <!-- Notes Tab -->
             <div id="tab-notes" class="tab-panel">
