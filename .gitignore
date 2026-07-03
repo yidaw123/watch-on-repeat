@@ -12,3 +12,6 @@ db.json
 *.njsproj
 *.sln
 *.sw?
+ 
+# Node
+node_modules/

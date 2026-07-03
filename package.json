@@ -1,0 +1,12 @@
+{
+  "name": "watchonrepeat",
+  "version": "1.0.0",
+  "description": "Video loop site",
+  "main": "app.js",
+  "scripts": {
+    "lint": "eslint \"**/*.js\" --ignore-pattern \"_archived_backups/\""
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  }
+}

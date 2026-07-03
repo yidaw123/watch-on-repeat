@@ -1305,6 +1305,14 @@ class WatchOnRepeat {
     }
   }
 
+  onVideoReady() {
+    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
+    if (this.elements.playerLoaded) {
+      this.elements.playerLoaded.classList.remove('remove');
+      this.elements.playerLoaded.classList.remove('hidden');
+    }
+  }
+
   setVideoDuration(duration) {
     if (!duration || isNaN(duration) || duration <= 0) return;
     
