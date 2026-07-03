@@ -9,7 +9,13 @@ window.NotesMixin = {
     let time = 0;
     if (isManual) {
       const manualInput = document.getElementById('manual-note-time');
-      if (manualInput && manualInput.value.trim() !== '') {
+      if (manualInput && manualInput._cascadingTime) {
+        time = manualInput._cascadingTime.getValue();
+        if (time === 0 && manualInput.value.includes('H')) {
+          this.showToast("Please enter a valid timestamp", "alert-circle");
+          return;
+        }
+      } else if (manualInput && manualInput.value.trim() !== '') {
         time = this.parseTime(manualInput.value.trim());
       } else {
         this.showToast("Please enter a valid timestamp", "alert-circle");

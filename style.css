@@ -2394,3 +2394,8 @@ input[type="checkbox"]:focus {
   font-weight: normal;
 }
 @media (max-width: 768px) { #timeline-container { display: none !important; } .timeline-loop-wrapper { gap: 15px !important; justify-content: center; } }
+
+.time-input::selection {
+  background: rgba(147, 51, 234, 0.6);
+  color: #fff;
+}

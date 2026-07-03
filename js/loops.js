@@ -15,8 +15,29 @@ class LoopsMixin {
     let target = this.state.abLoop;
     let isMulti = false;
     if (segIndex !== null && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments[segIndex]) {
-      target = this.state.abLoop.multiSegments[segIndex];
-      isMulti = true;
+      const startEl = document.getElementById(`multi-start-${segIndex}`);
+      const endEl = document.getElementById(`multi-end-${segIndex}`);
+      if (startEl && startEl._cascadingTime && endEl && endEl._cascadingTime) {
+         let currentStart = startEl._cascadingTime.getValue();
+         let currentEnd = endEl._cascadingTime.getValue();
+         if (isNaN(currentStart)) currentStart = 0;
+         if (isNaN(currentEnd) || currentEnd === 0) currentEnd = this.state.currentVideoDuration || 3600;
+         
+         let newStart = currentStart;
+         let newEnd = currentEnd;
+         
+         if (point === 'start') {
+           newStart = Math.max(0, newStart + amount);
+           if (newStart > newEnd) newStart = newEnd;
+         } else {
+           newEnd = Math.min(this.state.currentVideoDuration || 3600, newEnd + amount);
+           if (newEnd < newStart) newEnd = newStart;
+         }
+         
+         startEl._cascadingTime.setValue(newStart);
+         endEl._cascadingTime.setValue(newEnd);
+      }
+      return;
     } else {
       if (!this.state.abLoop.active) {
         this.state.abLoop.active = true;
@@ -56,8 +77,32 @@ class LoopsMixin {
     let target = this.state.abLoop;
     let isMulti = false;
     if (segIndex !== null && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments[segIndex]) {
-      target = this.state.abLoop.multiSegments[segIndex];
-      isMulti = true;
+      const startEl = document.getElementById(`multi-start-${segIndex}`);
+      const endEl = document.getElementById(`multi-end-${segIndex}`);
+      if (startEl && startEl._cascadingTime && endEl && endEl._cascadingTime) {
+         let currentStart = startEl._cascadingTime.getValue();
+         let currentEnd = endEl._cascadingTime.getValue();
+         if (isNaN(currentStart)) currentStart = 0;
+         if (isNaN(currentEnd) || currentEnd === 0) currentEnd = this.state.currentVideoDuration || 3600;
+         
+         const duration = currentEnd - currentStart;
+         let newStart = currentStart + (duration * direction);
+         let newEnd = currentEnd + (duration * direction);
+         
+         const maxTime = this.state.currentVideoDuration || newEnd;
+         if (newStart < 0) {
+           newStart = 0;
+           newEnd = duration;
+         } else if (newEnd > maxTime) {
+           newEnd = maxTime;
+           newStart = maxTime - duration;
+           if (newStart < 0) newStart = 0;
+         }
+         
+         startEl._cascadingTime.setValue(newStart);
+         endEl._cascadingTime.setValue(newEnd);
+      }
+      return;
     } else {
       if (!this.state.abLoop.active) {
         this.state.abLoop.active = true;
@@ -100,8 +145,26 @@ class LoopsMixin {
     let target = this.state.abLoop;
     let isMulti = false;
     if (segIndex !== null && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments[segIndex]) {
-      target = this.state.abLoop.multiSegments[segIndex];
-      isMulti = true;
+      const startEl = document.getElementById(`multi-start-${segIndex}`);
+      const endEl = document.getElementById(`multi-end-${segIndex}`);
+      if (startEl && startEl._cascadingTime && endEl && endEl._cascadingTime) {
+         let currentStart = startEl._cascadingTime.getValue();
+         let currentEnd = endEl._cascadingTime.getValue();
+         if (isNaN(currentStart)) currentStart = 0;
+         if (isNaN(currentEnd) || currentEnd === 0) currentEnd = this.state.currentVideoDuration || 3600;
+         
+         const duration = currentEnd - currentStart;
+         const newDuration = duration * multiplier;
+         
+         let newEnd = currentStart + newDuration;
+         const maxTime = this.state.currentVideoDuration || newEnd;
+         
+         if (newEnd > maxTime) newEnd = maxTime;
+         if (newEnd < currentStart + 0.1) newEnd = currentStart + 0.1;
+         
+         endEl._cascadingTime.setValue(newEnd);
+      }
+      return;
     } else {
       if (!this.state.abLoop.active) {
         this.state.abLoop.active = true;
@@ -340,13 +403,42 @@ class LoopsMixin {
   }
 
   setSegmentSpeed(index, speed) {
+    // Left empty. Speed is now saved via saveMultiSegment
+  }
+
+  saveMultiSegment(index) {
     if (!this.state.abLoop.multiSegments[index]) return;
-    this.state.abLoop.multiSegments[index].speed = parseFloat(speed);
+    
+    const startEl = document.getElementById(`multi-start-${index}`);
+    const endEl = document.getElementById(`multi-end-${index}`);
+    const speedEl = document.getElementById(`multi-speed-${index}`);
+    
+    let s = this.state.abLoop.multiSegments[index].start;
+    let e = this.state.abLoop.multiSegments[index].end;
+    let speed = this.state.abLoop.multiSegments[index].speed;
+    
+    if (startEl && startEl._cascadingTime) s = startEl._cascadingTime.getValue();
+    if (endEl && endEl._cascadingTime) e = endEl._cascadingTime.getValue();
+    if (speedEl) speed = parseFloat(speedEl.value) || 1.0;
+    
+    const duration = this.state.currentVideoDuration || 3600;
+    
+    s = Math.max(0, Math.min(s, duration));
+    e = Math.max(0, Math.min(e, duration));
+    if (s > e) s = e;
+    if (isNaN(s)) s = 0;
+    if (isNaN(e) || e === 0) e = duration;
+    
+    this.state.abLoop.multiSegments[index].start = s;
+    this.state.abLoop.multiSegments[index].end = e;
+    this.state.abLoop.multiSegments[index].speed = speed;
+    
+    this.state.abLoop.currentSegmentIndex = index;
     this.saveLoopData();
-    // If it's the currently active segment, apply it immediately
-    if (this.state.abLoop.currentSegmentIndex === index) {
-      this.setPlaybackSpeed(parseFloat(speed), true);
-    }
+    if (this.updateTimelineUI) this.updateTimelineUI();
+    this.renderMultiSegments();
+    
+    if (this.showToast) this.showToast("Segment saved!", "check-circle");
   }
 
   renderMultiSegments() {
@@ -450,26 +542,30 @@ class LoopsMixin {
       const activeStyle = isActive ? 'border-color: var(--color-primary); box-shadow: 0 0 5px var(--color-primary);' : 'border-color: #333;';
       
       const isReadOnly = this.state.isReadOnlyShared;
-      const groupClass = isReadOnly ? 'time-split-group disabled multi-seg-group' : 'time-split-group enabled multi-seg-group';
+      const isReadOnly = this.state.isReadOnlyShared;
       const inputAttr = isReadOnly ? 'readonly style="opacity: 0.6; cursor: not-allowed;" onclick="app.openUpgradeModal(\'Upgrade to edit Advanced Loop Segments on shared links!\')"' : '';
       
       row.innerHTML = `
         <span class="text-xs text-gray-500 w-4">${index + 1}</span>
-        <div class="${groupClass}" data-index="${index}" data-type="start" style="${activeStyle}">
-          <input type="text" class="ts-h" placeholder="HH" maxlength="2" ${inputAttr}><span class="ts-sep">:</span>
-          <input type="text" class="ts-m" placeholder="MM" maxlength="2" ${inputAttr}><span class="ts-sep">:</span>
-          <input type="text" class="ts-s" placeholder="SS" maxlength="2" ${inputAttr}><span class="ts-sep">.</span>
-          <input type="text" class="ts-ms" placeholder="sss" maxlength="3" ${inputAttr}>
+        <div style="flex: 1;">
+          <input type="text" id="multi-start-${index}" data-index="${index}" data-type="start" class="time-input multi-seg-input" value="HH:MM:SS.sss" style="width: 100%; text-align: center; color: white; background-color: rgba(255,255,255,0.1); border: 1px solid #333; border-radius: 4px; font-family: monospace; font-size: 13px; cursor: text; ${activeStyle}" ${inputAttr}>
         </div>
         <span class="text-gray-500" style="margin: 0 4px;">to</span>
-        <div class="${groupClass}" data-index="${index}" data-type="end" style="${activeStyle}">
-          <input type="text" class="ts-h" placeholder="HH" maxlength="2" ${inputAttr}><span class="ts-sep">:</span>
-          <input type="text" class="ts-m" placeholder="MM" maxlength="2" ${inputAttr}><span class="ts-sep">:</span>
-          <input type="text" class="ts-s" placeholder="SS" maxlength="2" ${inputAttr}><span class="ts-sep">.</span>
-          <input type="text" class="ts-ms" placeholder="sss" maxlength="3" ${inputAttr}>
+        <div style="flex: 1;">
+          <input type="text" id="multi-end-${index}" data-index="${index}" data-type="end" class="time-input multi-seg-input" value="HH:MM:SS.sss" style="width: 100%; text-align: center; color: white; background-color: rgba(255,255,255,0.1); border: 1px solid #333; border-radius: 4px; font-family: monospace; font-size: 13px; cursor: text; ${activeStyle}" ${inputAttr}>
         </div>
-        ${isReadOnly ? '' : '<button class="icon-btn text-red-500 delete-segment-btn" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>'}
+        ${isReadOnly ? '' : `
+          <button class="icon-btn text-green-500 save-segment-btn" data-tip="Save Segment" style="padding: 4px; margin-right: 2px;"><i data-lucide="save" style="width: 14px; height: 14px;"></i></button>
+          <button class="icon-btn text-red-500 delete-segment-btn" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+        `}
       `;
+      const saveBtn = row.querySelector('.save-segment-btn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.saveMultiSegment(index);
+        });
+      }
       const deleteBtn = row.querySelector('.delete-segment-btn');
       if (deleteBtn) {
         deleteBtn.addEventListener('click', (e) => {
@@ -504,7 +600,7 @@ class LoopsMixin {
             <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', 0.05, ${index})"><i data-lucide="plus" style="width:12px;height:12px;"></i></button>
           </div>
           <div style="display:flex; gap:2px; margin-left: 4px;" class="tooltip" data-tip="Segment Speed">
-            <select class="select-input" style="height:24px; min-height:24px; font-size:11px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff;" onchange="app.setSegmentSpeed(${index}, this.value)">
+            <select id="multi-speed-${index}" class="select-input" style="height:24px; min-height:24px; font-size:11px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff;" onchange="">
               <option style="color: #000; background: #fff;" value="0.25" ${speedValue == 0.25 ? 'selected' : ''}>0.25x</option>
               <option style="color: #000; background: #fff;" value="0.5" ${speedValue == 0.5 ? 'selected' : ''}>0.5x</option>
               <option style="color: #000; background: #fff;" value="0.75" ${speedValue == 0.75 ? 'selected' : ''}>0.75x</option>
@@ -534,76 +630,84 @@ class LoopsMixin {
       list.appendChild(container);
     });
     
-    let errorContainer = document.createElement('div');
-    errorContainer.id = 'multi-segment-error';
-    errorContainer.className = 'text-xs text-red-500 mt-1 hidden';
-    list.appendChild(errorContainer);
+    let errorContainer = document.getElementById('multi-segment-error');
+    if (!errorContainer) {
+      errorContainer = document.createElement('div');
+      errorContainer.id = 'multi-segment-error';
+      errorContainer.className = 'text-xs text-red-500 mt-1 hidden';
+      list.appendChild(errorContainer);
+    }
     
-    list.querySelectorAll('.multi-seg-group').forEach(group => {
-      const idx = parseInt(group.dataset.index, 10);
-      const type = group.dataset.type;
-      const seg = this.state.abLoop.multiSegments[idx];
-      this.setSplitTimeValue(group, seg[type]);
-      
-      this.bindSplitTimeGroup(group, () => {
-        const val = this.getSplitTimeValue(group);
-        const duration = this.state.currentVideoDuration || 3600;
-        const segs = this.state.abLoop.multiSegments;
+    if (window.CascadingTimeInput) {
+      this.state.abLoop.multiSegments.forEach((seg, idx) => {
+        const startEl = document.getElementById(`multi-start-${idx}`);
+        const endEl = document.getElementById(`multi-end-${idx}`);
         
-        if (val === null) {
-          if (type === 'start') segs[idx].start = null;
-          else segs[idx].end = null;
+        const handleChange = (val, type, groupEl) => {
+          const duration = this.state.currentVideoDuration || 3600;
+          const segs = this.state.abLoop.multiSegments;
+          
+          if (val === null || isNaN(val)) {
+            if (type === 'start') segs[idx].start = null;
+            else segs[idx].end = null;
+            
+            this.state.abLoop.currentSegmentIndex = idx;
+            this.saveLoopData();
+            if (this.updateTimelineUI) this.updateTimelineUI();
+            this.renderMultiSegments();
+            return;
+          }
+
+          let boundedVal = Math.max(0, Math.min(val, duration));
+
+          let maxPriorEnd = 0;
+          for (let i = 0; i < idx; i++) {
+            if (segs[i].start !== null && segs[i].end !== null) {
+              maxPriorEnd = Math.max(maxPriorEnd, segs[i].end);
+            }
+          }
+
+          let minNextStart = duration;
+          for (let i = idx + 1; i < segs.length; i++) {
+            if (segs[i].start !== null && segs[i].end !== null) {
+              minNextStart = Math.min(minNextStart, segs[i].start);
+            }
+          }
+
+          if (type === 'start') {
+            boundedVal = Math.max(maxPriorEnd, boundedVal);
+            if (segs[idx].end !== null) boundedVal = Math.min(boundedVal, segs[idx].end);
+            segs[idx].start = boundedVal;
+          } else {
+            boundedVal = Math.min(minNextStart, boundedVal);
+            if (segs[idx].start !== null) boundedVal = Math.max(boundedVal, segs[idx].start);
+            segs[idx].end = boundedVal;
+          }
+
+          if (boundedVal !== val) {
+             groupEl._cascadingTime.setValue(boundedVal);
+          }
+
+          if (errorContainer) {
+            errorContainer.textContent = '';
+            errorContainer.classList.add('hidden');
+          }
           
           this.state.abLoop.currentSegmentIndex = idx;
           this.saveLoopData();
-          if (this.updateTimelineUI) this.updateTimelineUI();
-          this.renderMultiSegments();
-          return;
-        }
+          if (this.updateTimelineUI) this.updateTimelineUI(true);
+        };
 
-        let boundedVal = Math.max(0, Math.min(val, duration));
-
-        let maxPriorEnd = 0;
-        for (let i = 0; i < idx; i++) {
-          if (segs[i].start !== null && segs[i].end !== null) {
-            maxPriorEnd = Math.max(maxPriorEnd, segs[i].end);
-          }
+        if (startEl) {
+          const ciStart = new CascadingTimeInput(startEl, true, (val, el) => handleChange(val, 'start', el));
+          ciStart.setValue(seg.start);
         }
-
-        let minNextStart = duration;
-        for (let i = idx + 1; i < segs.length; i++) {
-          if (segs[i].start !== null && segs[i].end !== null) {
-            minNextStart = Math.min(minNextStart, segs[i].start);
-          }
+        if (endEl) {
+          const ciEnd = new CascadingTimeInput(endEl, true, (val, el) => handleChange(val, 'end', el));
+          ciEnd.setValue(seg.end);
         }
-
-        if (type === 'start') {
-          boundedVal = Math.max(maxPriorEnd, boundedVal);
-          if (segs[idx].end !== null) boundedVal = Math.min(boundedVal, segs[idx].end);
-          segs[idx].start = boundedVal;
-        } else {
-          boundedVal = Math.min(minNextStart, boundedVal);
-          if (segs[idx].start !== null) boundedVal = Math.max(boundedVal, segs[idx].start);
-          segs[idx].end = boundedVal;
-        }
-
-        if (boundedVal !== val) {
-          this.setSplitTimeValue(group, boundedVal);
-        }
-
-        group.style.borderColor = '';
-        const errorEl = document.getElementById('multi-segment-error');
-        if (errorEl) {
-          errorEl.textContent = '';
-          errorEl.classList.add('hidden');
-        }
-        
-        this.state.abLoop.currentSegmentIndex = idx;
-        this.saveLoopData();
-        if (this.updateTimelineUI) this.updateTimelineUI();
-        this.renderMultiSegments();
       });
-    });
+    }
     
     if (window.lucide) window.lucide.createIcons();
   }
