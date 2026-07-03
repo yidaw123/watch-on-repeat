@@ -1,4 +1,4 @@
-class CascadingTimeInput {
+﻿class CascadingTimeInput {
   constructor(inputEl, withMillis = false, onChange = null) {
     this.inputEl = inputEl;
     this.withMillis = withMillis;
@@ -1470,8 +1470,8 @@ class WatchOnRepeat {
                 }
               }, 500);
             }
-
-          },
+              this.onVideoReady();
+            },
           'onStateChange': this.handleYouTubeStateChange,
           'onError': (event) => {
             let reason = "An unknown error occurred.";
@@ -3838,4 +3838,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
 
