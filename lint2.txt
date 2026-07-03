@@ -1,4 +1,0 @@
-
-> watchonrepeat@1.0.0 lint
-> eslint "**/*.js" --ignore-pattern "_archived_backups/"
-
