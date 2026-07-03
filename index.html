@@ -1018,14 +1018,6 @@
   </div>
 
   <script>
-    window.onerror = function(msg, url, lineNo, columnNo, error) {
-      const errDiv = document.createElement('div');
-      errDiv.style.cssText = 'position:fixed; top:0; left:0; width:100%; z-index:999999; background:red; color:white; padding:20px; font-size:24px; font-weight:bold; word-wrap:break-word;';
-      errDiv.innerHTML = 'ERROR: ' + msg + '<br>Line: ' + lineNo + '<br>URL: ' + url + '<br>Stack: ' + (error ? error.stack : '');
-      document.body.appendChild(errDiv);
-      return false;
-    };
-    
     // SELF DESTRUCT OLD SERVICE WORKERS & CACHES
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -1042,11 +1034,11 @@
       });
     }
   </script>
-  <script src="js/database.js?v=50"></script>
-  <script src="js/auth.js?v=50"></script>
-  <script src="js/notes.js?v=50"></script>
-  <script src="js/playlists.js?v=50"></script>
-  <script src="js/loops.js?v=50"></script>
-  <script src="app.js?v=50"></script>
+  <script src="js/database.js?v=51"></script>
+  <script src="js/auth.js?v=51"></script>
+  <script src="js/notes.js?v=51"></script>
+  <script src="js/playlists.js?v=51"></script>
+  <script src="js/loops.js?v=51"></script>
+  <script src="app.js?v=51"></script>
 </body>
 </html>

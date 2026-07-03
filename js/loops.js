@@ -542,7 +542,6 @@ class LoopsMixin {
       const activeStyle = isActive ? 'border-color: var(--color-primary); box-shadow: 0 0 5px var(--color-primary);' : 'border-color: #333;';
       
       const isReadOnly = this.state.isReadOnlyShared;
-      const isReadOnly = this.state.isReadOnlyShared;
       const inputAttr = isReadOnly ? 'readonly style="opacity: 0.6; cursor: not-allowed;" onclick="app.openUpgradeModal(\'Upgrade to edit Advanced Loop Segments on shared links!\')"' : '';
       
       row.innerHTML = `
