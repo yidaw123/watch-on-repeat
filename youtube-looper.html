@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Loop & Repeat YouTube Videos (The Easy Way)</title>
+  <meta name="description" content="Learn how to easily loop any YouTube video infinitely, repeat specific sections (A/B looping), and control playback speed with Watch On Repeat.">
+  <link rel="canonical" href="https://watchonrepeat.com/youtube-looper.html">
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:site_name" content="WatchOnRepeat">
+  <meta property="og:title" content="How to Loop & Repeat YouTube Videos (The Easy Way)">
+  <meta property="og:description" content="Learn how to easily loop any YouTube video infinitely, repeat specific sections (A/B looping), and control playback speed with Watch On Repeat.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://watchonrepeat.com/youtube-looper.html">
+  <meta property="og:image" content="https://watchonrepeat.com/og-image.png">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to Loop & Repeat YouTube Videos (The Easy Way)">
+  <meta name="twitter:description" content="Learn how to easily loop any YouTube video infinitely, repeat specific sections (A/B looping), and control playback speed with Watch On Repeat.">
+  <meta name="twitter:image" content="https://watchonrepeat.com/og-image.png">
+
+  <!-- JSON-LD Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "WatchOnRepeat",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [ { "@type": "Question", "name": "Can I loop YouTube videos on my phone?", "acceptedAnswer": { "@type": "Answer", "text": "Absolutely. WatchOnRepeat works perfectly on iOS and Android browsers without needing to download an app." } }, { "@type": "Question", "name": "Is there a limit to how long a video can loop?", "acceptedAnswer": { "@type": "Answer", "text": "No limit! You can leave a 10-hour ambient fireplace video looping for days if you want to." } } ] }
+  </script>
+  
+  <link href="style.css?v=10" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#4f46e5">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E9NYZYJL0D"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E9NYZYJL0D');
+  </script>
+  
+  <style>
+    body { padding-top: 80px; overflow-y: auto; }
+    .article-container { max-width: 800px; margin: 0 auto; padding: 2rem; background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); margin-bottom: 4rem; margin-top: 1rem;}
+    .breadcrumb { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .breadcrumb a { color: var(--primary-color); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .article-container h1 { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-primary); line-height: 1.2;}
+    .article-container h2 { font-family: 'Outfit', sans-serif; font-size: 1.8rem; margin-top: 2.5rem; margin-bottom: 1rem; color: var(--text-primary); }
+    .article-container h3 { font-family: 'Outfit', sans-serif; font-size: 1.4rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+    .article-container p { font-size: 1.1rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 1.2rem; }
+    .article-container ul { margin-bottom: 1.2rem; padding-left: 1.5rem; }
+    .article-container li { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 0.8rem; line-height: 1.5; }
+    .article-container strong { color: var(--text-primary); }
+    .cta-button { display: inline-block; padding: 1rem 2.5rem; background: linear-gradient(135deg, var(--primary-color), #7c3aed); color: white; text-decoration: none; font-weight: bold; border-radius: 50px; font-size: 1.2rem; text-align: center; margin-top: 2rem; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
+    .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6); color: white; }
+    .faq-section { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color); }
+    .faq-item { margin-bottom: 1.5rem; }
+    .faq-item h3 { font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+    .faq-item p { font-size: 1rem; color: var(--text-secondary); }
+    
+    .comparison-table { width: 100%; border-collapse: collapse; margin: 2rem 0; background: var(--bg-card); border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); }
+    .comparison-table th, .comparison-table td { padding: 1rem; text-align: center; border-bottom: 1px solid var(--border-color); }
+    .comparison-table th { background: rgba(255, 255, 255, 0.05); font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--text-primary); }
+    .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; }
+    .comparison-table td { color: var(--text-secondary); }
+    .check-icon { color: #10b981; }
+    .x-icon { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="glow-bg">
+    <div class="blob blob-purple"></div>
+    <div class="blob blob-blue"></div>
+  </div>
+
+  <div id="app-shell">
+    <header class="navbar">
+      <a href="/" class="brand" id="brand-logo">
+        <img src="logo.svg" alt="WatchOnRepeat Logo" class="brand-icon" style="background: none; object-fit: cover; border-radius: var(--radius-md);">
+        <span class="brand-name">Watch<span>On</span>Repeat</span>
+      </a>
+      <div class="search-container" style="justify-content: flex-end; padding-right: 1rem;">
+        <a href="/" class="btn btn-primary" style="text-decoration: none;">Launch App</a>
+      </div>
+    </header>
+
+    <main class="main-content" style="padding-top: 2rem;">
+      <div class="article-container">
+        <div class="breadcrumb">
+          <a href="/">Home</a> &gt; YouTube Looper
+        </div>
+        
+              <h1>How to Loop & Repeat YouTube Videos</h1>
+      <p>Ever found a song, an ambient track, or a funny clip that you just want to play over and over again? Endlessly repeating YouTube videos is incredibly simple with <strong>Watch On Repeat</strong>.</p>
+      
+      <h2>Step 1: Paste Your Link</h2>
+      <p>Simply copy the URL of the YouTube, Vimeo, or Twitch video you want to watch. Paste it into the search bar at the top of our app and hit "Loop It". That's it! Your video will now play continuously, automatically restarting when it reaches the end.</p>
+      
+      <h2>How to Loop a Specific Part of a Video (A/B Looping)</h2>
+      <p>Sometimes you don't want to loop the whole videoâ€”you just want to repeat a specific 10-second section. This is called A/B looping.</p>
+      <ul>
+        <li>Load your video into the player.</li>
+        <li>Below the video, click the <strong>Start (A)</strong> button when the part you want begins.</li>
+        <li>Click the <strong>End (B)</strong> button when that part finishes.</li>
+        <li>Toggle the loop switch on! The video will now endlessly repeat just that specific segment.</li>
+      </ul>
+      
+      <h2>Pro-Tip: The Bookmarklet</h2>
+      <p>Want to loop videos even faster? Drag our "Loop on WOR" bookmarklet from the app's sidebar directly to your browser's bookmarks bar. The next time you are on YouTube and want to repeat a video, click the bookmark, and it will instantly open here!</p>
+      
+      <p>Looking to practice an instrument? Check out our <a href="music-practice.html">Music Practice guide</a>.</p>
+      
+      <div class="faq-section">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-item">
+          <h3>Can I loop YouTube videos on my phone?</h3>
+          <p>Absolutely. WatchOnRepeat works perfectly on iOS and Android browsers without needing to download an app.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Is there a limit to how long a video can loop?</h3>
+          <p>No limit! You can leave a 10-hour ambient fireplace video looping for days if you want to.</p>
+        </div>
+      </div>
+        
+        <div style="text-align: center; margin-top: 3rem;">
+          <a href="/" class="cta-button">Start Looping Now â€” Free Forever</a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer" style="padding: 2rem; background: var(--bg-surface); border-top: 1px solid var(--border-color); text-align: center;">
+      <div class="footer-links" style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+        <a href="about.html">About Us</a>
+        <a href="privacy.html" target="_blank">Privacy</a>
+        <a href="terms.html" target="_blank">Terms</a>
+        <a href="contact.html" class="highlight-link" style="color: #60a5fa;">Contact Us</a>
+      </div>
+      <div class="footer-seo-links" style="margin-top: 15px; font-size: 0.9em; opacity: 0.7;">
+        <strong>Guides & Use Cases:</strong>
+        <a href="youtube-looper.html" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">YouTube Looper</a> | 
+        <a href="music-practice.html" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Music Practice</a> | 
+        <a href="language-learning.html" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Language Learning</a> | 
+        <a href="youtube-study-tool.html" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Video Study Tool</a> | 
+        <a href="listenonrepeat-alternative.html" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">ListenOnRepeat Alternative</a>
+      </div>
+      <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 WatchOnRepeat. All rights reserved.</p>
+    </footer>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
