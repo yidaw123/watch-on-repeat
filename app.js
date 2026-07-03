@@ -1,3 +1,173 @@
+class CascadingTimeInput {
+  constructor(inputEl, withMillis = false, onChange = null) {
+    this.inputEl = inputEl;
+    this.withMillis = withMillis;
+    this.onChange = onChange;
+    
+    this.defaultChars = this.withMillis ? ['H','H','M','M','S','S','s','s','s'] : ['H','H','M','M','S','S'];
+    this.chars = [...this.defaultChars];
+    
+    this.inputEl.value = this.format();
+    
+    this.inputEl.addEventListener('keydown', this.handleKeydown.bind(this));
+    this.inputEl.addEventListener('click', this.handleClick.bind(this));
+    this.inputEl.addEventListener('focus', this.handleClick.bind(this));
+    this.inputEl.addEventListener('select', (e) => {
+      if (this._handlingSelect) return;
+      this._handlingSelect = true;
+      this.handleClick(e);
+      setTimeout(() => this._handlingSelect = false, 10);
+    });
+    
+    this.inputEl._cascadingTime = this;
+  }
+
+  getActiveEndIndex() {
+    const pos = this.inputEl.selectionStart;
+    if (pos <= 2) return 1;
+    if (pos <= 5) return 3;
+    if (this.withMillis && pos > 8) return 8;
+    return 5;
+  }
+  
+  selectBlock(endIndex) {
+    if (endIndex === 1) this.inputEl.setSelectionRange(0, 2);
+    else if (endIndex === 3) this.inputEl.setSelectionRange(3, 5);
+    else if (endIndex === 5) this.inputEl.setSelectionRange(6, 8);
+    else if (endIndex === 8) this.inputEl.setSelectionRange(9, 13);
+  }
+
+  handleClick(e) {
+    const endIndex = this.getActiveEndIndex();
+    this.selectBlock(endIndex);
+  }
+
+  handleKeydown(e) {
+    if (e.key === 'Tab' || e.key === 'Enter' || e.ctrlKey || e.metaKey) return;
+    
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const endIndex = this.getActiveEndIndex();
+      let nextEnd = endIndex;
+      if (e.key === 'ArrowRight') {
+        if (endIndex === 1) nextEnd = 3;
+        else if (endIndex === 3) nextEnd = 5;
+        else if (endIndex === 5 && this.withMillis) nextEnd = 8;
+      } else {
+        if (endIndex === 8) nextEnd = 5;
+        else if (endIndex === 5) nextEnd = 3;
+        else if (endIndex === 3) nextEnd = 1;
+      }
+      this.selectBlock(nextEnd);
+      return;
+    }
+    
+    const endIndex = this.getActiveEndIndex();
+    
+    if (e.key >= '0' && e.key <= '9') {
+      e.preventDefault();
+      let digits = "";
+      for (let i = 0; i <= endIndex; i++) {
+        if (/[0-9]/.test(this.chars[i])) digits += this.chars[i];
+      }
+      digits += e.key;
+      if (digits.length > endIndex + 1) digits = digits.substring(digits.length - (endIndex + 1));
+      
+      let padded = "";
+      let defaultSub = this.defaultChars.slice(0, endIndex + 1).join('');
+      if (digits.length < defaultSub.length) {
+        padded = defaultSub.substring(0, defaultSub.length - digits.length) + digits;
+      } else {
+        padded = digits;
+      }
+      
+      for (let i = 0; i <= endIndex; i++) {
+        this.chars[i] = padded[i];
+      }
+      this.updateUI(endIndex);
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+      e.preventDefault();
+      let digits = "";
+      for (let i = 0; i <= endIndex; i++) {
+        if (/[0-9]/.test(this.chars[i])) digits += this.chars[i];
+      }
+      digits = digits.substring(0, Math.max(0, digits.length - 1));
+      
+      let padded = "";
+      let defaultSub = this.defaultChars.slice(0, endIndex + 1).join('');
+      if (digits.length < defaultSub.length) {
+        padded = defaultSub.substring(0, defaultSub.length - digits.length) + digits;
+      } else {
+        padded = digits;
+      }
+      
+      for (let i = 0; i <= endIndex; i++) {
+        this.chars[i] = padded[i];
+      }
+      this.updateUI(endIndex);
+    } else if (e.key.length === 1) {
+      e.preventDefault();
+    }
+  }
+
+  updateUI(endIndex) {
+    this.inputEl.value = this.format();
+    this.selectBlock(endIndex);
+    if (this.onChange) this.onChange(this.getValue(), this.inputEl);
+  }
+
+  format() {
+    let str = `${this.chars[0]}${this.chars[1]}:${this.chars[2]}${this.chars[3]}:${this.chars[4]}${this.chars[5]}`;
+    if (this.withMillis) {
+      str += `.${this.chars[6]}${this.chars[7]}${this.chars[8]}`;
+    }
+    return str;
+  }
+  
+  getValue() {
+    let hStr = this.chars[0] + this.chars[1];
+    let mStr = this.chars[2] + this.chars[3];
+    let sStr = this.chars[4] + this.chars[5];
+    let h = parseInt(hStr.replace(/[a-zA-Z]/g, '')) || 0;
+    let m = parseInt(mStr.replace(/[a-zA-Z]/g, '')) || 0;
+    let s = parseInt(sStr.replace(/[a-zA-Z]/g, '')) || 0;
+    let total = (h * 3600) + (m * 60) + s;
+    if (this.withMillis) {
+       let msStr = this.chars[6] + this.chars[7] + this.chars[8];
+       let ms = parseInt(msStr.replace(/[a-zA-Z]/g, '')) || 0;
+       total += (ms / 1000);
+    }
+    return total;
+  }
+
+  setValue(seconds) {
+    if (seconds === null || seconds === undefined || isNaN(seconds) || seconds < 0) {
+      this.chars = [...this.defaultChars];
+      this.inputEl.value = this.format();
+      return;
+    }
+    let h = Math.floor(seconds / 3600);
+    let m = Math.floor((seconds % 3600) / 60);
+    let s = Math.floor(seconds % 60);
+    let ms = Math.floor((seconds % 1) * 1000);
+    
+    let hStr = h.toString().padStart(2, '0');
+    let mStr = m.toString().padStart(2, '0');
+    let sStr = s.toString().padStart(2, '0');
+    let msStr = ms.toString().padStart(3, '0');
+    
+    this.chars[0] = hStr[0]; this.chars[1] = hStr[1];
+    this.chars[2] = mStr[0]; this.chars[3] = mStr[1];
+    this.chars[4] = sStr[0]; this.chars[5] = sStr[1];
+    if (this.withMillis) {
+      this.chars[6] = msStr[0]; this.chars[7] = msStr[1]; this.chars[8] = msStr[2];
+    }
+    this.inputEl.value = this.format();
+  }
+}
+window.CascadingTimeInput = CascadingTimeInput;
+
+
 /**
  * WatchOnRepeat - Core Application Logic
  */
@@ -2221,175 +2391,6 @@ class WatchOnRepeat {
   // UTILITIES
   // ==========================================
 
-class CascadingTimeInput {
-  constructor(inputEl, withMillis = false, onChange = null) {
-    this.inputEl = inputEl;
-    this.withMillis = withMillis;
-    this.onChange = onChange;
-    
-    this.defaultChars = this.withMillis ? ['H','H','M','M','S','S','s','s','s'] : ['H','H','M','M','S','S'];
-    this.chars = [...this.defaultChars];
-    
-    this.inputEl.value = this.format();
-    
-    this.inputEl.addEventListener('keydown', this.handleKeydown.bind(this));
-    this.inputEl.addEventListener('click', this.handleClick.bind(this));
-    this.inputEl.addEventListener('focus', this.handleClick.bind(this));
-    this.inputEl.addEventListener('select', (e) => {
-      if (this._handlingSelect) return;
-      this._handlingSelect = true;
-      this.handleClick(e);
-      setTimeout(() => this._handlingSelect = false, 10);
-    });
-    
-    this.inputEl._cascadingTime = this;
-  }
-
-  getActiveEndIndex() {
-    const pos = this.inputEl.selectionStart;
-    if (pos <= 2) return 1;
-    if (pos <= 5) return 3;
-    if (this.withMillis && pos > 8) return 8;
-    return 5;
-  }
-  
-  selectBlock(endIndex) {
-    if (endIndex === 1) this.inputEl.setSelectionRange(0, 2);
-    else if (endIndex === 3) this.inputEl.setSelectionRange(3, 5);
-    else if (endIndex === 5) this.inputEl.setSelectionRange(6, 8);
-    else if (endIndex === 8) this.inputEl.setSelectionRange(9, 13);
-  }
-
-  handleClick(e) {
-    const endIndex = this.getActiveEndIndex();
-    this.selectBlock(endIndex);
-  }
-
-  handleKeydown(e) {
-    if (e.key === 'Tab' || e.key === 'Enter' || e.ctrlKey || e.metaKey) return;
-    
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      const endIndex = this.getActiveEndIndex();
-      let nextEnd = endIndex;
-      if (e.key === 'ArrowRight') {
-        if (endIndex === 1) nextEnd = 3;
-        else if (endIndex === 3) nextEnd = 5;
-        else if (endIndex === 5 && this.withMillis) nextEnd = 8;
-      } else {
-        if (endIndex === 8) nextEnd = 5;
-        else if (endIndex === 5) nextEnd = 3;
-        else if (endIndex === 3) nextEnd = 1;
-      }
-      this.selectBlock(nextEnd);
-      return;
-    }
-    
-    const endIndex = this.getActiveEndIndex();
-    
-    if (e.key >= '0' && e.key <= '9') {
-      e.preventDefault();
-      let digits = "";
-      for (let i = 0; i <= endIndex; i++) {
-        if (/[0-9]/.test(this.chars[i])) digits += this.chars[i];
-      }
-      digits += e.key;
-      if (digits.length > endIndex + 1) digits = digits.substring(digits.length - (endIndex + 1));
-      
-      let padded = "";
-      let defaultSub = this.defaultChars.slice(0, endIndex + 1).join('');
-      if (digits.length < defaultSub.length) {
-        padded = defaultSub.substring(0, defaultSub.length - digits.length) + digits;
-      } else {
-        padded = digits;
-      }
-      
-      for (let i = 0; i <= endIndex; i++) {
-        this.chars[i] = padded[i];
-      }
-      this.updateUI(endIndex);
-    } else if (e.key === 'Backspace' || e.key === 'Delete') {
-      e.preventDefault();
-      let digits = "";
-      for (let i = 0; i <= endIndex; i++) {
-        if (/[0-9]/.test(this.chars[i])) digits += this.chars[i];
-      }
-      digits = digits.substring(0, Math.max(0, digits.length - 1));
-      
-      let padded = "";
-      let defaultSub = this.defaultChars.slice(0, endIndex + 1).join('');
-      if (digits.length < defaultSub.length) {
-        padded = defaultSub.substring(0, defaultSub.length - digits.length) + digits;
-      } else {
-        padded = digits;
-      }
-      
-      for (let i = 0; i <= endIndex; i++) {
-        this.chars[i] = padded[i];
-      }
-      this.updateUI(endIndex);
-    } else if (e.key.length === 1) {
-      e.preventDefault();
-    }
-  }
-
-  updateUI(endIndex) {
-    this.inputEl.value = this.format();
-    this.selectBlock(endIndex);
-    if (this.onChange) this.onChange(this.getValue(), this.inputEl);
-  }
-
-  format() {
-    let str = `${this.chars[0]}${this.chars[1]}:${this.chars[2]}${this.chars[3]}:${this.chars[4]}${this.chars[5]}`;
-    if (this.withMillis) {
-      str += `.${this.chars[6]}${this.chars[7]}${this.chars[8]}`;
-    }
-    return str;
-  }
-  
-  getValue() {
-    let hStr = this.chars[0] + this.chars[1];
-    let mStr = this.chars[2] + this.chars[3];
-    let sStr = this.chars[4] + this.chars[5];
-    let h = parseInt(hStr.replace(/[a-zA-Z]/g, '')) || 0;
-    let m = parseInt(mStr.replace(/[a-zA-Z]/g, '')) || 0;
-    let s = parseInt(sStr.replace(/[a-zA-Z]/g, '')) || 0;
-    let total = (h * 3600) + (m * 60) + s;
-    if (this.withMillis) {
-       let msStr = this.chars[6] + this.chars[7] + this.chars[8];
-       let ms = parseInt(msStr.replace(/[a-zA-Z]/g, '')) || 0;
-       total += (ms / 1000);
-    }
-    return total;
-  }
-
-  setValue(seconds) {
-    if (seconds === null || seconds === undefined || isNaN(seconds) || seconds < 0) {
-      this.chars = [...this.defaultChars];
-      this.inputEl.value = this.format();
-      return;
-    }
-    let h = Math.floor(seconds / 3600);
-    let m = Math.floor((seconds % 3600) / 60);
-    let s = Math.floor(seconds % 60);
-    let ms = Math.floor((seconds % 1) * 1000);
-    
-    let hStr = h.toString().padStart(2, '0');
-    let mStr = m.toString().padStart(2, '0');
-    let sStr = s.toString().padStart(2, '0');
-    let msStr = ms.toString().padStart(3, '0');
-    
-    this.chars[0] = hStr[0]; this.chars[1] = hStr[1];
-    this.chars[2] = mStr[0]; this.chars[3] = mStr[1];
-    this.chars[4] = sStr[0]; this.chars[5] = sStr[1];
-    if (this.withMillis) {
-      this.chars[6] = msStr[0]; this.chars[7] = msStr[1]; this.chars[8] = msStr[2];
-    }
-    this.inputEl.value = this.format();
-  }
-}
-window.CascadingTimeInput = CascadingTimeInput;
-
   showToast(message, iconName = 'info') {
     this.elements.toastIcon.innerHTML = `<i data-lucide="${iconName}"></i>`;
     this.elements.toastMessage.textContent = message;
@@ -2687,7 +2688,6 @@ window.CascadingTimeInput = CascadingTimeInput;
             else this.elements.abEnd.value = this.formatTime(this.state.abLoop.end);
           }
         }
-      }
       }
       if (!skipMultiRender) this.renderMultiSegments();
     };
@@ -3838,3 +3838,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
