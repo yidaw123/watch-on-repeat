@@ -556,7 +556,7 @@ class WatchOnRepeat {
         hasProFeatures = true;
       }
       
-      this.state.abLoops = segPairs;
+      this.state.sharedSegmentsToLoad = segPairs;
       this.state.isMultiSegment = true;
       if (this.elements.multiSegmentCheckbox) this.elements.multiSegmentCheckbox.checked = true;
     }
@@ -1059,10 +1059,10 @@ class WatchOnRepeat {
     if (!id) return;
     const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
     const data = savedLoops[id];
+    const dur = this.state.currentVideoDuration || 0;
     
+    // First apply base data if available
     if (data) {
-      const dur = this.state.currentVideoDuration || 0;
-      
       this.state.abLoop.start = data.start || 0;
       this.state.abLoop.end = data.end || dur;
       
@@ -1077,43 +1077,60 @@ class WatchOnRepeat {
         this.state.abLoop.end = dur;
       }
       
+      this.state.abLoop.active = data.enabled !== false;
+    }
+
+    // Handle Multi-Segments (prioritize shared link over local save)
+    if (this.state.sharedSegmentsToLoad && this.state.sharedSegmentsToLoad.length > 0) {
+      this.state.abLoop.multiSegments = this.state.sharedSegmentsToLoad;
+      this.state.isMultiSegment = true;
+      // Update base loop to match the first segment
+      if (this.state.sharedSegmentsToLoad[0]) {
+         this.state.abLoop.start = this.state.sharedSegmentsToLoad[0].start || 0;
+         this.state.abLoop.end = this.state.sharedSegmentsToLoad[0].end || dur;
+      }
+      // Clear to prevent leaking to other videos
+      this.state.sharedSegmentsToLoad = null; 
+    } else if (data) {
       const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
       this.state.abLoop.multiSegments = isPremium ? (data.multiSegments || []) : [];
-      
-      // Heal any corrupted segments
-      if (this.state.abLoop.multiSegments.length > 0 && dur > 0) {
-        this.state.abLoop.multiSegments.forEach((seg, index) => {
-          if (seg.start === null && seg.end === null) return; // Leave placeholders alone
-          
-          if (index === 0 && seg.start === null) {
-            seg.start = 0;
-          }
-          if (seg.end === null || seg.end <= 0) {
-            // Only heal null end if start is not null
-            seg.end = dur;
-          }
-          if (seg.end > dur) {
-            seg.end = dur;
-          }
-        });
-      }
-      
-      this.state.abLoop.active = data.enabled !== false;
       this.state.isMultiSegment = data.isMultiSegment || false;
-      
-      if (this.elements.multiSegmentCheckbox) {
-        this.elements.multiSegmentCheckbox.checked = this.state.isMultiSegment;
-      }
-      
-      if (this.elements.abStart) this.elements.abStart.value = this.formatTime(this.state.abLoop.start);
-      if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(this.state.abLoop.end);
-      
-      if (this.updateTimelineUI) {
-        this.updateTimelineUI();
-      }
+    }
+
+    // Heal any corrupted segments
+    if (this.state.abLoop.multiSegments.length > 0 && dur > 0) {
+      this.state.abLoop.multiSegments.forEach((seg, index) => {
+        if (seg.start === null && seg.end === null) return; // Leave placeholders alone
+        
+        if (index === 0 && seg.start === null) {
+          seg.start = 0;
+        }
+        if (seg.end === null || seg.end <= 0) {
+          // Only heal null end if start is not null
+          seg.end = dur;
+        }
+        if (seg.end > dur) {
+          seg.end = dur;
+        }
+      });
+    }
+
+    if (this.elements.multiSegmentCheckbox) {
+      this.elements.multiSegmentCheckbox.checked = this.state.isMultiSegment;
+    }
+    
+    if (this.elements.abStart) this.elements.abStart.value = this.formatTime(this.state.abLoop.start);
+    if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(this.state.abLoop.end);
+    
+    if (this.updateTimelineUI) {
+      this.updateTimelineUI();
+    }
+    if (typeof this.renderMultiSegments === 'function') {
       this.renderMultiSegments();
-      
-      // Re-save to clean up any corrupted data in localStorage
+    }
+    
+    // Re-save to clean up any corrupted data in localStorage ONLY if we aren't viewing a shared read-only link
+    if (!this.state.isReadOnlyShared && (data || this.state.abLoop.multiSegments.length > 0)) {
       this.saveLoopData();
     }
   }
@@ -2986,14 +3003,14 @@ class WatchOnRepeat {
     urlParams.set('p', video.platform);
     
     // Encode Segments
-    if (this.state.abLoops && this.state.abLoops.length > 0) {
+    if (this.state.isMultiSegment && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
       // Format: start-end,start-end
-      const segs = this.state.abLoops.map(l => `${Number(l.start).toFixed(2)}-${Number(l.end).toFixed(2)}`).join(',');
+      const segs = this.state.abLoop.multiSegments.map(l => `${Number(l.start).toFixed(2)}-${Number(l.end).toFixed(2)}`).join(',');
       urlParams.set('segments', segs);
       
       // Also set the basic start/end for backward compatibility or simple free users
-      urlParams.set('start', this.state.abLoops[0].start);
-      urlParams.set('end', this.state.abLoops[0].end);
+      urlParams.set('start', this.state.abLoop.multiSegments[0].start);
+      urlParams.set('end', this.state.abLoop.multiSegments[0].end);
     } else if (this.state.abLoop.active) {
       urlParams.set('start', this.state.abLoop.start);
       urlParams.set('end', this.state.abLoop.end);
