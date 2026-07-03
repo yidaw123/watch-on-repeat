@@ -22,3 +22,13 @@ This project is deployed live.
 1. **Zero-Defect Refactoring:** You MUST run local syntax validation checks and visually inspect every single file modification's `git diff` BEFORE you ever push code to the master branch.
 2. **Atomic Changes:** You MUST make smaller, highly focused changes rather than sweeping `replace_file_content` block replacements. Sweeping replacements introduce the risk of orphaned brackets or missing closing tags. Limit your `TargetContent` blocks to the smallest possible contiguous range.
 3. **No More 'Accidents':** You are required to run a rigorous review step for yourself before hitting 'deploy.' If you introduce a `SyntaxError` that causes the application to fail to execute (`app.js did not execute`), you have failed your core directive.
+
+# Mandatory Testing
+Before you run git push to the merge or master branch, you **MUST** run the local headless DOM test to ensure there are no syntax errors or runtime panics on initialization. 
+
+To do this:
+1. Run powershell -ExecutionPolicy Bypass -File .\verify_dom.ps1
+2. If the script outputs [PASS], you may proceed with the push.
+3. If the script outputs [FAIL], you must fix the error before pushing. Do not ask for user permission to fix it, just fix it.
+
+Never skip this step, even for small changes.
