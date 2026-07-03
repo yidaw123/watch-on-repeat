@@ -1239,14 +1239,32 @@ h1, h2, h3, h4, .brand-name {
 /* Responsive Breakpoints */
 @media (max-width: 1024px) {
   .main-container {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     padding: 1rem;
     gap: 1.5rem;
   }
   
-  .sidebar-card {
+  .player-column {
+    display: contents;
+  }
+  
+  .player-column > .player-card {
+    order: 1;
+  }
+  
+  .sidebar-column {
+    order: 2;
     height: auto;
     position: static;
+  }
+  
+  .stats-dashboard {
+    order: 3;
+  }
+  
+  #up-next-section {
+    order: 4;
   }
   
   .search-container {

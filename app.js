@@ -2067,14 +2067,14 @@ class WatchOnRepeat {
       this.renderPlaylistsTab();
     } else if (tabId === 'history') {
       this.renderHistoryTab();
+    } else if (tabId === 'saved-loops') {
+      this.renderSavedLoopsTab();
     } else if (tabId === 'trends') {
       this.renderTrendsTab();
     } else if (tabId === 'analytics') {
       this.renderAnalyticsTab();
     }
   }
-
-
 
   showTab(tabId) {
     this.switchTab(tabId);
@@ -3700,15 +3700,19 @@ class WatchOnRepeat {
         start: start,
         end: end,
         name: name,
-        loops: 0
+        loops: 0,
+        savedAt: Date.now(),
+        editedAt: Date.now()
       };
     } else {
       db.segments[key].name = name;
+      db.segments[key].editedAt = Date.now();
     }
     this.saveDb('analytics', db);
     this.elements.loopNameInput.value = '';
     this.showToast(`Loop saved as "${name}"`, "save");
     if (this.state.activeTab === 'analytics') this.renderAnalyticsTab();
+    if (this.state.activeTab === 'saved-loops') this.renderSavedLoopsTab();
 
     if (!this.state.user && !this.state.guestPromptShown) {
       this.state.guestPromptShown = true;
@@ -3720,7 +3724,7 @@ class WatchOnRepeat {
 
   renderSavedLoopsTab() {
     const db = this.getDb('analytics');
-    const segmentsArr = Object.values(db.segments || {});
+    const segmentsArr = Object.values(db.segments || {}).filter(seg => seg.name && seg.name.trim() !== '');
     
     // Sort logic
     const sortSelect = document.getElementById('saved-loops-sort');
