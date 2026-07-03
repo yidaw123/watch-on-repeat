@@ -2688,6 +2688,7 @@ window.CascadingTimeInput = CascadingTimeInput;
           }
         }
       }
+      }
       if (!skipMultiRender) this.renderMultiSegments();
     };
 
