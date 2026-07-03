@@ -954,6 +954,7 @@ class WatchOnRepeat {
           }
         }
       }
+      this.updateMediaSession(realTitle || videoTitle, platform, id);
     });
     this.updatePlatformBadge(platform);
     this.updateStatsUI();
@@ -991,6 +992,9 @@ class WatchOnRepeat {
 
     // Render notes
     this.renderNotes();
+    
+    // Render Up Next
+    this.renderUpNextQueue(id);
 
     // Add to loop history (if signed in)
     this.addToHistory(id, platform, videoTitle);
@@ -1884,6 +1888,57 @@ class WatchOnRepeat {
     if (platform === 'vimeo') return `https://vumbnail.com/${id}.jpg`;
     if (platform === 'dailymotion') return `https://www.dailymotion.com/thumbnail/video/${id}`;
     return '';
+  }
+
+  async renderUpNextQueue(currentVideoId) {
+    const section = document.getElementById('up-next-section');
+    const list = document.getElementById('up-next-list');
+    if (!section || !list) return;
+
+    if (!this.state.discoverData) {
+      let discoverVideos = [
+        { id: 'aqz-KE-bpKQ', platform: 'youtube', title: 'Big Buck Bunny 60fps 4K' },
+        { id: 'jfKfPfyJRdk', platform: 'youtube', title: 'lofi hip hop radio - beats to relax/study to' },
+        { id: '76979871', platform: 'vimeo', title: 'Big Buck Bunny (High Quality Animated Film)' },
+        { id: 'Sagg0zTrNGA', platform: 'youtube', title: 'Epic Sax Guy - 10 Hours Loop Edition' }
+      ];
+
+      if (window.supabaseClient) {
+        try {
+          const { data } = await supabaseClient.from('global_stats')
+            .select('*')
+            .neq('platform', 'local')
+            .order('global_loops', { ascending: false })
+            .limit(20);
+          
+          if (data && data.length > 0) {
+            discoverVideos = data.map(d => ({
+              videoId: d.video_id,
+              platform: d.platform,
+              title: `Trending ${d.platform} video`,
+              globalLoops: d.global_loops
+            }));
+          }
+        } catch(e) {}
+      }
+      this.state.discoverData = discoverVideos;
+    }
+
+    let suggestions = this.state.discoverData.filter(v => (v.videoId || v.id) !== currentVideoId);
+    suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 6);
+
+    if (suggestions.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+    list.innerHTML = '';
+    
+    suggestions.forEach(v => {
+      const card = this.createVideoCard(v, false, null);
+      list.appendChild(card);
+    });
   }
 
   async renderDiscoverTab(page = 1) {
@@ -2795,6 +2850,76 @@ class WatchOnRepeat {
     if (p === 'wistia' && this.state.players.wistia && typeof this.state.players.wistia.time === 'function') this.state.players.wistia.time(seconds);
   }
 
+  playVideo() {
+    const p = this.state.currentPlatform;
+    if (p === 'youtube' && this.state.players.youtube) this.state.players.youtube.playVideo();
+    if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.play();
+    if (p === 'dailymotion' && this.state.players.dailymotion) this.state.players.dailymotion.play();
+    if (p === 'html5' && this.state.players.html5) this.state.players.html5.play();
+    if (p === 'twitch' && this.state.players.twitch) this.state.players.twitch.play();
+    if (p === 'soundcloud' && this.state.players.soundcloud) this.state.players.soundcloud.play();
+    if (p === 'wistia' && this.state.players.wistia) this.state.players.wistia.play();
+  }
+  
+  pauseVideo() {
+    const p = this.state.currentPlatform;
+    if (p === 'youtube' && this.state.players.youtube) this.state.players.youtube.pauseVideo();
+    if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.pause();
+    if (p === 'dailymotion' && this.state.players.dailymotion) this.state.players.dailymotion.pause();
+    if (p === 'html5' && this.state.players.html5) this.state.players.html5.pause();
+    if (p === 'twitch' && this.state.players.twitch) this.state.players.twitch.pause();
+    if (p === 'soundcloud' && this.state.players.soundcloud) this.state.players.soundcloud.pause();
+    if (p === 'wistia' && this.state.players.wistia) this.state.players.wistia.pause();
+  }
+
+  updateMediaSession(title, platform, id) {
+    if ('mediaSession' in navigator) {
+      const artworkUrl = this.getThumbnailUrl(platform, id);
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: title || 'Unknown Title',
+        artist: 'WatchOnRepeat',
+        album: 'Video Loop',
+        artwork: [
+          { src: artworkUrl || 'logo.svg', sizes: '96x96', type: 'image/jpeg' },
+          { src: artworkUrl || 'logo.svg', sizes: '128x128', type: 'image/jpeg' },
+          { src: artworkUrl || 'logo.svg', sizes: '192x192', type: 'image/jpeg' },
+          { src: artworkUrl || 'logo.svg', sizes: '256x256', type: 'image/jpeg' },
+          { src: artworkUrl || 'logo.svg', sizes: '384x384', type: 'image/jpeg' },
+          { src: artworkUrl || 'logo.svg', sizes: '512x512', type: 'image/jpeg' }
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        this.playVideo();
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        this.pauseVideo();
+      });
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        if (this.state.isMultiSegment && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 1) {
+           let idx = this.state.abLoop.currentSegmentIndex - 1;
+           if (idx < 0) idx = this.state.abLoop.multiSegments.length - 1;
+           this.state.abLoop.currentSegmentIndex = idx;
+           this.seekToTime(this.state.abLoop.multiSegments[idx].start);
+           this.updateTimelineUI();
+        } else {
+           this.seekToTime(this.state.abLoop.start !== null ? this.state.abLoop.start : 0);
+        }
+      });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        if (this.state.isMultiSegment && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 1) {
+           let idx = this.state.abLoop.currentSegmentIndex + 1;
+           if (idx >= this.state.abLoop.multiSegments.length) idx = 0;
+           this.state.abLoop.currentSegmentIndex = idx;
+           this.seekToTime(this.state.abLoop.multiSegments[idx].start);
+           this.updateTimelineUI();
+        } else {
+           this.seekToTime(this.state.abLoop.end !== null && this.state.abLoop.end > 0 ? this.state.abLoop.end : (this.state.currentVideoDuration || 0));
+        }
+      });
+    }
+  }
+
   setPlaybackSpeed(rate, hideToast = false) {
     rate = parseFloat(rate);
     this.state.playbackRate = rate;
@@ -2888,15 +3013,20 @@ class WatchOnRepeat {
     }
 
     // Encode Notes (Limit payload size by truncating to ~1500 chars if necessary, but base64 compress)
-    const notesDb = this.getDb('notes');
-    const videoNotes = notesDb[`${video.platform}_${video.id}`];
-    if (videoNotes && videoNotes.length > 0) {
-      try {
-        const notesJson = JSON.stringify(videoNotes);
-        const base64Notes = btoa(encodeURIComponent(notesJson));
-        urlParams.set('n', base64Notes);
-      } catch (e) {
-        console.error("Notes payload too large to encode", e);
+    const includeNotesCheckbox = document.getElementById('share-include-notes');
+    const includeNotes = includeNotesCheckbox ? includeNotesCheckbox.checked : true;
+    
+    if (includeNotes) {
+      const notesDb = this.getDb('notes');
+      const videoNotes = notesDb[`${video.platform}_${video.id}`];
+      if (videoNotes && videoNotes.length > 0) {
+        try {
+          const notesJson = JSON.stringify(videoNotes);
+          const base64Notes = btoa(encodeURIComponent(notesJson));
+          urlParams.set('n', base64Notes);
+        } catch (e) {
+          console.error("Notes payload too large to encode", e);
+        }
       }
     }
 
