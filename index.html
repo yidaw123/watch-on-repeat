@@ -637,9 +637,15 @@
           <button class="btn btn-primary" id="copy-share-btn" onclick="app.copyShareLink()"><i data-lucide="copy"></i> Copy</button>
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:24px;">
-          <input type="checkbox" id="share-include-notes" checked onchange="app.generateShareableClip()" style="width:16px; height:16px; cursor:pointer;">
-          <label for="share-include-notes" style="color:var(--text-muted); font-size:14px; cursor:pointer; user-select:none;">Include my notes in this link</label>
+        <div style="display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+          <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); font-size:14px; cursor:pointer; user-select:none;">
+            <input type="checkbox" id="share-include-segments" checked onchange="app.generateShareableClip()" style="width:16px; height:16px; cursor:pointer;">
+            Include segments
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); font-size:14px; cursor:pointer; user-select:none;">
+            <input type="checkbox" id="share-include-notes" checked onchange="app.generateShareableClip()" style="width:16px; height:16px; cursor:pointer;">
+            Include notes
+          </label>
         </div>
 
         <h4 class="text-sm text-gray-400 font-bold mb-3 uppercase tracking-wider">Share to Social</h4>

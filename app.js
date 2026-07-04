@@ -3192,30 +3192,35 @@ class WatchOnRepeat {
     urlParams.set('p', video.platform);
     
     // Encode Segments
-    if (this.state.isMultiSegment && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
-      // Format: start-end,start-end
-      const segs = this.state.abLoop.multiSegments.map(l => `${Number(l.start).toFixed(2)}-${Number(l.end).toFixed(2)}`).join(',');
-      urlParams.set('segments', segs);
-      
-      // Also set the basic start/end for backward compatibility or simple free users
-      urlParams.set('start', this.state.abLoop.multiSegments[0].start);
-      urlParams.set('end', this.state.abLoop.multiSegments[0].end);
-    } else if (this.state.abLoop.active) {
-      urlParams.set('start', this.state.abLoop.start);
-      urlParams.set('end', this.state.abLoop.end);
-    } else {
-      try {
-        const currentTime = await this.getCurrentTime();
-        if (currentTime > 0) {
-          urlParams.set('start', Math.floor(currentTime));
-        }
-      } catch (err) {
-        console.error("Could not get current time for share link", err);
-      }
-    }
+    const includeSegmentsCheckbox = document.getElementById('share-include-segments');
+    const includeSegments = includeSegmentsCheckbox ? includeSegmentsCheckbox.checked : true;
     
-    if (this.state.playbackRate !== 1) {
-      urlParams.set('rate', this.state.playbackRate);
+    if (includeSegments) {
+      if (this.state.isMultiSegment && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+        // Format: start-end,start-end
+        const segs = this.state.abLoop.multiSegments.map(l => `${Number(l.start).toFixed(2)}-${Number(l.end).toFixed(2)}`).join(',');
+        urlParams.set('segments', segs);
+        
+        // Also set the basic start/end for backward compatibility or simple free users
+        urlParams.set('start', this.state.abLoop.multiSegments[0].start);
+        urlParams.set('end', this.state.abLoop.multiSegments[0].end);
+      } else if (this.state.abLoop.active) {
+        urlParams.set('start', this.state.abLoop.start);
+        urlParams.set('end', this.state.abLoop.end);
+      } else {
+        try {
+          const currentTime = await this.getCurrentTime();
+          if (currentTime > 0) {
+            urlParams.set('start', Math.floor(currentTime));
+          }
+        } catch (err) {
+          console.error("Could not get current time for share link", err);
+        }
+      }
+      
+      if (this.state.playbackRate !== 1) {
+        urlParams.set('rate', this.state.playbackRate);
+      }
     }
 
     // Encode Notes (Limit payload size by truncating to ~1500 chars if necessary, but base64 compress)
