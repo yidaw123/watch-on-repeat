@@ -417,61 +417,7 @@
                   </div>
                 </div>
                 
-                <!-- Stats Dashboard (Moved from main player view) -->
-                <div class="stats-dashboard" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                  <div class="stat-card personal-stats">
-                    <div class="stat-icon purple">
-                      <i data-lucide="user"></i>
-                    </div>
-                    <div class="stat-details">
-                      <div class="stat-value" id="personal-loop-count">0</div>
-                      <div class="stat-label">Your Loops for Current Video (Session)</div>
-                    </div>
-                    <div class="stat-sub">
-                      Lifetime: <span id="personal-lifetime-count">0</span>
-                    </div>
-                  </div>
-                  
-                  <div class="stat-card session-stats">
-                    <div class="stat-icon yellow" style="background: rgba(234, 179, 8, 0.1); color: #eab308;">
-                      <i data-lucide="layers"></i>
-                    </div>
-                    <div class="stat-details">
-                      <div class="stat-value" id="session-total-loop-count">0</div>
-                      <div class="stat-label">Your Loops for All Videos (Session)</div>
-                    </div>
-                    <div class="stat-sub">
-                      Lifetime: <span id="all-time-total-count">0</span>
-                    </div>
-                  </div>
 
-                  <div class="stat-card global-stats">
-                    <div class="stat-icon pink">
-                      <i data-lucide="globe"></i>
-                    </div>
-                    <div class="stat-details">
-                      <div class="stat-value" id="global-loop-count">0</div>
-                      <div class="stat-label">Global Loops (This Video)</div>
-                    </div>
-                    <div class="stat-sub" id="loop-timer">
-                      Session time: 00:00
-                    </div>
-                  </div>
-
-
-                  <div class="stat-card loop-status">
-                    <div class="stat-icon green">
-                      <i data-lucide="refresh-cw" class="spinning-icon"></i>
-                    </div>
-                    <div class="stat-details">
-                      <div class="stat-value text-green" id="loop-state-text">Looping</div>
-                      <div class="stat-label">Playback State</div>
-                    </div>
-                    <div class="stat-sub">
-                      All-Time Total (All Users & Videos): <span id="platform-total-loops">0</span>
-                    </div>
-                  </div>
-                </div>
                 
                 <h4 class="analytics-subtitle">Most Practiced Segments</h4>
                 <div class="analytics-segments-list" id="analytics-segments-list">
@@ -875,6 +821,63 @@
 
         </div>
       </aside>
+
+      <!-- Stats Dashboard at the very bottom -->
+      <div id="stats-dashboard-container" class="player-card" style="width: 100%;">
+        <div class="stats-dashboard" style="margin-top: 0; padding-top: 0; border-top: none;">
+          <div class="stat-card personal-stats">
+            <div class="stat-icon purple">
+              <i data-lucide="user"></i>
+            </div>
+            <div class="stat-details">
+              <div class="stat-value" id="personal-loop-count">0</div>
+              <div class="stat-label">Your Loops for Current Video (Session)</div>
+            </div>
+            <div class="stat-sub">
+              Lifetime: <span id="personal-lifetime-count">0</span>
+            </div>
+          </div>
+          
+          <div class="stat-card session-stats">
+            <div class="stat-icon yellow" style="background: rgba(234, 179, 8, 0.1); color: #eab308;">
+              <i data-lucide="layers"></i>
+            </div>
+            <div class="stat-details">
+              <div class="stat-value" id="session-total-loop-count">0</div>
+              <div class="stat-label">Your Loops for All Videos (Session)</div>
+            </div>
+            <div class="stat-sub">
+              Lifetime: <span id="all-time-total-count">0</span>
+            </div>
+          </div>
+
+          <div class="stat-card global-stats">
+            <div class="stat-icon pink">
+              <i data-lucide="globe"></i>
+            </div>
+            <div class="stat-details">
+              <div class="stat-value" id="global-loop-count">0</div>
+              <div class="stat-label">Global Loops (This Video)</div>
+            </div>
+            <div class="stat-sub" id="loop-timer">
+              Session time: 00:00
+            </div>
+          </div>
+
+          <div class="stat-card loop-status">
+            <div class="stat-icon green">
+              <i data-lucide="refresh-cw" class="spinning-icon"></i>
+            </div>
+            <div class="stat-details">
+              <div class="stat-value text-green" id="loop-state-text">Looping</div>
+              <div class="stat-label">Playback State</div>
+            </div>
+            <div class="stat-sub">
+              All-Time Total (All Users & Videos): <span id="platform-total-loops">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </main>
 
