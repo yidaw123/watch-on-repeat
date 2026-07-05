@@ -217,14 +217,10 @@ window.addEventListener('unhandledrejection', function(e) {
   }
 });
 
-const PIPED_INSTANCES = [
-  'https://pipedapi.kavin.rocks',
-  'https://pipedapi.tokhmi.xyz',
-  'https://pipedapi.smnz.de',
-  'https://pipedapi.in.projectsegfau.lt',
-  'https://piped-api.garudalinux.org',
-  'https://pi.ggtyler.dev/api',
-  'https://pipedapi.drgns.space'
+const PROXY_INSTANCES = [
+  'https://api.allorigins.win/get?url=',
+  'https://corsproxy.io/?',
+  'https://api.codetabs.com/v1/proxy?quest='
 ];
 
 class WatchOnRepeat {
@@ -948,7 +944,7 @@ class WatchOnRepeat {
     errorEl.classList.add('hidden');
 
     try {
-      const results = await this.fetchPipedSearchResults(query);
+      const results = await this.fetchYoutubeSearchResults(query);
       loading.classList.add('hidden');
       
       if (results && results.length > 0) {
@@ -965,33 +961,63 @@ class WatchOnRepeat {
     }
   }
 
-  async fetchPipedSearchResults(query) {
-    for (const instance of PIPED_INSTANCES) {
+  async fetchYoutubeSearchResults(query) {
+    const targetUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query);
+    
+    for (const proxy of PROXY_INSTANCES) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
         
-        const response = await fetch(`${instance}/search?q=${encodeURIComponent(query)}&filter=videos`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json'
-          },
-          signal: controller.signal
-        });
+        let html = '';
         
-        clearTimeout(timeoutId);
+        if (proxy.includes('allorigins')) {
+          const response = await fetch(proxy + encodeURIComponent(targetUrl), { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (response.ok) {
+            const data = await response.json();
+            html = data.contents;
+          }
+        } else {
+          const response = await fetch(proxy + encodeURIComponent(targetUrl), { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (response.ok) {
+            html = await response.text();
+          }
+        }
         
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.items) {
-            return data.items.slice(0, 10);
+        if (html) {
+          const match = html.match(/var ytInitialData = ({.*?});<\/script>/);
+          if (match) {
+            const ytData = JSON.parse(match[1]);
+            const contents = ytData.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents;
+            if (contents && contents.length > 0) {
+              const itemSection = contents.find(c => c.itemSectionRenderer)?.itemSectionRenderer;
+              if (itemSection && itemSection.contents) {
+                const results = [];
+                for (const item of itemSection.contents) {
+                  if (item.videoRenderer) {
+                    const vr = item.videoRenderer;
+                    results.push({
+                      url: 'https://www.youtube.com/watch?v=' + vr.videoId,
+                      title: vr.title?.runs?.[0]?.text || 'Unknown Title',
+                      thumbnails: vr.thumbnail?.thumbnails || [],
+                      uploader: vr.ownerText?.runs?.[0]?.text || 'Unknown Channel',
+                      durationStr: vr.lengthText?.simpleText || ''
+                    });
+                    if (results.length >= 10) break;
+                  }
+                }
+                if (results.length > 0) return results;
+              }
+            }
           }
         }
       } catch (err) {
-        if (DEBUG_MODE) console.warn(`Piped instance ${instance} failed:`, err);
+        if (DEBUG_MODE) console.warn(`Proxy ${proxy} failed:`, err);
       }
     }
-    throw new Error("All search instances failed.");
+    throw new Error("All proxy instances failed.");
   }
 
   renderSearchResults(results, container, dropdown) {
@@ -1000,10 +1026,10 @@ class WatchOnRepeat {
       const el = document.createElement('div');
       el.className = 'search-result-item';
       
-      const thumbUrl = item.thumbnail || (item.thumbnails && item.thumbnails.length > 0 ? item.thumbnails[0].url : '');
+      const thumbUrl = item.thumbnails && item.thumbnails.length > 0 ? item.thumbnails[0].url : '';
       const title = item.title || 'Unknown Title';
-      const channel = item.uploaderName || item.uploader || 'Unknown Channel';
-      const duration = item.duration > 0 ? new Date(item.duration * 1000).toISOString().substring(11, 19).replace(/^00:/, '') : '';
+      const channel = item.uploader || 'Unknown Channel';
+      const duration = item.durationStr || '';
       
       const videoId = item.url.split('?v=')[1];
       
