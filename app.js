@@ -2684,6 +2684,14 @@ class WatchOnRepeat {
       if (markers) container.appendChild(markers);
       
       if (this.state.isMultiSegment) {
+        if (this.state.abLoop.multiSegments) {
+          this.state.abLoop.multiSegments.forEach((s, idx) => {
+            const msStart = document.getElementById(`multi-start-${idx}`);
+            const msEnd = document.getElementById(`multi-end-${idx}`);
+            if (msStart && msStart._cascadingTime && s.start !== null) msStart._cascadingTime.setValue(s.start);
+            if (msEnd && msEnd._cascadingTime && s.end !== null) msEnd._cascadingTime.setValue(s.end);
+          });
+        }
         const activeIdx = this.state.abLoop.currentSegmentIndex || 0;
         if (this.state.abLoop.multiSegments[activeIdx]) {
           const activeSeg = this.state.abLoop.multiSegments[activeIdx];
