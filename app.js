@@ -16,6 +16,7 @@ class CascadingTimeInput {
       if (this.onChange) this.onChange(this.getValue(), this.inputEl);
     });
     this.inputEl.addEventListener('select', (e) => {
+      if (this._programmaticSelect) return;
       if (this._handlingSelect) return;
       this._handlingSelect = true;
       this.handleClick(e);
@@ -121,9 +122,11 @@ class CascadingTimeInput {
   }
 
   updateUI(endIndex) {
-    this.inputEl.value = this.format();
-    this.selectBlock(endIndex);
     this._lastEndIndex = endIndex;
+    this.inputEl.value = this.format();
+    this._programmaticSelect = true;
+    this.selectBlock(endIndex);
+    this._programmaticSelect = false;
     if (this.onChange) this.onChange(this.getValue(), this.inputEl);
   }
 
