@@ -299,6 +299,18 @@ h1, h2, h3, h4, .brand-name {
   border-color: rgba(255, 255, 255, 0.15);
 }
 
+.btn-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-error:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+
 .btn-outline {
   background: transparent;
   color: var(--text-primary);
