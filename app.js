@@ -2837,15 +2837,17 @@ class WatchOnRepeat {
         minStart = Math.max(0, minStart);
         let maxEnd = Math.min(nextStart, duration);
         
-        s = Math.max(minStart, Math.min(s, duration));
-        e = Math.min(e, maxEnd);
+        if (s !== null) s = Math.max(minStart, Math.min(s, duration));
+        if (e !== null) e = Math.min(e, maxEnd);
         
-        if (type === 'start' && s > e) {
-          e = Math.min(s, duration);
-        } else if (type === 'end' && e < s) {
-          s = Math.max(e, 0);
-        } else if (s > e) {
-          s = e;
+        if (s !== null && e !== null) {
+          if (type === 'start' && s > e) {
+            e = Math.min(s, duration);
+          } else if (type === 'end' && e < s) {
+            s = Math.max(e, 0);
+          } else if (s > e) {
+            s = e;
+          }
         }
         
         this.state.abLoop.multiSegments[idx].start = s;

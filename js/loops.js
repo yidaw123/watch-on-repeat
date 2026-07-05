@@ -375,15 +375,7 @@ class LoopsMixin {
       return;
     }
     
-    if (this.state.abLoop.multiSegments.length === 0) {
-      const dur = this.state.currentVideoDuration || 0;
-      const initialStart = this.state.abLoop.start !== null ? this.state.abLoop.start : 0;
-      const initialEnd = this.state.abLoop.end !== null ? this.state.abLoop.end : dur;
-      const initialSpeed = this.state.playbackRate || 1.0;
-      this.state.abLoop.multiSegments.push({ start: initialStart, end: initialEnd, speed: initialSpeed });
-    } else {
-      this.state.abLoop.multiSegments.push({ start: null, end: null });
-    }
+    this.state.abLoop.multiSegments.push({ start: null, end: null });
     this.state.abLoop.currentSegmentIndex = this.state.abLoop.multiSegments.length - 1;
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
