@@ -217,6 +217,16 @@ window.addEventListener('unhandledrejection', function(e) {
   }
 });
 
+const PIPED_INSTANCES = [
+  'https://pipedapi.kavin.rocks',
+  'https://pipedapi.tokhmi.xyz',
+  'https://pipedapi.smnz.de',
+  'https://pipedapi.in.projectsegfau.lt',
+  'https://piped-api.garudalinux.org',
+  'https://pi.ggtyler.dev/api',
+  'https://pipedapi.drgns.space'
+];
+
 class WatchOnRepeat {
   constructor() {
     // Database and State
@@ -408,6 +418,17 @@ class WatchOnRepeat {
   async init() {
     this.cacheElements();
     this.initDatabase();
+    
+    // Close search dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('search-results-dropdown');
+      const searchForm = document.getElementById('yt-search-form');
+      if (dropdown && !dropdown.classList.contains('hidden')) {
+        if (!dropdown.contains(e.target) && (!searchForm || !searchForm.contains(e.target))) {
+          dropdown.classList.add('hidden');
+        }
+      }
+    });
     
     // Initialize Supabase Auth Session
     if (supabaseClient) {
@@ -902,6 +923,117 @@ class WatchOnRepeat {
       if (DEBUG_MODE) console.error("handleSearchSubmit Error:", err);
       this.showToast("An error occurred: " + err.message, "alert-circle");
     }
+  }
+
+  // ==========================================
+  // VIDEO SEARCH (YOUTUBE)
+  // ==========================================
+  async handleVideoSearch(e) {
+    e.preventDefault();
+    const queryInput = document.getElementById('video-search-input');
+    const query = queryInput ? queryInput.value.trim() : '';
+    if (!query) return;
+
+    const dropdown = document.getElementById('search-results-dropdown');
+    const resultsList = document.getElementById('search-results-list');
+    const loading = document.getElementById('search-loading');
+    const errorEl = document.getElementById('search-error');
+    const errorText = document.getElementById('search-error-text');
+
+    if (!dropdown || !resultsList || !loading || !errorEl) return;
+
+    dropdown.classList.remove('hidden');
+    resultsList.innerHTML = '';
+    loading.classList.remove('hidden');
+    errorEl.classList.add('hidden');
+
+    try {
+      const results = await this.fetchPipedSearchResults(query);
+      loading.classList.add('hidden');
+      
+      if (results && results.length > 0) {
+        this.renderSearchResults(results, resultsList, dropdown);
+      } else {
+        errorEl.classList.remove('hidden');
+        errorText.textContent = "No results found.";
+      }
+    } catch (err) {
+      if (DEBUG_MODE) console.error("Search Error:", err);
+      loading.classList.add('hidden');
+      errorEl.classList.remove('hidden');
+      errorText.textContent = "Failed to fetch results. Please try again later.";
+    }
+  }
+
+  async fetchPipedSearchResults(query) {
+    for (const instance of PIPED_INSTANCES) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch(`${instance}/search?q=${encodeURIComponent(query)}&filter=videos`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.items) {
+            return data.items.slice(0, 10);
+          }
+        }
+      } catch (err) {
+        if (DEBUG_MODE) console.warn(`Piped instance ${instance} failed:`, err);
+      }
+    }
+    throw new Error("All search instances failed.");
+  }
+
+  renderSearchResults(results, container, dropdown) {
+    container.innerHTML = '';
+    results.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'search-result-item';
+      
+      const thumbUrl = item.thumbnail || (item.thumbnails && item.thumbnails.length > 0 ? item.thumbnails[0].url : '');
+      const title = item.title || 'Unknown Title';
+      const channel = item.uploaderName || item.uploader || 'Unknown Channel';
+      const duration = item.duration > 0 ? new Date(item.duration * 1000).toISOString().substring(11, 19).replace(/^00:/, '') : '';
+      
+      const videoId = item.url.split('?v=')[1];
+      
+      el.innerHTML = `
+        <div style="position: relative;">
+          <img src="${thumbUrl}" class="search-result-thumbnail" alt="Thumbnail" onerror="this.src='https://via.placeholder.com/120x68/333/fff?text=No+Image'">
+          ${duration ? `<span style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: white; font-size: 11px; padding: 2px 4px; border-radius: 4px;">${duration}</span>` : ''}
+        </div>
+        <div class="search-result-info">
+          <div class="search-result-title" title="${title.replace(/"/g, '&quot;')}">${title}</div>
+          <div class="search-result-channel">${channel}</div>
+        </div>
+      `;
+      
+      el.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+        document.getElementById('video-search-input').value = '';
+        
+        try {
+          const newUrl = `${window.location.href.split('?')[0]}?v=${videoId}&p=youtube`;
+          window.history.pushState({ v: videoId, p: 'youtube' }, '', newUrl);
+        } catch (err) {}
+        
+        this.loadVideo(videoId, 'youtube').catch(err => {
+          this.showToast("Failed to load video: " + err.message, "alert-circle");
+        });
+      });
+      
+      container.appendChild(el);
+    });
   }
 
 

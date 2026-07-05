@@ -121,6 +121,38 @@
             </button>
           </div>
         </div>
+        
+        <!-- Row 3: YouTube Search -->
+        <div class="search-form-container" style="margin-top: 12px; position: relative; width: 100%; max-width: 950px; margin-left: auto; margin-right: auto;">
+          <form id="yt-search-form" onsubmit="app.handleVideoSearch(event)">
+            <div class="search-wrapper">
+              <div class="search-platform-select" style="background: rgba(255,255,255,0.05); border-right: 1px solid var(--border-color); padding: 0 16px; display: flex; align-items: center; border-radius: var(--radius-full) 0 0 var(--radius-full);">
+                <i data-lucide="youtube" style="color: #ef4444; width: 18px; height: 18px; margin-right: 8px;"></i>
+                <span style="font-size: 14px; font-weight: 500; color: #fff;">YouTube Search</span>
+              </div>
+              <input type="text" id="video-search-input" placeholder="Search for music, tutorials, videos..." autocomplete="off" style="border-radius: 0;">
+              <button type="submit" class="search-btn">
+                <span>Search</span>
+                <i data-lucide="search"></i>
+              </button>
+            </div>
+          </form>
+          
+          <!-- Search Results Dropdown -->
+          <div id="search-results-dropdown" class="hidden" style="position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-top: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 1000; max-height: 450px; overflow-y: auto; backdrop-filter: blur(24px);">
+            <div id="search-results-list" style="display: flex; flex-direction: column;">
+              <!-- Results will be injected here -->
+            </div>
+            <div id="search-loading" class="hidden" style="padding: 30px; text-align: center; color: var(--text-secondary);">
+              <i data-lucide="loader" class="spinning-icon" style="width: 32px; height: 32px; margin-bottom: 12px; color: var(--color-purple);"></i>
+              <div style="font-weight: 500;">Searching YouTube...</div>
+            </div>
+            <div id="search-error" class="hidden" style="padding: 30px; text-align: center; color: #ef4444;">
+              <i data-lucide="alert-circle" style="width: 32px; height: 32px; margin-bottom: 12px;"></i>
+              <div id="search-error-text" style="font-weight: 500;">Failed to fetch results.</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- User Auth Section -->
