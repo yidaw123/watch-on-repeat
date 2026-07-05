@@ -513,11 +513,14 @@ class LoopsMixin {
       }
 
       const isReadOnly = this.state.isReadOnlyShared;
+      const delBtn = document.getElementById('delete-all-segments-btn');
       
       if (isReadOnly && addBtn) {
         addBtn.classList.add('hidden');
+        if (delBtn) delBtn.classList.add('hidden');
       } else if (isPremium && addBtn) {
         addBtn.classList.remove('hidden');
+        if (delBtn) delBtn.classList.remove('hidden');
         
         const tier = this.state.user ? this.state.user.tier : 'free';
         const limit = tier === 'pro' ? 10 : (tier === 'premium' ? 7 : 1);
@@ -535,11 +538,14 @@ class LoopsMixin {
         }
       } else if (addBtn) {
         addBtn.classList.add('hidden');
+        if (delBtn) delBtn.classList.add('hidden');
       }
     } else {
       if (checkbox && !checkbox.checked) {
         list.classList.add('hidden');
         if (addBtn) addBtn.classList.add('hidden');
+        const delBtn = document.getElementById('delete-all-segments-btn');
+        if (delBtn) delBtn.classList.add('hidden');
         
         const isReadOnly = this.state.isReadOnlyShared;
         
