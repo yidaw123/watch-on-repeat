@@ -2684,8 +2684,17 @@ class WatchOnRepeat {
           const activeSeg = this.state.abLoop.multiSegments[activeIdx];
           
           if (activeSeg.end > 0) {
-            if (this.elements.abStart) this.elements.abStart.value = this.formatTime(activeSeg.start);
-            if (this.elements.abEnd) this.elements.abEnd.value = this.formatTime(activeSeg.end);
+            if (this.elements.abStart) {
+              if (this.elements.abStart._cascadingTime) this.elements.abStart._cascadingTime.setValue(activeSeg.start);
+              else this.elements.abStart.value = this.formatTime(activeSeg.start);
+            }
+            if (this.elements.abEnd) {
+              if (this.elements.abEnd._cascadingTime) this.elements.abEnd._cascadingTime.setValue(activeSeg.end);
+              else this.elements.abEnd.value = this.formatTime(activeSeg.end);
+            }
+          } else {
+            if (this.elements.abStart && this.elements.abStart._cascadingTime) this.elements.abStart._cascadingTime.setValue(null);
+            if (this.elements.abEnd && this.elements.abEnd._cascadingTime) this.elements.abEnd._cascadingTime.setValue(null);
           }
           
           this.state.abLoop.start = activeSeg.start;
