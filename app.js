@@ -51,7 +51,11 @@ class CascadingTimeInput {
   }
 
   handleKeydown(e) {
-    if (e.key === 'Tab' || e.key === 'Enter' || e.ctrlKey || e.metaKey) return;
+    if (e.key === 'Enter') {
+      this.inputEl.blur();
+      return;
+    }
+    if (e.key === 'Tab' || e.ctrlKey || e.metaKey) return;
     
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
@@ -127,7 +131,6 @@ class CascadingTimeInput {
     this._programmaticSelect = true;
     this.selectBlock(endIndex);
     this._programmaticSelect = false;
-    if (this.onChange) this.onChange(this.getValue(), this.inputEl);
   }
 
   format() {
