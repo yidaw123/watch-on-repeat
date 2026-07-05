@@ -42,6 +42,10 @@ class CascadingTimeInput {
 
   handleClick(e) {
     const endIndex = this.getActiveEndIndex();
+    if (this._lastEndIndex !== endIndex) {
+      this._blockFresh = true;
+      this._lastEndIndex = endIndex;
+    }
     this.selectBlock(endIndex);
   }
 
@@ -61,52 +65,55 @@ class CascadingTimeInput {
         else if (endIndex === 5) nextEnd = 3;
         else if (endIndex === 3) nextEnd = 1;
       }
+      this._blockFresh = true;
+      this._lastEndIndex = nextEnd;
       this.selectBlock(nextEnd);
       return;
     }
     
     const endIndex = this.getActiveEndIndex();
+    const startIndex = endIndex === 1 ? 0 : (endIndex === 3 ? 2 : (endIndex === 5 ? 4 : 6));
+    const blockLength = endIndex - startIndex + 1;
     
     if (e.key >= '0' && e.key <= '9') {
       e.preventDefault();
-      let digits = "";
-      for (let i = 0; i <= endIndex; i++) {
-        if (/[0-9]/.test(this.chars[i])) digits += this.chars[i];
-      }
-      digits += e.key;
-      if (digits.length > endIndex + 1) digits = digits.substring(digits.length - (endIndex + 1));
       
-      let padded = "";
-      let defaultSub = this.defaultChars.slice(0, endIndex + 1).join('');
-      if (digits.length < defaultSub.length) {
-        padded = defaultSub.substring(0, defaultSub.length - digits.length) + digits;
+      if (this._blockFresh) {
+        for (let i = startIndex; i < endIndex; i++) {
+          this.chars[i] = '0';
+        }
+        this.chars[endIndex] = e.key;
+        this._blockFresh = false;
+        this._typedCount = 1;
       } else {
-        padded = digits;
+        for (let i = startIndex; i < endIndex; i++) {
+          this.chars[i] = this.chars[i + 1];
+        }
+        this.chars[endIndex] = e.key;
+        this._typedCount = (this._typedCount || 0) + 1;
       }
       
-      for (let i = 0; i <= endIndex; i++) {
-        this.chars[i] = padded[i];
+      let targetEnd = endIndex;
+      if (this._typedCount >= blockLength) {
+        if (endIndex === 1) targetEnd = 3;
+        else if (endIndex === 3) targetEnd = 5;
+        else if (endIndex === 5 && this.withMillis) targetEnd = 8;
+        
+        if (targetEnd !== endIndex) {
+          this._blockFresh = true;
+        }
       }
-      this.updateUI(endIndex);
+      this.updateUI(targetEnd);
+      
     } else if (e.key === 'Backspace' || e.key === 'Delete') {
       e.preventDefault();
-      let digits = "";
-      for (let i = 0; i <= endIndex; i++) {
-        if (/[0-9]/.test(this.chars[i])) digits += this.chars[i];
-      }
-      digits = digits.substring(0, Math.max(0, digits.length - 1));
       
-      let padded = "";
-      let defaultSub = this.defaultChars.slice(0, endIndex + 1).join('');
-      if (digits.length < defaultSub.length) {
-        padded = defaultSub.substring(0, defaultSub.length - digits.length) + digits;
-      } else {
-        padded = digits;
+      for (let i = endIndex; i > startIndex; i--) {
+        this.chars[i] = this.chars[i - 1];
       }
+      this.chars[startIndex] = '0';
+      this._typedCount = Math.max(0, (this._typedCount || 0) - 1);
       
-      for (let i = 0; i <= endIndex; i++) {
-        this.chars[i] = padded[i];
-      }
       this.updateUI(endIndex);
     } else if (e.key.length === 1) {
       e.preventDefault();
@@ -116,6 +123,7 @@ class CascadingTimeInput {
   updateUI(endIndex) {
     this.inputEl.value = this.format();
     this.selectBlock(endIndex);
+    this._lastEndIndex = endIndex;
     if (this.onChange) this.onChange(this.getValue(), this.inputEl);
   }
 
