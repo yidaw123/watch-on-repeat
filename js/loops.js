@@ -341,10 +341,26 @@ class LoopsMixin {
         if (tempoCb) tempoCb.checked = false;
       }
       const delBtn = document.getElementById('delete-all-segments-btn');
+      const proControls = document.getElementById('main-pro-controls');
       
       list.classList.remove('hidden');
       addBtn.classList.remove('hidden');
       if (delBtn) delBtn.classList.remove('hidden');
+      
+      if (proControls) {
+        proControls.style.opacity = '0.4';
+        proControls.style.pointerEvents = 'none';
+      }
+      if (this.elements && this.elements.abStart) {
+        this.elements.abStart.disabled = true;
+        this.elements.abStart.style.opacity = '0.4';
+        this.elements.abStart.style.pointerEvents = 'none';
+      }
+      if (this.elements && this.elements.abEnd) {
+        this.elements.abEnd.disabled = true;
+        this.elements.abEnd.style.opacity = '0.4';
+        this.elements.abEnd.style.pointerEvents = 'none';
+      }
       
       if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
       if (this.state.abLoop.multiSegments.length === 0) {
@@ -356,6 +372,22 @@ class LoopsMixin {
       addBtn.classList.add('hidden');
       const delBtn = document.getElementById('delete-all-segments-btn');
       if (delBtn) delBtn.classList.add('hidden');
+      
+      const proControls = document.getElementById('main-pro-controls');
+      if (proControls) {
+        proControls.style.opacity = '1';
+        proControls.style.pointerEvents = 'auto';
+      }
+      if (this.elements && this.elements.abStart) {
+        this.elements.abStart.disabled = false;
+        this.elements.abStart.style.opacity = '1';
+        this.elements.abStart.style.pointerEvents = 'auto';
+      }
+      if (this.elements && this.elements.abEnd) {
+        this.elements.abEnd.disabled = false;
+        this.elements.abEnd.style.opacity = '1';
+        this.elements.abEnd.style.pointerEvents = 'auto';
+      }
     }
     
     this.saveLoopData(); // Save the toggle state immediately
@@ -464,13 +496,20 @@ class LoopsMixin {
       
       if (this.elements && this.elements.abStart) {
         this.elements.abStart.disabled = true;
-        this.elements.abStart.style.opacity = '0.5';
+        this.elements.abStart.style.opacity = '0.4';
         this.elements.abStart.style.cursor = 'not-allowed';
+        this.elements.abStart.style.pointerEvents = 'none';
       }
       if (this.elements && this.elements.abEnd) {
         this.elements.abEnd.disabled = true;
-        this.elements.abEnd.style.opacity = '0.5';
+        this.elements.abEnd.style.opacity = '0.4';
         this.elements.abEnd.style.cursor = 'not-allowed';
+        this.elements.abEnd.style.pointerEvents = 'none';
+      }
+      const proControls = document.getElementById('main-pro-controls');
+      if (proControls) {
+        proControls.style.opacity = '0.4';
+        proControls.style.pointerEvents = 'none';
       }
 
       const isReadOnly = this.state.isReadOnlyShared;

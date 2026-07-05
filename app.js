@@ -12,6 +12,9 @@ class CascadingTimeInput {
     this.inputEl.addEventListener('keydown', this.handleKeydown.bind(this));
     this.inputEl.addEventListener('click', this.handleClick.bind(this));
     this.inputEl.addEventListener('focus', this.handleClick.bind(this));
+    this.inputEl.addEventListener('blur', () => {
+      if (this.onChange) this.onChange(this.getValue(), this.inputEl);
+    });
     this.inputEl.addEventListener('select', (e) => {
       if (this._handlingSelect) return;
       this._handlingSelect = true;
@@ -141,6 +144,8 @@ class CascadingTimeInput {
   }
 
   setValue(seconds) {
+    if (document.activeElement === this.inputEl) return;
+    
     if (seconds === null || seconds === undefined || isNaN(seconds) || seconds < 0) {
       this.chars = [...this.defaultChars];
       this.inputEl.value = this.format();
