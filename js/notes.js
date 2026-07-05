@@ -92,6 +92,26 @@ window.NotesMixin = {
     }
   },
 
+  deleteAllNotes() {
+    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const db = this.getDb('notes');
+    if (db[vId] && db[vId].length > 0) {
+      if (!confirm("Are you sure you want to delete all notes for this video?")) return;
+      
+      if (this.state.user && window.supabaseClient) {
+          const noteIds = db[vId].map(n => n.id);
+          supabaseClient.from('notes').delete().in('id', noteIds).then(({error}) => {
+              if (error) console.error("Failed to delete notes from Supabase:", error);
+          });
+      }
+      
+      db[vId] = [];
+      this.saveDb('notes', db);
+      this.renderNotes();
+      if (this.showToast) this.showToast("All notes deleted", "trash-2");
+    }
+  },
+
   renderNotes() {
     if (!this.state.currentVideo) return;
     const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
@@ -129,11 +149,17 @@ window.NotesMixin = {
     
     this.elements.notesList.innerHTML = '';
     
+    const deleteAllNotesBtn = document.getElementById('delete-all-notes-btn');
     if (notes.length === 0) {
       this.elements.notesList.appendChild(this.elements.notesEmpty);
       this.elements.notesEmpty.classList.remove('hidden');
+      if (deleteAllNotesBtn) deleteAllNotesBtn.classList.add('hidden');
     } else {
       this.elements.notesEmpty.classList.add('hidden');
+      if (deleteAllNotesBtn) {
+        if (isReadOnly) deleteAllNotesBtn.classList.add('hidden');
+        else deleteAllNotesBtn.classList.remove('hidden');
+      }
     }
     
     notes.forEach(note => {

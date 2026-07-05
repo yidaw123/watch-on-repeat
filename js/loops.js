@@ -340,9 +340,11 @@ class LoopsMixin {
         const tempoCb = document.getElementById('auto-tempo-checkbox');
         if (tempoCb) tempoCb.checked = false;
       }
+      const delBtn = document.getElementById('delete-all-segments-btn');
       
       list.classList.remove('hidden');
       addBtn.classList.remove('hidden');
+      if (delBtn) delBtn.classList.remove('hidden');
       
       if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
       if (this.state.abLoop.multiSegments.length === 0) {
@@ -352,6 +354,8 @@ class LoopsMixin {
       this.state.isMultiSegment = false;
       list.classList.add('hidden');
       addBtn.classList.add('hidden');
+      const delBtn = document.getElementById('delete-all-segments-btn');
+      if (delBtn) delBtn.classList.add('hidden');
     }
     
     this.saveLoopData(); // Save the toggle state immediately
@@ -392,6 +396,17 @@ class LoopsMixin {
     }
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
+  }
+
+  deleteAllSegments() {
+    if (!confirm("Are you sure you want to delete all segments?")) return;
+    const dur = this.state.currentVideoDuration || 0;
+    this.state.abLoop.multiSegments = [];
+    this.state.abLoop.multiSegments.push({ start: 0, end: dur, speed: 1.0 });
+    this.state.abLoop.currentSegmentIndex = 0;
+    this.saveLoopData();
+    if (this.updateTimelineUI) this.updateTimelineUI();
+    if (this.showToast) this.showToast("All segments deleted.", "trash-2");
   }
 
   setSegmentSpeed(index, speed) {
