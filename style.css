@@ -644,19 +644,26 @@ h1, h2, h3, h4, .brand-name {
   gap: 0.5rem;
 }
 
+#stats-dashboard-container {
+  grid-column: 1 / -1;
+}
+
 /* Stats Dashboard */
 .stats-dashboard {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
   margin-top: 1.5rem;
 }
 
 .stat-card {
+  flex: 1 1 250px;
+  max-width: 320px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--radius-md);
-  padding: 1rem 1.25rem;
+  padding: 1.5rem 1.25rem;
   display: flex;
   flex-direction: column;
   position: relative;
