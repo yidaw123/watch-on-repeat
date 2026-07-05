@@ -217,11 +217,7 @@ window.addEventListener('unhandledrejection', function(e) {
   }
 });
 
-const PROXY_INSTANCES = [
-  'https://api.allorigins.win/get?url=',
-  'https://corsproxy.io/?',
-  'https://api.codetabs.com/v1/proxy?quest='
-];
+
 
 class WatchOnRepeat {
   constructor() {
@@ -415,17 +411,7 @@ class WatchOnRepeat {
     this.cacheElements();
     this.initDatabase();
     
-    // Close search dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-      const dropdown = document.getElementById('search-results-dropdown');
-      const searchForm = document.getElementById('yt-search-form');
-      if (dropdown && !dropdown.classList.contains('hidden')) {
-        if (!dropdown.contains(e.target) && (!searchForm || !searchForm.contains(e.target))) {
-          dropdown.classList.add('hidden');
-        }
-      }
-    });
-    
+
     // Initialize Supabase Auth Session
     if (supabaseClient) {
       try {
@@ -919,147 +905,6 @@ class WatchOnRepeat {
       if (DEBUG_MODE) console.error("handleSearchSubmit Error:", err);
       this.showToast("An error occurred: " + err.message, "alert-circle");
     }
-  }
-
-  // ==========================================
-  // VIDEO SEARCH (YOUTUBE)
-  // ==========================================
-  async handleVideoSearch(e) {
-    e.preventDefault();
-    const queryInput = document.getElementById('video-search-input');
-    const query = queryInput ? queryInput.value.trim() : '';
-    if (!query) return;
-
-    const dropdown = document.getElementById('search-results-dropdown');
-    const resultsList = document.getElementById('search-results-list');
-    const loading = document.getElementById('search-loading');
-    const errorEl = document.getElementById('search-error');
-    const errorText = document.getElementById('search-error-text');
-
-    if (!dropdown || !resultsList || !loading || !errorEl) return;
-
-    dropdown.classList.remove('hidden');
-    resultsList.innerHTML = '';
-    loading.classList.remove('hidden');
-    errorEl.classList.add('hidden');
-
-    try {
-      const results = await this.fetchYoutubeSearchResults(query);
-      loading.classList.add('hidden');
-      
-      if (results && results.length > 0) {
-        this.renderSearchResults(results, resultsList, dropdown);
-      } else {
-        errorEl.classList.remove('hidden');
-        errorText.textContent = "No results found.";
-      }
-    } catch (err) {
-      if (DEBUG_MODE) console.error("Search Error:", err);
-      loading.classList.add('hidden');
-      errorEl.classList.remove('hidden');
-      errorText.textContent = "Failed to fetch results. Please try again later.";
-    }
-  }
-
-  async fetchYoutubeSearchResults(query) {
-    const targetUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query);
-    
-    for (const proxy of PROXY_INSTANCES) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
-        
-        let html = '';
-        
-        if (proxy.includes('allorigins')) {
-          const response = await fetch(proxy + encodeURIComponent(targetUrl), { signal: controller.signal });
-          clearTimeout(timeoutId);
-          if (response.ok) {
-            const data = await response.json();
-            html = data.contents;
-          }
-        } else {
-          const response = await fetch(proxy + encodeURIComponent(targetUrl), { signal: controller.signal });
-          clearTimeout(timeoutId);
-          if (response.ok) {
-            html = await response.text();
-          }
-        }
-        
-        if (html) {
-          const match = html.match(/var ytInitialData = ({.*?});<\/script>/);
-          if (match) {
-            const ytData = JSON.parse(match[1]);
-            const contents = ytData.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents;
-            if (contents && contents.length > 0) {
-              const itemSection = contents.find(c => c.itemSectionRenderer)?.itemSectionRenderer;
-              if (itemSection && itemSection.contents) {
-                const results = [];
-                for (const item of itemSection.contents) {
-                  if (item.videoRenderer) {
-                    const vr = item.videoRenderer;
-                    results.push({
-                      url: 'https://www.youtube.com/watch?v=' + vr.videoId,
-                      title: vr.title?.runs?.[0]?.text || 'Unknown Title',
-                      thumbnails: vr.thumbnail?.thumbnails || [],
-                      uploader: vr.ownerText?.runs?.[0]?.text || 'Unknown Channel',
-                      durationStr: vr.lengthText?.simpleText || ''
-                    });
-                    if (results.length >= 10) break;
-                  }
-                }
-                if (results.length > 0) return results;
-              }
-            }
-          }
-        }
-      } catch (err) {
-        if (DEBUG_MODE) console.warn(`Proxy ${proxy} failed:`, err);
-      }
-    }
-    throw new Error("All proxy instances failed.");
-  }
-
-  renderSearchResults(results, container, dropdown) {
-    container.innerHTML = '';
-    results.forEach(item => {
-      const el = document.createElement('div');
-      el.className = 'search-result-item';
-      
-      const thumbUrl = item.thumbnails && item.thumbnails.length > 0 ? item.thumbnails[0].url : '';
-      const title = item.title || 'Unknown Title';
-      const channel = item.uploader || 'Unknown Channel';
-      const duration = item.durationStr || '';
-      
-      const videoId = item.url.split('?v=')[1];
-      
-      el.innerHTML = `
-        <div style="position: relative;">
-          <img src="${thumbUrl}" class="search-result-thumbnail" alt="Thumbnail" onerror="this.src='https://via.placeholder.com/120x68/333/fff?text=No+Image'">
-          ${duration ? `<span style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: white; font-size: 11px; padding: 2px 4px; border-radius: 4px;">${duration}</span>` : ''}
-        </div>
-        <div class="search-result-info">
-          <div class="search-result-title" title="${title.replace(/"/g, '&quot;')}">${title}</div>
-          <div class="search-result-channel">${channel}</div>
-        </div>
-      `;
-      
-      el.addEventListener('click', () => {
-        dropdown.classList.add('hidden');
-        document.getElementById('video-search-input').value = '';
-        
-        try {
-          const newUrl = `${window.location.href.split('?')[0]}?v=${videoId}&p=youtube`;
-          window.history.pushState({ v: videoId, p: 'youtube' }, '', newUrl);
-        } catch (err) {}
-        
-        this.loadVideo(videoId, 'youtube').catch(err => {
-          this.showToast("Failed to load video: " + err.message, "alert-circle");
-        });
-      });
-      
-      container.appendChild(el);
-    });
   }
 
 
