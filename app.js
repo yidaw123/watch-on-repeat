@@ -1047,6 +1047,11 @@ class WatchOnRepeat {
 
   async  loadVideo(id, platform = 'youtube') {
     this.flushAnalytics();
+    
+    // Clean up any stray Dailymotion message listeners when switching platforms
+    if (this.state.players.dailymotion && this.state.players.dailymotion.cleanup) {
+      this.state.players.dailymotion.cleanup();
+    }
 
     if (this.state.currentVideo && (this.state.currentVideo.id !== id || this.state.currentVideo.platform !== platform)) {
       this.state.isReadOnlyShared = false;
