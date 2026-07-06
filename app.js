@@ -682,6 +682,13 @@ class WatchOnRepeat {
   // ==========================================
 
   handleRouting() {
+    // Handle OAuth Cancellation or errors gracefully
+    if (window.location.hash.includes('error=access_denied')) {
+      window.location.hash = '';
+      this.showToast("Login cancelled.", "info");
+      this.closeLoginModal();
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const playlistId = urlParams.get('playlist');
     if (playlistId) {
@@ -1072,34 +1079,40 @@ class WatchOnRepeat {
     this.state.currentVideoDuration = 0;
 
     if (window.supabaseClient) {
-      supabaseClient.from('global_stats')
-        .select('global_loops')
-        .eq('video_id', id)
-        .eq('platform', platform)
-        .single()
-        .then(({ data }) => {
-          if (data) {
-            this.state.currentGlobalLoops = data.global_loops || 0;
-            if (this.elements.globalLoopCount) this.elements.globalLoopCount.textContent = this.formatNumber(this.state.currentGlobalLoops);
-          }
-        }).catch(() => {});
-        
-      this.fetchPlatformTotalLoops();
-        
-      if (this.state.user) {
-        supabaseClient.from('user_history')
-          .select('loops_count')
-          .eq('user_id', this.state.user.id)
+      const promises = [
+        supabaseClient.from('global_stats')
+          .select('global_loops')
           .eq('video_id', id)
           .eq('platform', platform)
           .single()
           .then(({ data }) => {
             if (data) {
-              this.state.currentLifetimeLoops = data.loops_count;
-              this.updateStatsUI();
+              this.state.currentGlobalLoops = data.global_loops || 0;
+              if (this.elements.globalLoopCount) this.elements.globalLoopCount.textContent = this.formatNumber(this.state.currentGlobalLoops);
             }
-          });
+          }).catch(() => {}),
+        
+        this.fetchPlatformTotalLoops()
+      ];
+
+      if (this.state.user) {
+        promises.push(
+          supabaseClient.from('user_history')
+            .select('loops_count')
+            .eq('user_id', this.state.user.id)
+            .eq('video_id', id)
+            .eq('platform', platform)
+            .single()
+            .then(({ data }) => {
+              if (data) {
+                this.state.currentLifetimeLoops = data.loops_count;
+                this.updateStatsUI();
+              }
+            })
+        );
       }
+
+      Promise.all(promises);
     }
     
     // Only disable inputs if there's no valid video ID being loaded
