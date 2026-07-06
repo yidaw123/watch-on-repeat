@@ -346,14 +346,7 @@
                 <input type="text" id="loop-name-input" placeholder="Name loop..." style="width: 110px;">
                 <button class="btn btn-primary btn-sm" aria-label="Save Loop" onclick="app.saveNamedLoop()" title="Save Loop"><i data-lucide="save"></i></button>
               </div>
-              <select id="playback-speed" onchange="app.setPlaybackSpeed(this.value)" class="select-input">
-                <option value="0.5">0.5x</option>
-                <option value="0.75">0.75x</option>
-                <option value="1" selected>1x Normal</option>
-                <option value="1.25">1.25x</option>
-                <option value="1.5">1.5x</option>
-                <option value="2">2x</option>
-              </select>
+
               <button class="btn btn-primary btn-sm" onclick="app.generateShareableClip()"><i data-lucide="link"></i> Share Clip</button>
             </div>
           </div>
