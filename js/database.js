@@ -135,9 +135,11 @@ class DatabaseMixin {
             id: p.id, user_id: p.userId, name: p.name, videos: p.videos, is_public: p.isPublic || false,
             updated_at: p.updatedAt || new Date().toISOString()
           });
-          if (error && error.message.includes('limited to 5')) {
-             this.showToast("Free tier limit: Max 5 playlists. Please upgrade to Pro.", "alert-circle");
-             await this.syncFromSupabase();
+          if (error && (error.code === '42501' || error.message.includes('row-level security'))) {
+             this.openUpgradeModal("Free tier limit: Max 5 playlists. Please upgrade to Pro for unlimited playlists.");
+             await this.syncFromSupabase(); // Rollback local changes from server
+          } else if (error) {
+             console.error("Playlist upsert failed:", error);
           }
         }
       } else if (key === 'notes') {
@@ -156,7 +158,12 @@ class DatabaseMixin {
           }
           for (const note of userNotes) {
             const { error } = await supabaseClient.from('notes').upsert(note);
-            if (error) console.error("Note upsert failed:", error, "Note:", note);
+            if (error && (error.code === '42501' || error.message.includes('row-level security'))) {
+               this.openUpgradeModal("Free tier limit: Notes can only be added to 5 videos. Please upgrade to Pro.");
+               await this.syncFromSupabase(); // Rollback local changes from server
+            } else if (error) {
+               console.error("Note upsert failed:", error, "Note:", note);
+            }
           }
       } else if (key === 'shortcuts') {
         await supabaseClient.from('user_settings').upsert({ user_id: this.state.user.id, shortcuts: data });

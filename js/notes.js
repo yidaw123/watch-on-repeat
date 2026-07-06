@@ -181,7 +181,7 @@ window.NotesMixin = {
       div.innerHTML = `
         <div class="note-header">
           <span class="note-timestamp" onclick="app.seekToTime(${note.time})">[${timeStr}]</span>
-          ${isReadOnly ? '' : `<button class="note-delete" onclick="app.deleteNote('${note.id}')" title="Delete note"><i data-lucide="trash-2"></i></button>`}
+          ${isReadOnly ? '' : `<button class="note-delete" aria-label="Delete note" onclick="app.deleteNote('${note.id}')" title="Delete note"><i data-lucide="trash-2"></i></button>`}
         </div>
         <div class="note-content">${this.escapeHtml(note.text)}</div>
       `;
@@ -249,7 +249,7 @@ window.NotesMixin = {
             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${noteCount} saved note${noteCount !== 1 ? 's' : ''}</div>
           </div>
         </div>
-        <button class="icon-btn text-red-500" onclick="app.clearNotesForVideo('${id}')" title="Clear all notes for this video" style="padding: 4px; margin-left: 8px; flex-shrink: 0;">
+        <button class="icon-btn text-red-500" aria-label="Clear all notes for this video" onclick="app.clearNotesForVideo('${id}')" title="Clear all notes for this video" style="padding: 4px; margin-left: 8px; flex-shrink: 0;">
           <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
         </button>
       `;

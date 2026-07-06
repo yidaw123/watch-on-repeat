@@ -217,13 +217,13 @@
               <h1 id="video-title">Loading video title...</h1>
             </div>
             <div class="action-buttons">
-              <button id="favorite-btn" class="btn-icon" onclick="app.toggleFavorite()" title="Favorite Video">
+              <button id="favorite-btn" class="btn-icon" aria-label="Favorite Video" onclick="app.toggleFavorite()" title="Favorite Video">
                 <i data-lucide="heart"></i>
               </button>
-              <button id="add-playlist-btn" class="btn-icon" onclick="app.openPlaylistModal()" title="Add to Playlist">
+              <button id="add-playlist-btn" class="btn-icon" aria-label="Add to Playlist" onclick="app.openPlaylistModal()" title="Add to Playlist">
                 <i data-lucide="list-plus"></i>
               </button>
-              <button class="btn-icon" onclick="app.shareVideo()" title="Share Link">
+              <button class="btn-icon" aria-label="Share Link" onclick="app.shareVideo()" title="Share Link">
                 <i data-lucide="share-2"></i>
               </button>
             </div>
@@ -344,7 +344,7 @@
             <div class="playback-controls">
               <div class="input-group" id="save-loop-group">
                 <input type="text" id="loop-name-input" placeholder="Name loop..." style="width: 110px;">
-                <button class="btn btn-primary btn-sm" onclick="app.saveNamedLoop()" title="Save Loop"><i data-lucide="save"></i></button>
+                <button class="btn btn-primary btn-sm" aria-label="Save Loop" onclick="app.saveNamedLoop()" title="Save Loop"><i data-lucide="save"></i></button>
               </div>
               <select id="playback-speed" onchange="app.setPlaybackSpeed(this.value)" class="select-input">
                 <option value="0.5">0.5x</option>

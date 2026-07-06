@@ -2732,16 +2732,69 @@ class WatchOnRepeat {
         hStart.style.left = `${sPct}%`;
         hStart.dataset.index = index;
         hStart.dataset.type = 'start';
+        hStart.tabIndex = 0;
+        hStart.setAttribute('aria-label', 'Adjust loop start time');
         
         const hEnd = document.createElement('div');
         hEnd.className = `timeline-handle handle-end`;
         hEnd.style.left = `${ePct}%`;
         hEnd.dataset.index = index;
         hEnd.dataset.type = 'end';
+        hEnd.tabIndex = 0;
+        hEnd.setAttribute('aria-label', 'Adjust loop end time');
         
         hStart.addEventListener('pointerdown', handlePointerDown);
-        
         hEnd.addEventListener('pointerdown', handlePointerDown);
+
+        const handleKeyDown = (e, handleType, segIndex) => {
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            const step = 0.1; // 100ms
+            const duration = this.state.currentVideoDuration || 3600;
+            
+            if (this.state.isMultiSegment) {
+              const segs = this.state.abLoop.multiSegments;
+              const s = segs[segIndex];
+              if (handleType === 'start') {
+                let minStart = (segIndex > 0 && segs[segIndex - 1].end !== null) ? segs[segIndex - 1].end : 0;
+                let maxStart = (s.end !== null) ? s.end : duration;
+                s.start += (e.key === 'ArrowLeft' ? -step : step);
+                s.start = Math.max(minStart, Math.min(s.start, maxStart));
+              } else {
+                let minEnd = (s.start !== null) ? s.start : 0;
+                let maxEnd = (segIndex < segs.length - 1 && segs[segIndex + 1].start !== null) ? segs[segIndex + 1].start : duration;
+                s.end += (e.key === 'ArrowLeft' ? -step : step);
+                s.end = Math.max(minEnd, Math.min(s.end, maxEnd));
+              }
+            } else {
+              if (handleType === 'start') {
+                let maxStart = (this.state.abLoop.end !== null && this.state.abLoop.end > 0) ? this.state.abLoop.end : duration;
+                this.state.abLoop.start += (e.key === 'ArrowLeft' ? -step : step);
+                this.state.abLoop.start = Math.max(0, Math.min(this.state.abLoop.start, maxStart));
+              } else {
+                let minEnd = (this.state.abLoop.start !== null) ? this.state.abLoop.start : 0;
+                this.state.abLoop.end += (e.key === 'ArrowLeft' ? -step : step);
+                this.state.abLoop.end = Math.max(minEnd, Math.min(this.state.abLoop.end, duration));
+              }
+            }
+            
+            renderTimelineHandles();
+            
+            // Restore focus after render
+            const handles = container.querySelectorAll('.timeline-handle');
+            for (let h of handles) {
+              if (parseInt(h.dataset.index) === segIndex && h.dataset.type === handleType) {
+                h.focus();
+                break;
+              }
+            }
+            
+            this.saveABLoop();
+          }
+        };
+
+        hStart.addEventListener('keydown', (e) => handleKeyDown(e, 'start', index));
+        hEnd.addEventListener('keydown', (e) => handleKeyDown(e, 'end', index));
         
         container.appendChild(sel);
         container.appendChild(hStart);
@@ -3017,7 +3070,7 @@ class WatchOnRepeat {
     this.elements.playerContainer.innerHTML = '<div id="twitch-player-target" style="width:100%;height:100%;"></div>';
     
     // Parse the id we packed earlier
-    const opts = { width: '100%', height: '100%', parent: [window.location.hostname || 'localhost'] };
+    const opts = { width: '100%', height: '100%', parent: ['watchonrepeat.com', 'www.watchonrepeat.com', 'app.watchonrepeat.com', window.location.hostname || 'localhost'] };
     if (id.startsWith('video=')) opts.video = id.split('=')[1];
     else if (id.startsWith('clip=')) opts.collection = id.split('=')[1];
     else if (id.startsWith('channel=')) opts.channel = id.split('=')[1];
