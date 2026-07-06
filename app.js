@@ -3386,24 +3386,39 @@ class WatchOnRepeat {
     }
 
     const shareUrl = `${window.location.href.split('?')[0]}?${urlParams.toString()}`;
-    
-    // Open Share Modal
-    const modal = document.getElementById('share-modal');
+    // Open Inline Share Menu
+    const menu = document.getElementById('inline-share-menu');
     const input = document.getElementById('share-link-input');
-    if (modal && input) {
+    if (menu && input) {
       input.value = shareUrl;
-      modal.classList.remove('hidden');
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+      } else {
+        menu.classList.remove('hidden');
+      }
     } else {
       // Fallback
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        this.showToast("Shareable Deep-Link copied to clipboard!", "clipboard-check");
+      app.showToast("Link copied to clipboard!", "check-circle");
+      navigator.clipboard.writeText(shareUrl).catch(err => {
+        console.error("Could not copy link", err);
       });
     }
   }
 
+  toggleInlineShare() {
+    const menu = document.getElementById('inline-share-menu');
+    if (menu) {
+      if (menu.classList.contains('hidden')) {
+        this.generateShareableClip();
+      } else {
+        menu.classList.add('hidden');
+      }
+    }
+  }
+
   closeShareModal() {
-    const modal = document.getElementById('share-modal');
-    if (modal) modal.classList.add('hidden');
+    const menu = document.getElementById('inline-share-menu');
+    if (menu) menu.classList.add('hidden');
   }
 
   openProControlsModal() {
