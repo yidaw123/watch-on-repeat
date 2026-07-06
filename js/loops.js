@@ -637,13 +637,13 @@ class LoopsMixin {
       row.style.alignItems = 'center';
       
       const isActive = index === (this.state.abLoop.currentSegmentIndex || 0);
-      const activeStyle = isActive ? 'border-color: var(--color-primary); box-shadow: 0 0 5px var(--color-primary);' : 'border-color: #333;';
+      const activeStyle = isActive ? 'border-color: var(--color-purple); box-shadow: 0 0 8px var(--color-purple-glow);' : 'border-color: #333;';
       
       const isReadOnly = this.state.isReadOnlyShared;
       const inputAttr = isReadOnly ? 'readonly style="opacity: 0.6; cursor: not-allowed;" onclick="app.openUpgradeModal(\'Upgrade to edit Advanced Loop Segments on shared links!\')"' : '';
       
       row.innerHTML = `
-        <span class="text-xs text-gray-500 w-4">${index + 1}</span>
+        <span class="text-xs text-gray-500 w-4" style="${isActive ? 'color: var(--color-purple); font-weight: bold;' : ''}">${index + 1}</span>
         <div style="flex: 1;">
           <input type="text" id="multi-start-${index}" data-index="${index}" data-type="start" class="time-input multi-seg-input" value="HH:MM:SS.sss" style="width: 100%; text-align: center; color: white; background-color: rgba(255,255,255,0.1); border: 1px solid #333; border-radius: 4px; font-family: monospace; font-size: 13px; cursor: text; ${activeStyle}" ${inputAttr}>
         </div>
@@ -714,10 +714,11 @@ class LoopsMixin {
       const container = document.createElement('div');
       container.style.display = 'flex';
       container.style.flexDirection = 'column';
-      container.style.background = 'rgba(255,255,255,0.02)';
+      container.style.background = isActive ? 'rgba(139, 92, 246, 0.1)' : 'rgba(255,255,255,0.02)';
       container.style.borderRadius = '6px';
       container.style.padding = '8px';
-      container.style.border = '1px solid var(--border-color)';
+      container.style.border = isActive ? '1px solid var(--color-purple)' : '1px solid var(--border-color)';
+      container.style.transition = 'all 0.3s ease';
       
       container.appendChild(row);
       if (!isReadOnly) {
