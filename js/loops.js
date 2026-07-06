@@ -278,16 +278,55 @@ class LoopsMixin {
       return;
     }
     
-    if (t >= seg.end && seg.end > 0) {
+    // NEW LOGIC
+    // 1. Is 't' inside ANY valid segment?
+    const activeSegIndex = segments.findIndex(s => s.start !== null && s.end !== null && t >= s.start && t < s.end);
+    
+    if (activeSegIndex !== -1) {
+      if (activeSegIndex !== currentSegIndex) {
+        // User manually seeked into a different segment
+        this.state.abLoop.currentSegmentIndex = activeSegIndex;
+        
+        // Update speed for new segment
+        const newSegSpeed = segments[activeSegIndex].speed || 1.0;
+        if (this.state.playbackRate !== newSegSpeed) {
+          this.setPlaybackSpeed(newSegSpeed, true);
+        }
+        if (this.updateTimelineUI) this.updateTimelineUI();
+      }
+      return; // All good, playing inside a valid segment
+    }
+    
+    // 2. Not in any segment. Did we just naturally finish the current segment?
+    if (t >= seg.end && t < seg.end + 1.5) {
       this.state.abLoop.lastLoopAdvance = now;
-      // If we seamlessly transition to the very next timestamp, we can avoid seeking
-      const currentEnd = seg.end;
       this.advanceLoopSegment();
-      // Optimization: if the next segment starts exactly where this one ended, we could theoretically skip the seek
-      // But advanceLoopSegment already handles the seek, which is safe.
-    } else if (t < seg.start - 0.5) {
-      this.state.abLoop.lastLoopAdvance = now;
-      this.seekToTime(seg.start);
+      return;
+    }
+    
+    // 3. User manually seeked outside of any valid segment (into a gap, or out of bounds)
+    this.state.abLoop.lastLoopAdvance = now;
+    let nextIdx = segments.findIndex(s => s.start !== null && s.start >= t);
+    if (nextIdx !== -1) {
+      this.state.abLoop.currentSegmentIndex = nextIdx;
+      const newSegSpeed = segments[nextIdx].speed || 1.0;
+      if (this.state.playbackRate !== newSegSpeed) {
+        this.setPlaybackSpeed(newSegSpeed, true);
+      }
+      this.seekToTime(segments[nextIdx].start);
+      if (this.updateTimelineUI) this.updateTimelineUI();
+    } else {
+      // Seeked past the last segment. Wrap around to the first valid segment.
+      let firstIdx = segments.findIndex(s => s.start !== null && s.end !== null);
+      if (firstIdx === -1) firstIdx = 0;
+      this.state.abLoop.currentSegmentIndex = firstIdx;
+      
+      const newSegSpeed = segments[firstIdx].speed || 1.0;
+      if (this.state.playbackRate !== newSegSpeed) {
+        this.setPlaybackSpeed(newSegSpeed, true);
+      }
+      this.seekToTime(segments[firstIdx].start);
+      if (this.updateTimelineUI) this.updateTimelineUI();
     }
   }
 
