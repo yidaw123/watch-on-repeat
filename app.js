@@ -3809,6 +3809,8 @@ class WatchOnRepeat {
   updateAnalyticsTime() {
     const db = this.getDb('analytics');
     db.totalTime = (db.totalTime || 0) + 1;
+    if (!db.weeklyTime) db.weeklyTime = {};
+    if (!db.segments) db.segments = {};
     
     const d = new Date();
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
@@ -3822,6 +3824,8 @@ class WatchOnRepeat {
 
   trackABSegment() {
     const db = this.getDb('analytics');
+    if (!db.segments) db.segments = {};
+    
     const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const start = this.state.abLoop.start;
     const end = this.state.abLoop.end;
@@ -3964,6 +3968,8 @@ class WatchOnRepeat {
 
   renderAnalyticsTab() {
     const db = this.getDb('analytics');
+    if (!db.weeklyTime) db.weeklyTime = {};
+    if (!db.segments) db.segments = {};
     
     const formatH = (secs) => {
       const h = Math.floor(secs / 3600);
