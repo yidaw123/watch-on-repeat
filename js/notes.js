@@ -1,4 +1,23 @@
 window.NotesMixin = {
+  syncNotesToCloud(vId, notesArray) {
+    if (!this.state.user || !window.supabaseClient || !this.state.currentVideo) return;
+    
+    // vId is formatted as platform_videoId, but we need raw videoId and platform for user_history
+    const platform = this.state.currentPlatform;
+    const videoId = this.state.currentVideo.id;
+    
+    supabaseClient.from('user_history').upsert({
+      user_id: this.state.user.id,
+      video_id: videoId,
+      platform: platform,
+      title: this.state.currentVideo.title || '',
+      notes_data: notesArray,
+      last_played: new Date().toISOString()
+    }, { onConflict: 'user_id, video_id, platform' }).then(({ error }) => {
+      if (error && DEBUG_MODE) console.error("Notes Data Sync Error:", error);
+    });
+  },
+
   async addNote(isManual = false) {
     if (!this.state.currentVideo) return;
     let text = this.elements.noteInput.value.trim();
@@ -61,6 +80,7 @@ window.NotesMixin = {
     notes[vId].sort((a,b) => a.time - b.time);
     
     this.saveDb('notes', notes);
+    this.syncNotesToCloud(vId, notes[vId]);
     this.elements.noteInput.value = ''; // Clear input for the next note
     this.renderNotes();
     this.showToast(`Note added at ${this.formatTime(Math.floor(time))}!`, "edit-3");
@@ -81,11 +101,7 @@ window.NotesMixin = {
       if (index !== -1) {
         db[vId].splice(index, 1);
         this.saveDb('notes', db);
-        if (this.state.user && window.supabaseClient) {
-            supabaseClient.from('notes').delete().eq('id', noteId).then(({error}) => {
-                if (error) console.error("Failed to delete note from Supabase:", error);
-            });
-        }
+        this.syncNotesToCloud(vId, db[vId]);
         this.renderNotes();
         this.showToast("Note deleted", "trash-2");
       }
@@ -97,16 +113,9 @@ window.NotesMixin = {
     const db = this.getDb('notes');
     if (db[vId] && db[vId].length > 0) {
       if (!confirm("Are you sure you want to delete all notes for this video?")) return;
-      
-      if (this.state.user && window.supabaseClient) {
-          const noteIds = db[vId].map(n => n.id);
-          supabaseClient.from('notes').delete().in('id', noteIds).then(({error}) => {
-              if (error) console.error("Failed to delete notes from Supabase:", error);
-          });
-      }
-      
       db[vId] = [];
       this.saveDb('notes', db);
+      this.syncNotesToCloud(vId, db[vId]);
       this.renderNotes();
       if (this.showToast) this.showToast("All notes deleted", "trash-2");
     }

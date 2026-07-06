@@ -321,6 +321,42 @@ class WatchOnRepeat {
     this.state.analyticsSession.startTime = Date.now();
   }
 
+  async syncUserDataFromCloud() {
+    if (!this.state.user || !window.supabaseClient) return;
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('user_history')
+        .select('video_id, platform, saved_loop_data, notes_data')
+        .eq('user_id', this.state.user.id);
+        
+      if (error) {
+        console.error("Failed to sync user data from cloud:", error);
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        let localSavedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+        let localNotes = this.getDb('notes');
+        
+        data.forEach(row => {
+          if (row.saved_loop_data) {
+            localSavedLoops[row.video_id] = row.saved_loop_data;
+          }
+          if (row.notes_data) {
+            const vId = `${row.platform}_${row.video_id}`;
+            localNotes[vId] = row.notes_data;
+          }
+        });
+        
+        localStorage.setItem('wor_saved_loops', JSON.stringify(localSavedLoops));
+        this.saveDb('notes', localNotes);
+      }
+    } catch(err) {
+      console.error("Sync error:", err);
+    }
+  }
+
   async setUserFromSession(session) {
     const user = session.user;
     let tier = 'free';
@@ -395,7 +431,7 @@ class WatchOnRepeat {
       this.saveDb('users', users);
     }
     
-    await this.syncFromSupabase();
+    await this.syncUserDataFromCloud();
 
     this.updateUserUI();
     this.closeLoginModal();
@@ -409,7 +445,6 @@ class WatchOnRepeat {
 
   async init() {
     this.cacheElements();
-    this.initDatabase();
     
 
     // Initialize Supabase Auth Session
