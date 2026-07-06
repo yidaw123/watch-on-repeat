@@ -273,13 +273,20 @@ class LoopsMixin {
     
     const seg = segments[currentSegIndex];
     
+    const now = Date.now();
+    if (this.state.abLoop.lastLoopAdvance && now - this.state.abLoop.lastLoopAdvance < 500) {
+      return;
+    }
+    
     if (t >= seg.end && seg.end > 0) {
+      this.state.abLoop.lastLoopAdvance = now;
       // If we seamlessly transition to the very next timestamp, we can avoid seeking
       const currentEnd = seg.end;
       this.advanceLoopSegment();
       // Optimization: if the next segment starts exactly where this one ended, we could theoretically skip the seek
       // But advanceLoopSegment already handles the seek, which is safe.
     } else if (t < seg.start - 0.5) {
+      this.state.abLoop.lastLoopAdvance = now;
       this.seekToTime(seg.start);
     }
   }
@@ -756,6 +763,18 @@ class LoopsMixin {
         if (endEl) {
           const ciEnd = new CascadingTimeInput(endEl, true, (val, el) => handleChange(val, 'end', el));
           ciEnd.setValue(seg.end);
+        }
+        
+        const speedEl = document.getElementById(`multi-speed-${idx}`);
+        if (speedEl) {
+          speedEl.addEventListener('change', (e) => {
+            const speed = parseFloat(e.target.value);
+            this.state.abLoop.multiSegments[idx].speed = speed;
+            if (this.state.abLoop.currentSegmentIndex === idx) {
+               this.setPlaybackSpeed(speed, true);
+            }
+            this.saveLoopData();
+          });
         }
       });
     }
