@@ -1776,6 +1776,19 @@ h1, h2, h3, h4, .brand-name {
   left: 0%;
 }
 
+/* Increase mobile touch target to 44x44px for accessibility */
+.timeline-handle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  cursor: inherit;
+}
+
 .timeline-handle.handle-end {
   left: 100%;
 }

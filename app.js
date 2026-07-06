@@ -855,8 +855,8 @@ class WatchOnRepeat {
     if (!url) return null;
     url = url.trim();
 
-    // YouTube
-    const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|repeatyoutube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/;
+    // YouTube (Including Shorts and Music)
+    const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/|music\.youtube\.com\/.*[?&]v=|repeatyoutube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/;
     const ytMatch = url.match(ytRegex);
     if (ytMatch && ytMatch[1]) {
       return { platform: 'youtube', id: ytMatch[1] };
@@ -1160,8 +1160,7 @@ class WatchOnRepeat {
         document.title = realTitle + " | Watch On Repeat";
         if (this.state.currentVideo) this.state.currentVideo.title = realTitle;
         
-        this.renderTrendsTab();
-
+        // Removed redundant this.renderTrendsTab() to prevent DB spam on video load
         // Update history cache if needed
         const history = this.getDb('history');
         if (history && history.length > 0) {
@@ -1807,14 +1806,13 @@ class WatchOnRepeat {
 
     // Fire and forget direct upserts to Supabase to completely bypass RPCs
     if (window.supabaseClient && video.platform !== 'local') {
-      supabaseClient.from('global_stats').upsert({
-        video_id: video.id,
-        platform: video.platform,
-        global_loops: this.state.currentGlobalLoops,
-        video_title: video.title || ''
-      }, { onConflict: 'video_id, platform' }).then(({ error }) => {
+      supabaseClient.rpc('increment_global_loops', {
+        p_video_id: video.id,
+        p_platform: video.platform,
+        p_video_title: video.title || ''
+      }).then(({ error }) => {
         if (!error) this.fetchPlatformTotalLoops(); // Refresh the massive platform number
-        if (error && DEBUG_MODE) console.error("Global Loops Upsert Error:", error);
+        if (error && DEBUG_MODE) console.error("Global Loops RPC Error:", error);
       });
 
       if (this.state.user) {
@@ -1865,10 +1863,9 @@ class WatchOnRepeat {
   async fetchPlatformTotalLoops() {
     if (!window.supabaseClient || !this.elements.platformTotalLoops) return;
     try {
-      const { data } = await supabaseClient.from('global_stats').select('global_loops');
-      if (data) {
-        const total = data.reduce((acc, row) => acc + (row.global_loops || 0), 0);
-        this.elements.platformTotalLoops.textContent = this.formatNumber(total);
+      const { data, error } = await supabaseClient.rpc('get_total_platform_loops');
+      if (!error && data !== null) {
+        this.elements.platformTotalLoops.textContent = this.formatNumber(data);
       }
     } catch (e) {}
   }
