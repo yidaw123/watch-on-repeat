@@ -786,8 +786,16 @@ class WatchOnRepeat {
     // 1. Process Segments
     if (segmentsParam) {
       const segPairs = segmentsParam.split(',').map(s => {
-        const parts = s.split('-');
-        return { start: parseFloat(parts[0]), end: parseFloat(parts[1]) };
+        const hasSpeed = s.includes('@');
+        let speed = 1;
+        let timePart = s;
+        if (hasSpeed) {
+          const parts = s.split('@');
+          timePart = parts[0];
+          speed = parseFloat(parts[1]) || 1;
+        }
+        const parts = timePart.split('-');
+        return { start: parseFloat(parts[0]), end: parseFloat(parts[1]), speed: speed };
       });
       
       if (segPairs.length > 1) {
@@ -3342,7 +3350,13 @@ class WatchOnRepeat {
     if (includeSegments) {
       if (this.state.isMultiSegment && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
         // Format: start-end,start-end
-        const segs = this.state.abLoop.multiSegments.map(l => `${Number(l.start).toFixed(2)}-${Number(l.end).toFixed(2)}`).join(',');
+        const segs = this.state.abLoop.multiSegments.map(l => {
+          let str = `${Number(l.start).toFixed(2)}-${Number(l.end).toFixed(2)}`;
+          if (l.speed && Number(l.speed) !== 1) {
+            str += `@${l.speed}`;
+          }
+          return str;
+        }).join(',');
         urlParams.set('segments', segs);
         
         // Also set the basic start/end for backward compatibility or simple free users
