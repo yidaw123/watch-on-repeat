@@ -2113,6 +2113,14 @@ class WatchOnRepeat {
   // TABS RENDERING
   // ==========================================
 
+  
+  toggleSidebar() {
+    const sidebar = document.getElementById('app-sidebar');
+    const shell = document.getElementById('app-shell');
+    if (sidebar) sidebar.classList.toggle('open');
+    if (shell) shell.classList.toggle('sidebar-open');
+  }
+
   switchTab(tabId) {
     if (tabId === 'analytics' && !this.checkLimit('analytics')) return;
     this.state.activeTab = tabId;
@@ -3206,6 +3214,10 @@ class WatchOnRepeat {
     if (p === 'vimeo' && this.state.players.vimeo && typeof this.state.players.vimeo.setCurrentTime === 'function') this.state.players.vimeo.setCurrentTime(seconds);
     if (p === 'dailymotion' && this.state.players.dailymotion && typeof this.state.players.dailymotion.seek === 'function') this.state.players.dailymotion.seek(seconds);
     if (p === 'html5' && this.state.players.html5) this.state.players.html5.currentTime = seconds;
+    
+    if (typeof this.syncRecordingWithVideo === 'function') {
+      this.syncRecordingWithVideo();
+    }
     if (p === 'local' && this.state.players.local) this.state.players.local.seekTo(seconds);
     if (p === 'twitch' && this.state.players.twitch && typeof this.state.players.twitch.seek === 'function') this.state.players.twitch.seek(seconds);
     if (p === 'soundcloud' && this.state.players.soundcloud && typeof this.state.players.soundcloud.seekTo === 'function') this.state.players.soundcloud.seekTo(seconds * 1000);
@@ -4083,6 +4095,7 @@ if (window.AuthMixin) applyMixin(WatchOnRepeat, window.AuthMixin);
 if (window.NotesMixin) Object.assign(WatchOnRepeat.prototype, window.NotesMixin);
 if (window.PlaylistsMixin) applyMixin(WatchOnRepeat, window.PlaylistsMixin);
 if (window.LoopsMixin) applyMixin(WatchOnRepeat, window.LoopsMixin);
+if (window.AudioRecorderMixin) applyMixin(WatchOnRepeat, window.AudioRecorderMixin);
 
 // Instantiate and initialize
 const app = new WatchOnRepeat();
@@ -4122,3 +4135,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+
+
+// PWA Installation Logic
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const installBtn = document.getElementById('pwa-install-btn');
+  if (installBtn) {
+    installBtn.classList.remove('hidden');
+    installBtn.onclick = async () => {
+      installBtn.classList.add('hidden');
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('PWA Install Outcome:', outcome);
+      deferredPrompt = null;
+    };
+  }
+});
