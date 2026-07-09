@@ -3322,6 +3322,13 @@ class WatchOnRepeat {
     }
     
     if (this.elements && this.elements.playbackSpeed) {
+      if (fromAutoTempo) {
+        // Remove any old Auto options so they don't stack up
+        Array.from(this.elements.playbackSpeed.options).forEach(opt => {
+          if (opt.text.includes('(Auto)')) this.elements.playbackSpeed.removeChild(opt);
+        });
+      }
+      
       let optionExists = Array.from(this.elements.playbackSpeed.options).some(opt => parseFloat(opt.value) === rate);
       if (!optionExists) {
         const newOpt = document.createElement('option');

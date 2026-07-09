@@ -211,6 +211,14 @@ class LoopsMixin {
         speedSelect.disabled = false;
         speedSelect.parentElement.style.opacity = '1';
         speedSelect.parentElement.title = "";
+        
+        // Remove all temporary Auto options and reset to 1x
+        Array.from(speedSelect.options).forEach(opt => {
+          if (opt.text.includes('(Auto)')) speedSelect.removeChild(opt);
+        });
+        if (this.state.playbackRate !== 1) {
+          this.setPlaybackSpeed(1);
+        }
       }
     }
     
