@@ -197,7 +197,7 @@ window.NotesMixin = {
     if (!listEl) return;
     listEl.innerHTML = '';
     
-    const uniqueVideos = Object.keys(db).filter(k => k !== '__titles');
+    const uniqueVideos = Object.keys(db).filter(k => k !== '__titles' && Array.isArray(db[k]) && db[k].length > 0);
     if (uniqueVideos.length === 0) {
       listEl.innerHTML = '<div class="empty-state-list"><i data-lucide="file-text"></i><p>No active notes for any videos.</p></div>';
       if (window.lucide) window.lucide.createIcons();
