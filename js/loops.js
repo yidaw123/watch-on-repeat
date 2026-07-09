@@ -255,6 +255,11 @@ class LoopsMixin {
       const start = this.state.abLoop.start || 0;
       const end = this.state.abLoop.end || this.state.currentVideoDuration || 0;
       if (end > 0 && t >= end) {
+        if (this.state.isAutoTempoEnabled) {
+          let speed = this.state.playbackRate || 1.0;
+          speed = Math.min(2.0, speed + 0.05);
+          this.setPlaybackSpeed(speed.toFixed(2));
+        }
         this.seekToTime(start);
         this.incrementLoops();
       } else if (t < start - 0.5) {
