@@ -81,8 +81,7 @@
   <!-- Left App Navigation Sidebar -->
   <aside id="app-sidebar" class="app-sidebar open">
     <div class="sidebar-header">
-      <button class="btn-icon sidebar-toggle-btn" onclick="app.toggleSidebar()"><i data-lucide="menu"></i></button>
-      <span class="sidebar-title font-orbitron">Menu</span>
+      <span class="sidebar-title font-orbitron" style="margin-left: 8px;">Menu</span>
     </div>
     <nav class="sidebar-nav">
       <button class="nav-btn active" id="tab-discover-btn" onclick="app.showTab('discover')">
@@ -122,12 +121,11 @@
     
     <!-- Top Navigation Bar -->
     <header class="navbar">
-      <button class="btn-icon mobile-sidebar-toggle hidden" onclick="app.toggleSidebar()"><i data-lucide="menu"></i></button>
+      <button class="btn-icon" style="margin-right: 12px; display: flex;" onclick="app.toggleSidebar()" title="Toggle Menu"><i data-lucide="menu"></i></button>
       <a href="/" class="brand" id="brand-logo" onclick="event.preventDefault(); app.loadHome();">
         <img src="logo.svg" alt="WatchOnRepeat Logo" class="brand-icon" style="background: none; object-fit: cover; border-radius: var(--radius-md);">
         <span class="brand-name">Watch<span>On</span>Repeat</span>
       </a>
-      
       <!-- Center Search/URL Input Bar -->
       <div class="search-container">
         <!-- Row 1: Direct Link Paste -->
@@ -370,7 +368,7 @@
                     </span>
                   </label>
                   <span title="When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments." tabindex="0" onclick="app.showToast(this.title, 'info')" style="margin-left:6px;margin-right:6px;outline:none;cursor:pointer;"><i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);cursor:pointer;"></i></span>
-                  <span class="premium-badge">Upgrade</span>
+                  <span class="premium-badge" style="cursor: pointer;" onclick="app.openUpgradeModal('Unlock Pro features including Advanced Segments and unlimited Audio Recording!')">Upgrade</span>
                 </div>
                 
                 <div id="multi-segment-list" class="hidden" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
@@ -389,7 +387,7 @@
                     <span class="text-sm font-bold text-white" style="display:flex; align-items:center;">
                       <i data-lucide="mic" style="width:14px; height:14px; display:inline-block; margin-right:4px;"></i> Audio Recorder Studio
                     </span>
-                    <span class="premium-badge">Upgrade</span>
+                    <span class="premium-badge" style="cursor: pointer;" onclick="app.openUpgradeModal('Unlock Pro features including Advanced Segments and unlimited Audio Recording!')">Upgrade</span>
                   </div>
                   <div style="display: flex; gap: 8px; align-items: center;">
                      <button id="record-btn" class="btn btn-error btn-sm" onclick="app.toggleRecording()"><i data-lucide="mic"></i> Record (30s Free)</button>
