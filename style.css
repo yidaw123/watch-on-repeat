@@ -2179,11 +2179,11 @@ select option, .select-input option, .select-dropdown option {
 input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
-  background-color: rgba(15, 23, 42, 0.8);
+  background-color: rgba(255, 255, 255, 0.1);
   margin: 0;
   width: 1.15em;
   height: 1.15em;
-  border: 1px solid var(--border-glass);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 0.25em;
   transform: translateY(-0.075em);
   display: grid;
@@ -2198,12 +2198,13 @@ input[type="checkbox"]::before {
   height: 0.65em;
   transform: scale(0);
   transition: 120ms transform ease-in-out;
-  box-shadow: inset 1em 1em var(--color-purple);
+  box-shadow: inset 1em 1em #ffffff;
   transform-origin: center;
   clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
 }
 
 input[type="checkbox"]:checked {
+  background-color: var(--color-purple);
   border-color: var(--color-purple);
 }
 
