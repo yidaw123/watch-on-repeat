@@ -1344,6 +1344,10 @@ class WatchOnRepeat {
       if (this.state.sharedSegmentsToLoad[0]) {
          this.state.abLoop.start = this.state.sharedSegmentsToLoad[0].start || 0;
          this.state.abLoop.end = this.state.sharedSegmentsToLoad[0].end || dur;
+         const initialSpeed = this.state.sharedSegmentsToLoad[0].speed || 1.0;
+         if (this.state.playbackRate !== initialSpeed) {
+           this.setPlaybackSpeed(initialSpeed, true);
+         }
       }
       // Clear to prevent leaking to other videos
       this.state.sharedSegmentsToLoad = null; 

@@ -678,37 +678,39 @@ class LoopsMixin {
       controlsRow.style.gap = '4px';
       controlsRow.style.paddingLeft = '24px';
       controlsRow.style.marginTop = '4px';
-      if (!isReadOnly) {
-        controlsRow.innerHTML = `
-          <div style="display:flex; gap:2px;" class="tooltip" data-tip="Fine-tune Start">
-            <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('start', -0.05, ${index})"><i data-lucide="minus" style="width:12px;height:12px;"></i></button>
-            <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('start', 0.05, ${index})"><i data-lucide="plus" style="width:12px;height:12px;"></i></button>
-          </div>
-          <div style="display:flex; gap:2px;">
-            <button class="btn btn-secondary btn-sm tooltip" data-tip="Shift Left" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.shiftLoop(-1, ${index})"><i data-lucide="arrow-left" style="width:12px;height:12px;"></i></button>
-            <button class="btn btn-secondary btn-sm tooltip" data-tip="Shift Right" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.shiftLoop(1, ${index})"><i data-lucide="arrow-right" style="width:12px;height:12px;"></i></button>
-          </div>
-          <div style="display:flex; gap:2px;">
-            <button class="btn btn-secondary btn-sm tooltip" data-tip="Halve Duration" style="padding: 0 6px; height:24px; min-height:24px; font-size:11px;" onclick="app.scaleLoop(0.5, ${index})">½x</button>
-            <button class="btn btn-secondary btn-sm tooltip" data-tip="Double Duration" style="padding: 0 6px; height:24px; min-height:24px; font-size:11px;" onclick="app.scaleLoop(2, ${index})">2x</button>
-          </div>
-          <div style="display:flex; gap:2px;" class="tooltip" data-tip="Fine-tune End">
-            <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', -0.05, ${index})"><i data-lucide="minus" style="width:12px;height:12px;"></i></button>
-            <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', 0.05, ${index})"><i data-lucide="plus" style="width:12px;height:12px;"></i></button>
-          </div>
-          <div style="display:flex; gap:2px; margin-left: 4px;" class="tooltip" data-tip="Segment Speed">
-            <select id="multi-speed-${index}" class="select-input" style="height:24px; min-height:24px; font-size:11px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff;" onchange="">
-              <option style="color: #000; background: #fff;" value="0.25" ${speedValue == 0.25 ? 'selected' : ''}>0.25x</option>
-              <option style="color: #000; background: #fff;" value="0.5" ${speedValue == 0.5 ? 'selected' : ''}>0.5x</option>
-              <option style="color: #000; background: #fff;" value="0.75" ${speedValue == 0.75 ? 'selected' : ''}>0.75x</option>
-              <option style="color: #000; background: #fff;" value="1" ${speedValue == 1 ? 'selected' : ''}>1x Normal</option>
-              <option style="color: #000; background: #fff;" value="1.25" ${speedValue == 1.25 ? 'selected' : ''}>1.25x</option>
-              <option style="color: #000; background: #fff;" value="1.5" ${speedValue == 1.5 ? 'selected' : ''}>1.5x</option>
-              <option style="color: #000; background: #fff;" value="1.75" ${speedValue == 1.75 ? 'selected' : ''}>1.75x</option>
-              <option style="color: #000; background: #fff;" value="2" ${speedValue == 2 ? 'selected' : ''}>2x</option>
-            </select>
-          </div>
-        `;
+      controlsRow.innerHTML = `
+        <div style="display:flex; gap:2px;" class="tooltip" data-tip="Fine-tune Start">
+          <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('start', -0.05, ${index})"><i data-lucide="minus" style="width:12px;height:12px;"></i></button>
+          <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('start', 0.05, ${index})"><i data-lucide="plus" style="width:12px;height:12px;"></i></button>
+        </div>
+        <div style="display:flex; gap:2px;">
+          <button class="btn btn-secondary btn-sm tooltip" data-tip="Shift Left" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.shiftLoop(-1, ${index})"><i data-lucide="arrow-left" style="width:12px;height:12px;"></i></button>
+          <button class="btn btn-secondary btn-sm tooltip" data-tip="Shift Right" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.shiftLoop(1, ${index})"><i data-lucide="arrow-right" style="width:12px;height:12px;"></i></button>
+        </div>
+        <div style="display:flex; gap:2px;">
+          <button class="btn btn-secondary btn-sm tooltip" data-tip="Halve Duration" style="padding: 0 6px; height:24px; min-height:24px; font-size:11px;" onclick="app.scaleLoop(0.5, ${index})">½x</button>
+          <button class="btn btn-secondary btn-sm tooltip" data-tip="Double Duration" style="padding: 0 6px; height:24px; min-height:24px; font-size:11px;" onclick="app.scaleLoop(2, ${index})">2x</button>
+        </div>
+        <div style="display:flex; gap:2px;" class="tooltip" data-tip="Fine-tune End">
+          <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', -0.05, ${index})"><i data-lucide="minus" style="width:12px;height:12px;"></i></button>
+          <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', 0.05, ${index})"><i data-lucide="plus" style="width:12px;height:12px;"></i></button>
+        </div>
+        <div style="display:flex; gap:2px; margin-left: 4px;" class="tooltip" data-tip="Segment Speed">
+          <select id="multi-speed-${index}" class="select-input" style="height:24px; min-height:24px; font-size:11px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff;" onchange="app.setSegmentSpeed(this.value, ${index})">
+            <option style="color: #000; background: #fff;" value="0.25" ${speedValue == 0.25 ? 'selected' : ''}>0.25x</option>
+            <option style="color: #000; background: #fff;" value="0.5" ${speedValue == 0.5 ? 'selected' : ''}>0.5x</option>
+            <option style="color: #000; background: #fff;" value="0.75" ${speedValue == 0.75 ? 'selected' : ''}>0.75x</option>
+            <option style="color: #000; background: #fff;" value="1" ${speedValue == 1 ? 'selected' : ''}>1x Normal</option>
+            <option style="color: #000; background: #fff;" value="1.25" ${speedValue == 1.25 ? 'selected' : ''}>1.25x</option>
+            <option style="color: #000; background: #fff;" value="1.5" ${speedValue == 1.5 ? 'selected' : ''}>1.5x</option>
+            <option style="color: #000; background: #fff;" value="1.75" ${speedValue == 1.75 ? 'selected' : ''}>1.75x</option>
+            <option style="color: #000; background: #fff;" value="2" ${speedValue == 2 ? 'selected' : ''}>2x</option>
+          </select>
+        </div>
+      `;
+      if (isReadOnly) {
+        controlsRow.style.opacity = '0.4';
+        controlsRow.style.pointerEvents = 'none';
       }
       
       const container = document.createElement('div');
@@ -721,9 +723,7 @@ class LoopsMixin {
       container.style.transition = 'all 0.3s ease';
       
       container.appendChild(row);
-      if (!isReadOnly) {
-        container.appendChild(controlsRow);
-      }
+      container.appendChild(controlsRow);
       
       list.appendChild(container);
     });
