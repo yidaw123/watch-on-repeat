@@ -3437,16 +3437,13 @@ class WatchOnRepeat {
     }
 
     const shareUrl = `${window.location.href.split('?')[0]}?${urlParams.toString()}`;
-    // Open Inline Share Menu
-    const menu = document.getElementById('inline-share-menu');
+    // Open Share Modal
+    const menu = document.getElementById('share-modal');
     const input = document.getElementById('share-link-input');
     if (menu && input) {
       input.value = shareUrl;
-      if (menu.classList.contains('hidden')) {
-        menu.classList.remove('hidden');
-      } else {
-        menu.classList.remove('hidden');
-      }
+      menu.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
     } else {
       // Fallback
       app.showToast("Link copied to clipboard!", "check-circle");
@@ -3457,7 +3454,7 @@ class WatchOnRepeat {
   }
 
   toggleInlineShare() {
-    const menu = document.getElementById('inline-share-menu');
+    const menu = document.getElementById('share-modal');
     if (menu) {
       if (menu.classList.contains('hidden')) {
         this.generateShareableClip();
@@ -3468,7 +3465,7 @@ class WatchOnRepeat {
   }
 
   closeShareModal() {
-    const menu = document.getElementById('inline-share-menu');
+    const menu = document.getElementById('share-modal');
     if (menu) menu.classList.add('hidden');
   }
 
