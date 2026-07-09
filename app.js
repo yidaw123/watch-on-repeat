@@ -1809,6 +1809,13 @@ class WatchOnRepeat {
     }
     this.lastLoopIncrementTime = now;
 
+    // Apply Gradual Tempo if active
+    if (this.state.isAutoTempoEnabled) {
+      let speed = this.state.playbackRate || 1.0;
+      speed = Math.min(2.0, speed + 0.05);
+      this.setPlaybackSpeed(speed.toFixed(2), true, true);
+    }
+
     // Increment personal loops (this video)
     this.state.personalLoops++;
     this.elements.personalLoopCount.textContent = this.formatNumber(this.state.personalLoops);
