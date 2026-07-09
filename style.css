@@ -128,11 +128,7 @@ h1, h2, h3, h4, .brand-name {
 }
 
 /* App Shell */
-#app-shell {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
+
 
 /* Navigation Bar */
 .navbar {
@@ -465,11 +461,11 @@ h1, h2, h3, h4, .brand-name {
 
 /* Main Container Grid Layout */
 .main-container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 380px;
   gap: 2rem;
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   flex: 1;
   width: 100%;
@@ -2493,12 +2489,8 @@ input[type="checkbox"]:focus {
 .app-sidebar.open {
   transform: translateX(0);
 }
-#app-shell {
-  transition: padding-left 0.3s ease;
-}
-#app-shell.sidebar-open {
-  padding-left: 250px;
-}
+
+
 .sidebar-header {
   height: 60px;
   display: flex;
@@ -2542,33 +2534,11 @@ input[type="checkbox"]:focus {
   margin-right: 12px;
 }
 @media (max-width: 1024px) {
-  #app-shell.sidebar-open {
-    padding-left: 0;
-  }
+  
   .mobile-sidebar-toggle {
     display: flex !important;
   }
   .app-sidebar {
     box-shadow: 4px 0 24px rgba(0,0,0,0.5);
   }
-}
-
-
-/* App View Architecture */
-.app-view {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  width: 100%;
-  animation: fadeIn 0.3s ease;
-  padding: 2rem;
-  max-width: 1600px;
-  margin: 0 auto;
-}
-.app-view.hidden {
-  display: none !important;
-}
-.app-view#view-player {
-  padding: 0;
-  max-width: none;
 }
