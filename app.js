@@ -2128,6 +2128,8 @@ class WatchOnRepeat {
     if (this.elements.tabSavedLoopsBtn) this.elements.tabSavedLoopsBtn.classList.toggle('active', tabId === 'saved-loops');
     this.elements.tabNotesBtn.classList.toggle('active', tabId === 'notes');
     this.elements.tabAnalyticsBtn.classList.toggle('active', tabId === 'analytics');
+    const tabRecordedAudioBtn = document.getElementById('tab-recorded-audio-btn');
+    if (tabRecordedAudioBtn) tabRecordedAudioBtn.classList.toggle('active', tabId === 'recorded-audio');
 
     const panels = {
       'discover': this.elements.tabDiscover,
@@ -2136,7 +2138,8 @@ class WatchOnRepeat {
       'history': this.elements.tabHistory,
       'saved-loops': this.elements.tabSavedLoops || document.getElementById('tab-saved-loops'),
       'notes': this.elements.tabNotes,
-      'analytics': this.elements.tabAnalytics || document.getElementById('tab-analytics')
+      'analytics': this.elements.tabAnalytics || document.getElementById('tab-analytics'),
+      'recorded-audio': document.getElementById('tab-recorded-audio')
     };
 
     for (const [id, panel] of Object.entries(panels)) {
