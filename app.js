@@ -2125,30 +2125,44 @@ class WatchOnRepeat {
     if (tabId === 'analytics' && !this.checkLimit('analytics')) return;
     this.state.activeTab = tabId;
     
-    this.elements.tabDiscoverBtn.classList.toggle('active', tabId === 'discover');
-    this.elements.tabFavoritesBtn.classList.toggle('active', tabId === 'favorites');
-    this.elements.tabPlaylistsBtn = document.getElementById('tab-playlists-btn');
-    if (this.elements.tabPlaylistsBtn) this.elements.tabPlaylistsBtn.classList.toggle('active', tabId === 'playlists');
-    this.elements.tabHistoryBtn.classList.toggle('active', tabId === 'history');
-    if (this.elements.tabSavedLoopsBtn) this.elements.tabSavedLoopsBtn.classList.toggle('active', tabId === 'saved-loops');
-    this.elements.tabNotesBtn.classList.toggle('active', tabId === 'notes');
-    this.elements.tabAnalyticsBtn.classList.toggle('active', tabId === 'analytics');
+    // Update active state on sidebar nav buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById(`tab-${tabId}-btn`);
+    if (activeBtn) activeBtn.classList.add('active');
 
-    const panels = {
-      'discover': this.elements.tabDiscover,
-      'favorites': this.elements.tabFavorites,
-      'playlists': this.elements.tabPlaylists || document.getElementById('tab-playlists'),
-      'history': this.elements.tabHistory,
-      'saved-loops': this.elements.tabSavedLoops || document.getElementById('tab-saved-loops'),
-      'notes': this.elements.tabNotes,
-      'analytics': this.elements.tabAnalytics || document.getElementById('tab-analytics')
+    const views = {
+      'player': document.getElementById('view-player'),
+      'discover': document.getElementById('view-discover'),
+      'favorites': document.getElementById('view-favorites'),
+      'playlists': document.getElementById('view-playlists'),
+      'history': document.getElementById('view-history'),
+      'saved-loops': document.getElementById('view-saved-loops'),
+      'recorded-audio': document.getElementById('view-recorded-audio')
     };
 
-    for (const [id, panel] of Object.entries(panels)) {
-      if (panel) {
-        panel.classList.toggle('active', tabId === id);
-        panel.classList.toggle('hidden', tabId !== id);
+    let targetViewId = tabId;
+    if (tabId === 'notes' || tabId === 'analytics') {
+      targetViewId = 'player';
+    }
+
+    for (const [id, view] of Object.entries(views)) {
+      if (view) {
+        if (id === targetViewId) {
+          view.classList.add('active');
+          view.classList.remove('hidden');
+        } else {
+          view.classList.remove('active');
+          view.classList.add('hidden');
+        }
       }
+    }
+
+    if (tabId === 'notes') {
+      const notesPanel = document.getElementById('tab-notes');
+      if (notesPanel) notesPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (tabId === 'analytics') {
+      const analyticsPanel = document.getElementById('tab-analytics');
+      if (analyticsPanel) analyticsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     if (tabId === 'discover') {

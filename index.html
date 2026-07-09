@@ -214,6 +214,7 @@
       </aside>
 
       <!-- Main Content Area -->
+      <div id="view-player" class="app-view active">
       <main class="main-container">
         
         <!-- Video Player Column -->
@@ -467,419 +468,7 @@
       </section>
 
       <!-- Sidebar Tabs Column -->
-      <aside class="sidebar-column">
-        <div class="sidebar-card">
-          <!-- Sidebar Tabs Header -->
-          <div class="sidebar-tabs">
-            <button class="tab-btn active" id="tab-discover-btn" onclick="app.showTab('discover')">
-              <i data-lucide="compass"></i> Discover
-            </button>
-            <button class="tab-btn" id="tab-favorites-btn" onclick="app.showTab('favorites')">
-              <i data-lucide="heart"></i> Favorites
-            </button>
-            <button class="tab-btn" id="tab-playlists-btn" onclick="app.showTab('playlists')">
-              <i data-lucide="list-video"></i> Playlists
-            </button>
-            <button class="tab-btn" id="tab-history-btn" onclick="app.showTab('history')">
-              <i data-lucide="history"></i> History
-            </button>
-            <button class="tab-btn" id="tab-saved-loops-btn" onclick="app.showTab('saved-loops')">
-              <i data-lucide="bookmark"></i> Saved Loops
-            </button>
-            <button class="tab-btn" id="tab-notes-btn" onclick="app.showTab('notes')">
-              <i data-lucide="edit-3"></i> Notes
-            </button>
-            <button class="tab-btn" id="tab-analytics-btn" onclick="app.showTab('analytics')">
-              <i data-lucide="bar-chart-2"></i> Analytics
-            </button>
-          </div>
-
-          <!-- Sidebar Tabs Content -->
-          <div class="tab-content-container">
-            
-            <!-- Analytics Tab -->
-            <div id="tab-analytics" class="tab-panel">
-              <div class="tab-header">
-                <h3>My Analytics</h3>
-              </div>
-              <div class="analytics-container">
-                <div class="analytics-summary">
-                  <div class="analytics-card">
-                    <span class="analytics-label">Lifetime Practice</span>
-                    <span class="analytics-value" id="analytics-total-time">0h 0m</span>
-                  </div>
-                  <div class="analytics-card">
-                    <span class="analytics-label">This Week</span>
-                    <span class="analytics-value" id="analytics-weekly-time">0h 0m</span>
-                  </div>
-                </div>
-                
-
-                
-                <h4 class="analytics-subtitle">Most Practiced Segments</h4>
-                <div class="analytics-segments-list" id="analytics-segments-list">
-                  <!-- Segments inserted here -->
-                </div>
-                <div id="analytics-empty" class="empty-state hidden">
-                  <i data-lucide="bar-chart-2"></i>
-                  <p>Practice some loops to see your stats here.</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Upgrade/Paywall Modal -->
-  <div class="premium-unlock-takeover hidden" id="premium-unlock-modal" onclick="if(event.target === this) app.closeUpgradeModal()">
-    <div class="premium-unlock-container">
-      <button class="modal-close-btn" onclick="app.closeUpgradeModal()">
-        <i data-lucide="x"></i>
-      </button>
-      <div class="modal-header border-b pb-4 mb-6 border-gray-800">
-        <h3 id="premium-unlock-title" class="text-2xl font-bold">Unlock Premium Features</h3>
-      </div>
-      <div class="modal-body">
-        <p id="premium-unlock-message" class="text-gray-400 mb-8 text-center text-lg">You've hit a limit! Upgrade your account to continue.</p>
-        
-        <div class="pricing-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-          <!-- Premium Tier -->
-          <div class="pricing-card" style="border: 1px solid #333; border-radius: 16px; padding: 32px; text-align: center; background: rgba(255,255,255,0.02);">
-            <div class="tier-icon"><i data-lucide="crown" style="color: #FBBF24; width: 48px; height: 48px; margin: 0 auto 16px;"></i></div>
-            <h4 class="text-xl font-bold mb-2">Premium</h4>
-            <div class="price text-5xl font-bold mb-2" style="font-size: 3rem; line-height: 1;">$5.99<span class="text-xl text-gray-500 font-normal" style="font-size: 1.25rem;">/mo</span></div>
-            <div class="yearly-price text-2xl text-gray-400 mb-6 font-medium" style="font-size: 1.5rem;">or $59.99/year <span class="text-xl" style="color: #10B981; font-weight: bold; margin-left: 4px;">(Save 16%)</span></div>
-            <ul class="features text-left text-base text-gray-300 space-y-4 mb-8" style="list-style: none; padding: 0;">
-              <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Ad-free experience</li>
-              <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Advanced loop segments</li>
-              <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Unlimited notes & history</li>
-              <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Customizable Hotkeys</li>
-            </ul>
-            <button class="btn btn-outline w-full" disabled style="justify-content: center; margin-top: 24px; opacity: 0.5; cursor: not-allowed;">Upgrade to Premium (Coming Soon)</button>
-          </div>
-          
-          <!-- Pro Tier -->
-          <div class="pricing-card" style="border: 1px solid #333; border-radius: 16px; padding: 32px; text-align: center; position: relative; background: rgba(255,255,255,0.02);">
-
-            <div class="tier-icon"><i data-lucide="graduation-cap" style="color: #ec4899; width: 48px; height: 48px; margin: 0 auto 16px;"></i></div>
-            <h4 class="text-xl font-bold mb-2">Pro</h4>
-            <div class="price text-5xl font-bold mb-2" style="font-size: 3rem; line-height: 1;">$9.99<span class="text-xl text-gray-500 font-normal" style="font-size: 1.25rem;">/mo</span></div>
-            <div class="yearly-price text-2xl text-gray-400 mb-6 font-medium" style="font-size: 1.5rem;">or $99.99/year <span class="text-xl" style="color: #10B981; font-weight: bold; margin-left: 4px;">(Save 16%)</span></div>
-            <ul class="features text-left text-base text-gray-300 space-y-4 mb-8" style="list-style: none; padding: 0;">
-              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Everything in Premium</li>
-              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Advanced Practice Analytics</li>
-              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Team & Classroom Features</li>
-              <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> API & Data Export</li>
-            </ul>
-            <button class="btn btn-primary w-full" disabled style="justify-content: center; margin-top: 24px; opacity: 0.5; cursor: not-allowed;">Upgrade to Pro (Coming Soon)</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Playlist Select Modal -->
-  <div class="modal-overlay hidden" id="playlist-modal" onclick="app.closePlaylistModal()">
-    <div class="modal-card" style="max-width: 400px; padding: 24px;" onclick="event.stopPropagation()">
-      <button class="modal-close-btn" onclick="app.closePlaylistModal()" style="position: absolute; top: 16px; right: 16px;">
-        <i data-lucide="x"></i>
-      </button>
-      <div class="modal-header border-b pb-4 mb-4 border-gray-800" style="text-align: center;">
-        <h3 class="text-xl font-bold">Save to Playlist</h3>
-      </div>
-      <div class="modal-body">
-        <div id="playlist-select-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
-          <!-- Rendered playlists go here -->
-        </div>
-        <div class="mt-4 pt-4 border-t border-gray-800">
-          <div id="create-playlist-form" class="hidden">
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="new-playlist-name" placeholder="Playlist Name" style="flex: 1; padding: 8px; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white;">
-              <button class="btn btn-primary btn-sm" onclick="app.createNewPlaylistFromModal()">Create</button>
-            </div>
-          </div>
-          <button id="show-create-playlist-btn" class="btn btn-outline w-full" onclick="document.getElementById('create-playlist-form').classList.remove('hidden'); document.getElementById('show-create-playlist-btn').classList.add('hidden'); document.getElementById('new-playlist-name').focus();" style="justify-content: center;">
-            <i data-lucide="plus" style="display:inline; width:16px; height:16px; margin-right: 8px;"></i> Create New Playlist
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings Modal -->
-  <div class="modal-overlay hidden" id="settings-modal" onclick="app.closeSettingsModal()">
-    <div class="modal-card" style="max-width: 500px; padding: 24px; text-align: left;" onclick="event.stopPropagation()">
-      <button class="modal-close-btn" onclick="app.closeSettingsModal()" style="position: absolute; top: 16px; right: 16px;">
-        <i data-lucide="x"></i>
-      </button>
       
-      <div class="modal-header border-b pb-4 mb-4 border-gray-800">
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 4px;">Account Settings</h2>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Manage your credentials and subscription.</p>
-      </div>
-      
-      <div class="settings-section mb-6">
-        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><i data-lucide="credit-card" style="width:18px;height:18px"></i> Subscription</h3>
-        <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="color: var(--text-secondary);">Current Plan</span>
-            <span id="settings-plan-badge" class="badge" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">Free</span>
-          </div>
-          <div id="settings-plan-details" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 0.9rem;">
-            <span style="color: var(--text-secondary);">Renews On</span>
-            <span id="settings-plan-date" style="font-weight: 500;">N/A</span>
-          </div>
-          <button id="settings-cancel-sub-btn" class="btn" style="width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white;" onclick="app.cancelSubscription()">Cancel Subscription</button>
-        </div>
-      </div>
-
-      <div class="settings-section mb-6" style="margin-top: 24px;">
-        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><i data-lucide="lock" style="width:18px;height:18px"></i> Security</h3>
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-          <div>
-            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Update Email</label>
-            <div style="display: flex; gap: 8px;">
-              <input type="email" id="settings-email-input" class="input-field" placeholder="New email address" style="flex: 1;">
-              <button class="btn btn-primary" onclick="app.updateAccountEmail()">Update</button>
-            </div>
-          </div>
-          <div>
-            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Update Password</label>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-              <input type="password" id="settings-password-input" class="input-field" placeholder="New secure password" style="width: 100%;">
-              <input type="password" id="settings-password-confirm" class="input-field" placeholder="Confirm new password" style="width: 100%;">
-              <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: -4px;">Password must be at least 6 characters long.</p>
-              <button class="btn btn-primary" style="align-self: flex-end;" onclick="app.updateAccountPassword()">Update Password</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Shortcuts Settings Modal -->
-  <div class="modal-overlay hidden" id="shortcuts-modal" onclick="app.closeShortcutsModal()">
-    <div class="modal-card" style="max-width: 500px; padding: 24px;" onclick="event.stopPropagation()">
-      <button class="modal-close-btn" onclick="app.closeShortcutsModal()" style="position: absolute; top: 16px; right: 16px;">
-        <i data-lucide="x"></i>
-      </button>
-      <div class="modal-header border-b pb-4 mb-4 border-gray-800" style="text-align: center;">
-        <h3 class="text-xl font-bold">Keyboard Shortcuts</h3>
-      </div>
-      <div class="modal-body">
-        <div id="shortcuts-free-warning" class="hidden mb-4 p-3 bg-blue-900/30 border border-blue-500/30 rounded text-sm text-blue-200">
-          <i data-lucide="info" style="display:inline; width:14px; height:14px;"></i> Customizing shortcuts is a Premium feature. Upgrade to remap keys.
-        </div>
-        <div class="shortcuts-list" id="shortcuts-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto;">
-          <!-- Dynamically populated -->
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-
-  <!-- Recording Shortcut Overlay -->
-  <div class="modal-overlay hidden" id="shortcut-recorder-modal" style="z-index: 3000;">
-    <div class="modal-card text-center" style="max-width: 300px; padding: 32px;" onclick="event.stopPropagation()">
-      <h3 class="text-xl font-bold mb-4">Press any key</h3>
-      <p class="text-gray-400 text-sm mb-4">Press the key you want to use for <span id="recording-action-name" class="text-white font-bold"></span>.</p>
-      <input type="text" id="shortcut-recorder" style="opacity: 0; position: absolute; top: -9999px;">
-      <button class="btn btn-outline" onclick="app.cancelShortcutRecord()">Cancel</button>
-    </div>
-  </div>
-
-  <!-- Pro Controls Guide Modal -->
-  <div id="pro-controls-modal" class="modal hidden">
-    <div class="modal-box" style="max-width: 500px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <h3 class="text-xl font-bold">Pro Controls Guide</h3>
-        <button class="btn btn-circle btn-sm" onclick="app.closeProControlsModal()"><i data-lucide="x"></i></button>
-      </div>
-      <div class="space-y-4">
-        <div>
-          <h4 class="font-bold text-white mb-1">Start / End Time Fine Tune (- / +)</h4>
-          <p class="text-sm text-gray-300">Nudges your loop's start or end time by tiny fractions of a second (0.05s) so you can get the timing absolutely perfect.</p>
-        </div>
-        <div>
-          <h4 class="font-bold text-white mb-1">Loop Segment Shift (&lt;- / -&gt;)</h4>
-          <p class="text-sm text-gray-300">Shifts the entire loop window backwards or forwards without changing its total length. Great for moving your loop to the next bar of a song.</p>
-        </div>
-        <div>
-          <h4 class="font-bold text-white mb-1">Loop Window Multiplier (½x / 2x)</h4>
-          <p class="text-sm text-gray-300">Instantly cuts your loop duration in half, or doubles it. Perfect for breaking down tricky sections into smaller pieces.</p>
-        </div>
-        <div>
-          <h4 class="font-bold text-white mb-1">Gradual Tempo (Auto-increase)</h4>
-          <p class="text-sm text-gray-300">Automatically increases the playback speed slightly (+0.05x) every time the video loops, helping you build up your speed naturally.</p>
-        </div>
-      </div>
-      <div class="modal-action">
-        <button class="btn w-full" onclick="app.closeProControlsModal()">Got it!</button>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- Login Modal -->
-
-            <!-- Saved Loops Tab -->
-            <div id="tab-saved-loops" class="tab-panel">
-              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <h3>Saved Loops</h3>
-                <select id="saved-loops-sort" class="select-dropdown" onchange="app.renderSavedLoopsTab()" style="margin-left: 10px; max-width: 150px;">
-                  <option value="recent_add">Recently Added</option>
-                  <option value="recent_edit">Recently Edited</option>
-                  <option value="alpha">Alphabetical</option>
-                </select>
-              </div>
-              <div class="notes-container">
-                <div class="active-notes-section" style="padding-top: 0;">
-                  <div id="saved-loops-list" style="display: flex; flex-direction: column; gap: 8px;">
-                    <!-- Saved loops rendered here -->
-                  </div>
-                  <div class="empty-state-list hidden" id="saved-loops-empty">
-                    <i data-lucide="bookmark"></i>
-                    <p>No saved loops yet. Save segments to quickly access them later!</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Notes Tab -->
-            <div id="tab-notes" class="tab-panel">
-              <div class="tab-header">
-                <h3>Video Notes</h3>
-              </div>
-              <div class="notes-container">
-                <div class="notes-input-area">
-                  <textarea id="note-input" placeholder="Type a note here..."></textarea>
-                  <div style="display: flex; gap: 8px; flex-direction: column;">
-                    <button class="btn btn-primary btn-sm" onclick="app.addNote()">
-                      <i data-lucide="plus"></i> Add at Current Time
-                    </button>
-                    <div style="display: flex; gap: 8px;">
-                      <button class="btn btn-primary btn-sm" onclick="app.addNote(true)" style="flex: 1;">
-                        <i data-lucide="plus"></i> Add at Manual Time
-                      </button>
-                      <input type="text" id="manual-note-time" value="HH:MM:SS" class="time-input" style="width: 100px; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white; padding: 4px; font-size: 14px; letter-spacing: 1px; cursor: text;">
-                    </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; margin-top: 16px;">
-                  <h4 style="margin: 0; color: #fff; font-size: 14px;">Notes List</h4>
-                  <button class="btn btn-error btn-sm hidden" id="delete-all-notes-btn" onclick="app.deleteAllNotes()"><i data-lucide="trash-2"></i> Delete All</button>
-                </div>
-                <div class="notes-list" id="notes-list">
-                  <!-- Notes loaded here -->
-                  <div class="empty-state-list" id="notes-empty">
-                    <i data-lucide="file-text"></i>
-                    <p>No notes for this video yet. Add one to remember a specific timestamp!</p>
-                  </div>
-                </div>
-                
-                <div class="active-notes-section" style="margin-top: 24px; border-top: 1px solid #333; padding-top: 16px;">
-                  <h4 style="margin-bottom: 12px; font-size: 14px; color: #aaa;">Active Videos with Notes</h4>
-                  <div id="active-notes-list" style="display: flex; flex-direction: column; gap: 8px;">
-                    <!-- Active notes summary rendered here -->
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Discover Tab -->
-            <div id="tab-discover" class="tab-panel active">
-              
-              <h3>Popular Videos to Loop</h3>
-              <div class="video-grid" id="discover-list">
-                <!-- Will be loaded dynamically -->
-              </div>
-              
-              <!-- Bookmark Shortcut -->
-              <div class="bookmarklet-box">
-                <h4><i data-lucide="bookmark"></i> WatchOnRepeat Bookmark</h4>
-                <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Vimeo, Dailymotion, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
-                <a id="bookmarklet-btn" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;">
-                  <i data-lucide="repeat"></i>
-                  <span>Watch On Repeat</span>
-                </a>
-              </div>
-            </div>
-
-            <!-- Favorites Tab -->
-            <div id="tab-favorites" class="tab-panel">
-              <div class="tab-header">
-                <h3>My Favorites</h3>
-                <span class="badge" id="favorites-count-badge">0</span>
-              </div>
-              <div class="auth-required-view" id="fav-auth-required">
-                <i data-lucide="lock" class="lock-icon"></i>
-                <p>Please sign in to save and view your favorite videos.</p>
-                <button class="btn btn-outline" onclick="app.openLoginModal()">Sign In</button>
-              </div>
-              <div class="video-list hidden" id="favorites-list">
-                <!-- Loaded dynamically -->
-              </div>
-              <div class="empty-state-list hidden" id="favorites-empty">
-                <i data-lucide="heart-off"></i>
-                <p>No favorites saved yet.</p>
-              </div>
-            </div>
-
-          <!-- Playlists Tab -->
-          <div id="tab-playlists" class="tab-panel hidden">
-            <div class="tab-header">
-              <h2>Your Playlists</h2>
-              <span class="badge" id="playlists-count-badge">0</span>
-            </div>
-            
-            <div class="empty-state hidden" id="playlists-auth-required">
-              <i data-lucide="lock" style="width:48px;height:48px;margin-bottom:16px;color:var(--text-muted)"></i>
-              <h3>Sign in required</h3>
-              <p>Create and manage your playlists.</p>
-              <button class="btn btn-primary" onclick="app.openLoginModal()" style="margin-top:16px;">Sign In</button>
-            </div>
-            
-            <div id="playlists-content" class="hidden">
-              <div style="display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;">
-                <input type="text" id="new-playlist-input" class="search-input" placeholder="New Playlist Name..." style="flex: 1; min-width: 200px;">
-                <button class="btn btn-primary" onclick="app.createPlaylist()"><i data-lucide="plus"></i> Create</button>
-                <select id="playlist-sort-select" class="dropdown-select" onchange="app.renderPlaylistsTab()">
-                  <option value="newest">Newest First</option>
-                  <option value="recent">Recently Edited</option>
-                  <option value="alpha">Alphabetical</option>
-                </select>
-              </div>
-
-              <div id="playlists-list" class="video-grid" style="grid-template-columns: 1fr;">
-                <!-- Dynamically rendered playlists -->
-              </div>
-            </div>
-          </div>
-
-            <!-- History Tab -->
-            <div id="tab-history" class="tab-panel">
-              <div class="tab-header">
-                <h3>Loop History</h3>
-                <button class="btn-text" id="clear-history-btn" onclick="app.clearHistory()">Clear All</button>
-              </div>
-              <div class="auth-required-view id-history-auth" id="history-auth-required">
-                <i data-lucide="lock" class="lock-icon"></i>
-                <p>Please sign in to keep track of your loop history across devices.</p>
-                <button class="btn btn-outline" onclick="app.openLoginModal()">Sign In</button>
-              </div>
-              <div class="video-list hidden" id="history-list">
-                <!-- Loaded dynamically -->
-              </div>
-              <div class="empty-state-list hidden" id="history-empty">
-                <i data-lucide="clock"></i>
-                <p>Your history is currently empty.</p>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </aside>
 
       <!-- Stats Dashboard at the very bottom -->
       <div id="stats-dashboard-container" style="width: 100%; order: 99;">
@@ -938,7 +527,79 @@
         </div>
       </div>
 
-    </main>
+      <!-- Notes & Analytics moved below player -->
+          <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 2rem;">
+            <div id="tab-notes" class="tab-panel">
+              <div class="tab-header">
+                <h3>Video Notes</h3>
+              </div>
+              <div class="notes-container">
+                <div class="notes-input-area">
+                  <textarea id="note-input" placeholder="Type a note here..."></textarea>
+                  <div style="display: flex; gap: 8px; flex-direction: column;">
+                    <button class="btn btn-primary btn-sm" onclick="app.addNote()">
+                      <i data-lucide="plus"></i> Add at Current Time
+                    </button>
+                    <div style="display: flex; gap: 8px;">
+                      <button class="btn btn-primary btn-sm" onclick="app.addNote(true)" style="flex: 1;">
+                        <i data-lucide="plus"></i> Add at Manual Time
+                      </button>
+                      <input type="text" id="manual-note-time" value="HH:MM:SS" class="time-input" style="width: 100px; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white; padding: 4px; font-size: 14px; letter-spacing: 1px; cursor: text;">
+                    </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; margin-top: 16px;">
+                  <h4 style="margin: 0; color: #fff; font-size: 14px;">Notes List</h4>
+                  <button class="btn btn-error btn-sm hidden" id="delete-all-notes-btn" onclick="app.deleteAllNotes()"><i data-lucide="trash-2"></i> Delete All</button>
+                </div>
+                <div class="notes-list" id="notes-list">
+                  <!-- Notes loaded here -->
+                  <div class="empty-state-list" id="notes-empty">
+                    <i data-lucide="file-text"></i>
+                    <p>No notes for this video yet. Add one to remember a specific timestamp!</p>
+                  </div>
+                </div>
+                
+                <div class="active-notes-section" style="margin-top: 24px; border-top: 1px solid #333; padding-top: 16px;">
+                  <h4 style="margin-bottom: 12px; font-size: 14px; color: #aaa;">Active Videos with Notes</h4>
+                  <div id="active-notes-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Active notes summary rendered here -->
+                  </div>
+                </div>
+              </div>
+            <div id="tab-analytics" class="tab-panel">
+              <div class="tab-header">
+                <h3>My Analytics</h3>
+              </div>
+              <div class="analytics-container">
+                <div class="analytics-summary">
+                  <div class="analytics-card">
+                    <span class="analytics-label">Lifetime Practice</span>
+                    <span class="analytics-value" id="analytics-total-time">0h 0m</span>
+                  </div>
+                  <div class="analytics-card">
+                    <span class="analytics-label">This Week</span>
+                    <span class="analytics-value" id="analytics-weekly-time">0h 0m</span>
+                  </div>
+                </div>
+                
+
+                
+                <h4 class="analytics-subtitle">Most Practiced Segments</h4>
+                <div class="analytics-segments-list" id="analytics-segments-list">
+                  <!-- Segments inserted here -->
+                </div>
+                <div id="analytics-empty" class="empty-state hidden">
+                  <i data-lucide="bar-chart-2"></i>
+                  <p>Practice some loops to see your stats here.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+      </main>
+    </div>
 
     <!-- Right Gutter Ad Space -->
     <aside class="ad-slot ad-gutter ad-gutter-right" id="ad-gutter-right">
@@ -954,7 +615,114 @@
       </div>
     </aside>
 
+  
+    <!-- New Full Page Views -->
+    <div id="view-discover" class="app-view hidden"><div id="tab-discover" class="tab-panel active">
+              
+              <h3>Popular Videos to Loop</h3>
+              <div class="video-grid" id="discover-list">
+                <!-- Will be loaded dynamically -->
+              </div>
+              
+              <!-- Bookmark Shortcut -->
+              <div class="bookmarklet-box">
+                <h4><i data-lucide="bookmark"></i> WatchOnRepeat Bookmark</h4>
+                <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Vimeo, Dailymotion, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
+                <a id="bookmarklet-btn" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;">
+                  <i data-lucide="repeat"></i>
+                  <span>Watch On Repeat</span>
+                </a>
+              </div>
+            </div></div>
+    <div id="view-favorites" class="app-view hidden"><div id="tab-favorites" class="tab-panel">
+              <div class="tab-header">
+                <h3>My Favorites</h3>
+                <span class="badge" id="favorites-count-badge">0</span>
+              </div>
+              <div class="auth-required-view" id="fav-auth-required">
+                <i data-lucide="lock" class="lock-icon"></i>
+                <p>Please sign in to save and view your favorite videos.</p>
+                <button class="btn btn-outline" onclick="app.openLoginModal()">Sign In</button>
+              </div>
+              <div class="video-list hidden" id="favorites-list">
+                <!-- Loaded dynamically -->
+              </div>
+              <div class="empty-state-list hidden" id="favorites-empty">
+                <i data-lucide="heart-off"></i>
+                <p>No favorites saved yet.</p>
+              </div>
+            </div></div>
+    <div id="view-playlists" class="app-view hidden"><div id="tab-playlists" class="tab-panel hidden">
+            <div class="tab-header">
+              <h2>Your Playlists</h2>
+              <span class="badge" id="playlists-count-badge">0</span>
+            </div>
+            
+            <div class="empty-state hidden" id="playlists-auth-required">
+              <i data-lucide="lock" style="width:48px;height:48px;margin-bottom:16px;color:var(--text-muted)"></i>
+              <h3>Sign in required</h3>
+              <p>Create and manage your playlists.</p>
+              <button class="btn btn-primary" onclick="app.openLoginModal()" style="margin-top:16px;">Sign In</button>
+            </div>
+            
+            <div id="playlists-content" class="hidden">
+              <div style="display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;">
+                <input type="text" id="new-playlist-input" class="search-input" placeholder="New Playlist Name..." style="flex: 1; min-width: 200px;">
+                <button class="btn btn-primary" onclick="app.createPlaylist()"><i data-lucide="plus"></i> Create</button>
+                <select id="playlist-sort-select" class="dropdown-select" onchange="app.renderPlaylistsTab()">
+                  <option value="newest">Newest First</option>
+                  <option value="recent">Recently Edited</option>
+                  <option value="alpha">Alphabetical</option>
+                </select>
+              </div>
+
+              <div id="playlists-list" class="video-grid" style="grid-template-columns: 1fr;">
+                <!-- Dynamically rendered playlists -->
+              </div>
+            </div>
+          </div></div>
+    <div id="view-history" class="app-view hidden"><div id="tab-history" class="tab-panel">
+              <div class="tab-header">
+                <h3>Loop History</h3>
+                <button class="btn-text" id="clear-history-btn" onclick="app.clearHistory()">Clear All</button>
+              </div>
+              <div class="auth-required-view id-history-auth" id="history-auth-required">
+                <i data-lucide="lock" class="lock-icon"></i>
+                <p>Please sign in to keep track of your loop history across devices.</p>
+                <button class="btn btn-outline" onclick="app.openLoginModal()">Sign In</button>
+              </div>
+              <div class="video-list hidden" id="history-list">
+                <!-- Loaded dynamically -->
+              </div>
+              <div class="empty-state-list hidden" id="history-empty">
+                <i data-lucide="clock"></i>
+                <p>Your history is currently empty.</p>
+              </div>
+            </div></div>
+    <div id="view-saved-loops" class="app-view hidden"><div id="tab-saved-loops" class="tab-panel">
+              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3>Saved Loops</h3>
+                <select id="saved-loops-sort" class="select-dropdown" onchange="app.renderSavedLoopsTab()" style="margin-left: 10px; max-width: 150px;">
+                  <option value="recent_add">Recently Added</option>
+                  <option value="recent_edit">Recently Edited</option>
+                  <option value="alpha">Alphabetical</option>
+                </select>
+              </div>
+              <div class="notes-container">
+                <div class="active-notes-section" style="padding-top: 0;">
+                  <div id="saved-loops-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Saved loops rendered here -->
+                  </div>
+                  <div class="empty-state-list hidden" id="saved-loops-empty">
+                    <i data-lucide="bookmark"></i>
+                    <p>No saved loops yet. Save segments to quickly access them later!</p>
+                  </div>
+                </div>
+              </div>
+            </div></div>
+    <div id="view-recorded-audio" class="app-view hidden"></div>
   </div> <!-- End content-wrapper -->
+
 
     <!-- Social Sign In Modal -->
     <div id="login-modal" class="modal-overlay hidden" onclick="app.closeLoginModal()">
