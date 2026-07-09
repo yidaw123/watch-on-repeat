@@ -258,7 +258,7 @@ class LoopsMixin {
         if (this.state.isAutoTempoEnabled) {
           let speed = this.state.playbackRate || 1.0;
           speed = Math.min(2.0, speed + 0.05);
-          this.setPlaybackSpeed(speed.toFixed(2));
+          this.setPlaybackSpeed(speed.toFixed(2), true, true);
         }
         this.seekToTime(start);
         this.incrementLoops();
@@ -356,7 +356,7 @@ class LoopsMixin {
       if (this.state.isAutoTempoEnabled) {
         let speed = this.state.playbackRate || 1.0;
         speed = Math.min(2.0, speed + 0.05);
-        this.setPlaybackSpeed(speed.toFixed(2));
+        this.setPlaybackSpeed(speed.toFixed(2), true, true);
       }
       
       if (this.incrementLoops()) return;

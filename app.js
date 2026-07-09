@@ -3292,27 +3292,36 @@ class WatchOnRepeat {
     }
   }
 
-  setPlaybackSpeed(rate, hideToast = false) {
+  setPlaybackSpeed(rate, hideToast = false, fromAutoTempo = false) {
     rate = parseFloat(rate);
     this.state.playbackRate = rate;
     
-    // Freeze gradual tempo if speed is not 1x
-    const tempoCheckbox = document.getElementById('auto-tempo-checkbox');
-    if (tempoCheckbox) {
-      if (rate !== 1) {
-        tempoCheckbox.disabled = true;
-        tempoCheckbox.checked = false;
-        this.state.isAutoTempoEnabled = false;
-        tempoCheckbox.parentElement.style.opacity = '0.4';
-        tempoCheckbox.parentElement.title = "Gradual Tempo requires 1x Master Speed";
-      } else {
-        tempoCheckbox.disabled = false;
-        tempoCheckbox.parentElement.style.opacity = '1';
-        tempoCheckbox.parentElement.title = "";
+    // Freeze gradual tempo if speed is manually changed
+    if (!fromAutoTempo) {
+      const tempoCheckbox = document.getElementById('auto-tempo-checkbox');
+      if (tempoCheckbox) {
+        if (rate !== 1) {
+          tempoCheckbox.disabled = true;
+          tempoCheckbox.checked = false;
+          this.state.isAutoTempoEnabled = false;
+          tempoCheckbox.parentElement.style.opacity = '0.4';
+          tempoCheckbox.parentElement.title = "Gradual Tempo requires 1x Master Speed";
+        } else {
+          tempoCheckbox.disabled = false;
+          tempoCheckbox.parentElement.style.opacity = '1';
+          tempoCheckbox.parentElement.title = "";
+        }
       }
     }
     
     if (this.elements && this.elements.playbackSpeed) {
+      let optionExists = Array.from(this.elements.playbackSpeed.options).some(opt => parseFloat(opt.value) === rate);
+      if (!optionExists) {
+        const newOpt = document.createElement('option');
+        newOpt.value = rate;
+        newOpt.text = rate.toFixed(2) + 'x (Auto)';
+        this.elements.playbackSpeed.appendChild(newOpt);
+      }
       this.elements.playbackSpeed.value = rate;
     }
     
