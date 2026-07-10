@@ -73,28 +73,36 @@ class PlaylistsMixin {
       }
       if (createRow) createRow.style.display = 'none';
       list.innerHTML = `
-        <div style="margin-bottom: 16px; display:flex; flex-direction:column; gap:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <button class="btn btn-sm btn-outline" onclick="app.backToPlaylists()"><i data-lucide="arrow-left"></i> Back</button>
-            <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${p.id}')" style="white-space: nowrap;"><i data-lucide="play"></i> Play Through</button>
+        <div class="playlist-header-container">
+          <div style="margin-bottom: 16px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <button class="btn btn-sm btn-outline" onclick="app.backToPlaylists()"><i data-lucide="arrow-left"></i> Back</button>
+              <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${p.id}')" style="white-space: nowrap;"><i data-lucide="play"></i> Play Through</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 200px;">
+                <input type="text" class="search-input" data-target="playlist-videos-container" placeholder="Search videos..." style="flex: 1;" onkeyup="app.filterTabList(this)">
+                <select class="search-input" style="padding: 6px 10px; width: auto; font-size: 13px;" onchange="app.sortPlaylist('${p.id}', this.value)">
+                  <option value="">Sort By...</option>
+                  <option value="date">Date Added</option>
+                  <option value="alpha">Alphabetical</option>
+                </select>
+              </div>
+              <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; user-select:none; font-weight: 500;">
+                <input type="checkbox" id="playlist-loop-toggle" style="width: 18px; height: 18px; cursor: pointer; accent-color: #60a5fa;"> 
+                <span>Loop Video</span>
+              </label>
+            </div>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <select class="search-input" style="padding: 6px 10px; width: auto; font-size: 13px;" onchange="app.sortPlaylist('${p.id}', this.value)">
-              <option value="">Sort By...</option>
-              <option value="date">Date Added</option>
-              <option value="alpha">Alphabetical</option>
-            </select>
-            <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; user-select:none; font-weight: 500;">
-              <input type="checkbox" id="playlist-loop-toggle" style="width: 18px; height: 18px; cursor: pointer; accent-color: #60a5fa;"> 
-              <span>Loop Video</span>
-            </label>
-          </div>
+          <h2 style="margin-bottom:16px;">${this.escapeHtml(p.name)}</h2>
         </div>
-        <h2 style="margin-bottom:16px;">${this.escapeHtml(p.name)}</h2>
+        <div id="playlist-videos-container" style="display: flex; flex-direction: column;"></div>
       `;
       
+      const vidsContainer = list.querySelector('#playlist-videos-container');
+      
       if (!p.videos || p.videos.length === 0) {
-        list.innerHTML += '<div class="empty-state"><p>This playlist is empty.</p></div>';
+        vidsContainer.innerHTML = '<div class="empty-state"><p>This playlist is empty.</p></div>';
         lucide.createIcons();
         return;
       }
@@ -145,9 +153,9 @@ class PlaylistsMixin {
             <div class="yt-playlist-title">${this.escapeHtml(v.title)}</div>
             <div class="yt-playlist-channel">${v.platform}</div>
           </div>
-          <button class="icon-btn text-red-500" onclick="app.removeVideoFromPlaylist('${p.id}', '${v.videoId || v.id}')" style="padding:4px;"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+          <button class="icon-btn text-red-500" onclick="app.removeVideoFromPlaylist('${p.id}', '${v.videoId || v.id}')" style="padding:4px;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
         `;
-        list.appendChild(card);
+        vidsContainer.appendChild(card);
       });
       lucide.createIcons();
       return;

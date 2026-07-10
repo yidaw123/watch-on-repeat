@@ -336,7 +336,9 @@
                   </div>
                   <div style="display: flex; gap: 8px; align-items: center;">
                      <button id="record-btn" class="btn btn-error btn-sm" onclick="app.toggleRecording()"><i data-lucide="mic"></i> Record (30s Free)</button>
+                     <i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted); cursor: help;" title="Recorded audio is only saved temporarily and will be lost if you close the session. Download it to keep it!"></i>
                      <button id="play-recording-btn" class="btn btn-secondary btn-sm hidden" onclick="app.toggleRecordingPlayback()"><i data-lucide="play"></i> Play</button>
+                     <a id="download-recording-btn" class="btn btn-secondary btn-sm hidden" download="recording.webm" style="text-decoration: none;"><i data-lucide="download"></i></a>
                      <button id="delete-recording-btn" class="btn btn-secondary btn-sm hidden" onclick="app.deleteCurrentRecording()"><i data-lucide="trash-2"></i></button>
                      <input type="range" id="recording-volume" min="0" max="1" step="0.1" value="1" class="hidden" style="width: 80px;" onchange="app.setRecordingVolume(this.value)" oninput="app.setRecordingVolume(this.value)" title="Recording Volume">
                   </div>
@@ -413,17 +415,20 @@
             <button class="tab-btn" id="tab-playlists-btn" onclick="app.showTab('playlists')">
               <i data-lucide="list-video"></i> Playlists
             </button>
-            <button class="tab-btn" id="tab-history-btn" onclick="app.showTab('history')">
-              <i data-lucide="history"></i> History
-            </button>
             <button class="tab-btn" id="tab-saved-loops-btn" onclick="app.showTab('saved-loops')">
               <i data-lucide="bookmark"></i> Saved Loops
             </button>
+            <button class="tab-btn" id="tab-notes-btn" onclick="app.showTab('notes')">
+              <i data-lucide="edit-3"></i> Saved Notes
+            </button>
+            <button class="tab-btn" id="tab-saved-sessions-btn" onclick="app.showTab('saved-sessions')">
+              <i data-lucide="package"></i> Saved Sessions
+            </button>
+            <button class="tab-btn" id="tab-history-btn" onclick="app.showTab('history')">
+              <i data-lucide="history"></i> History
+            </button>
             <button class="tab-btn" id="tab-recorded-audio-btn" onclick="app.showTab('recorded-audio')">
               <i data-lucide="mic"></i> Recorded Audio
-            </button>
-            <button class="tab-btn" id="tab-notes-btn" onclick="app.showTab('notes')">
-              <i data-lucide="edit-3"></i> Notes
             </button>
             <button class="tab-btn" id="tab-analytics-btn" onclick="app.showTab('analytics')">
               <i data-lucide="bar-chart-2"></i> Analytics
@@ -659,12 +664,15 @@
             <!-- Saved Loops Tab -->
             <div id="tab-saved-loops" class="tab-panel">
               <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <h3>Saved Loops</h3>
-                <select id="saved-loops-sort" class="select-dropdown" onchange="app.renderSavedLoopsTab()" style="margin-left: 10px; max-width: 150px;">
-                  <option value="recent_add">Recently Added</option>
-                  <option value="recent_edit">Recently Edited</option>
-                  <option value="alpha">Alphabetical</option>
-                </select>
+                <h3 style="margin-bottom: 0;">Saved Loops</h3>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="text" class="search-input tab-search-input" data-target="saved-loops-list" placeholder="Search loops..." style="max-width: 150px;" onkeyup="app.filterTabList(this)">
+                  <select id="saved-loops-sort" class="select-dropdown" onchange="app.renderSavedLoopsTab()" style="max-width: 120px;">
+                    <option value="recent_add">Recently Added</option>
+                    <option value="recent_edit">Recently Edited</option>
+                    <option value="alpha">Alphabetical</option>
+                  </select>
+                </div>
               </div>
               <div class="notes-container">
                 <div class="active-notes-section" style="padding-top: 0;">
@@ -705,8 +713,9 @@
 
             <!-- Notes Tab -->
             <div id="tab-notes" class="tab-panel">
-              <div class="tab-header">
-                <h3>Video Notes</h3>
+              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 style="margin-bottom: 0;">Saved Notes</h3>
+                <input type="text" class="search-input tab-search-input" data-target="notes-list" placeholder="Search notes..." style="max-width: 200px;" onkeyup="app.filterTabList(this)">
               </div>
               <div class="notes-container">
                 <div class="notes-input-area">
@@ -748,8 +757,9 @@
 
             <!-- Discover Tab -->
             <div id="tab-discover" class="tab-panel active">
-              
-              <h3 style="margin-left: 12px;">Most watched youtube videos</h3>
+              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 style="margin-left: 12px; margin-bottom: 0;">Most watched youtube videos</h3>
+              </div>
               <div class="video-grid" id="discover-list">
                 <!-- Will be loaded dynamically -->
               </div>
@@ -767,9 +777,9 @@
 
             <!-- Favorites Tab -->
             <div id="tab-favorites" class="tab-panel">
-              <div class="tab-header">
-                <h3>My Favorites</h3>
-                <span class="badge" id="favorites-count-badge">0</span>
+              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 style="margin-bottom: 0;">My Favorites <span class="badge" id="favorites-count-badge">0</span></h3>
+                <input type="text" class="search-input tab-search-input" data-target="favorites-list" placeholder="Search favorites..." style="max-width: 200px;" onkeyup="app.filterTabList(this)">
               </div>
               <div class="auth-required-view" id="fav-auth-required">
                 <i data-lucide="lock" class="lock-icon"></i>
@@ -787,9 +797,9 @@
 
           <!-- Playlists Tab -->
           <div id="tab-playlists" class="tab-panel hidden">
-            <div class="tab-header">
-              <h2>Your Playlists</h2>
-              <span class="badge" id="playlists-count-badge">0</span>
+            <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <h2 style="margin-bottom: 0;">Your Playlists <span class="badge" id="playlists-count-badge">0</span></h2>
+              <input type="text" class="search-input tab-search-input" data-target="playlists-list" placeholder="Search playlists..." style="max-width: 200px;" onkeyup="app.filterTabList(this)">
             </div>
             
             <div class="empty-state hidden" id="playlists-auth-required">
@@ -816,11 +826,29 @@
             </div>
           </div>
 
+            <!-- Saved Sessions Tab -->
+            <div id="tab-saved-sessions" class="tab-panel hidden">
+              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 style="margin-bottom: 0;">Saved Sessions</h3>
+                <input type="text" class="search-input tab-search-input" data-target="saved-sessions-list" placeholder="Search sessions..." style="max-width: 200px;" onkeyup="app.filterTabList(this)">
+              </div>
+              <div class="video-list" id="saved-sessions-list">
+                <!-- Loaded dynamically -->
+              </div>
+              <div class="empty-state-list hidden" id="saved-sessions-empty">
+                <i data-lucide="package"></i>
+                <p>No saved sessions yet. Save your current loops and settings as a session below the player.</p>
+              </div>
+            </div>
+
             <!-- History Tab -->
             <div id="tab-history" class="tab-panel">
-              <div class="tab-header">
-                <h3>Loop History</h3>
-                <button class="btn-text" id="clear-history-btn" onclick="app.clearHistory()">Clear All</button>
+              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 style="margin-bottom: 0;">Loop History</h3>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="text" class="search-input tab-search-input" data-target="history-list" placeholder="Search history..." style="max-width: 150px;" onkeyup="app.filterTabList(this)">
+                  <button class="btn-text" id="clear-history-btn" onclick="app.clearHistory()">Clear All</button>
+                </div>
               </div>
               <div class="auth-required-view id-history-auth" id="history-auth-required">
                 <i data-lucide="lock" class="lock-icon"></i>

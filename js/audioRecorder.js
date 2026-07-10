@@ -74,16 +74,28 @@ class AudioRecorderMixin {
       
       // Save to recordings list
       const timestamp = new Date().toLocaleTimeString();
-      this.state.audio.recordings.push({
+      const newRec = {
         id: Date.now().toString(),
         name: `Recording at ${timestamp}`,
         blobUrl: this.state.audio.blobUrl,
         duration: this.state.audio.duration
-      });
+      };
+      
+      const isPremiumUser = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+      if (!isPremiumUser) {
+        this.state.audio.recordings = [newRec];
+      } else {
+        this.state.audio.recordings.push(newRec);
+      }
       
       this.renderRecordedAudioTab();
       
       document.getElementById('play-recording-btn')?.classList.remove('hidden');
+      const dlBtn = document.getElementById('download-recording-btn');
+      if (dlBtn) {
+        dlBtn.href = this.state.audio.blobUrl;
+        dlBtn.classList.remove('hidden');
+      }
       document.getElementById('delete-recording-btn')?.classList.remove('hidden');
       document.getElementById('recording-volume')?.classList.remove('hidden');
     };
@@ -222,6 +234,7 @@ class AudioRecorderMixin {
     }
     
     document.getElementById('play-recording-btn')?.classList.add('hidden');
+    document.getElementById('download-recording-btn')?.classList.add('hidden');
     document.getElementById('delete-recording-btn')?.classList.add('hidden');
     document.getElementById('recording-volume')?.classList.add('hidden');
     

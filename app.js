@@ -2321,6 +2321,8 @@ class WatchOnRepeat {
     this.elements.tabAnalyticsBtn.classList.toggle('active', tabId === 'analytics');
     const tabRecordedAudioBtn = document.getElementById('tab-recorded-audio-btn');
     if (tabRecordedAudioBtn) tabRecordedAudioBtn.classList.toggle('active', tabId === 'recorded-audio');
+    const tabSavedSessionsBtn = document.getElementById('tab-saved-sessions-btn');
+    if (tabSavedSessionsBtn) tabSavedSessionsBtn.classList.toggle('active', tabId === 'saved-sessions');
 
     const panels = {
       'discover': this.elements.tabDiscover,
@@ -2330,7 +2332,8 @@ class WatchOnRepeat {
       'saved-loops': this.elements.tabSavedLoops || document.getElementById('tab-saved-loops'),
       'notes': this.elements.tabNotes,
       'analytics': this.elements.tabAnalytics || document.getElementById('tab-analytics'),
-      'recorded-audio': document.getElementById('tab-recorded-audio')
+      'recorded-audio': document.getElementById('tab-recorded-audio'),
+      'saved-sessions': document.getElementById('tab-saved-sessions')
     };
 
     for (const [id, panel] of Object.entries(panels)) {
@@ -2350,6 +2353,8 @@ class WatchOnRepeat {
       this.renderHistoryTab();
     } else if (tabId === 'saved-loops') {
       this.renderSavedLoopsTab();
+    } else if (tabId === 'saved-sessions') {
+      this.renderSavedSessionsTab();
     } else if (tabId === 'trends') {
       this.renderTrendsTab();
     } else if (tabId === 'analytics') {
@@ -2548,7 +2553,7 @@ class WatchOnRepeat {
         // Add delete button specifically for favorites
         const delBtn = document.createElement('button');
         delBtn.className = 'icon-btn text-red-500';
-        delBtn.innerHTML = '<i data-lucide="x" style="width:16px;height:16px;"></i>';
+        delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>';
         delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: flex-start; margin-left: auto; background: rgba(0,0,0,0.3);";
         delBtn.onclick = (e) => {
           e.stopPropagation();
@@ -4392,6 +4397,131 @@ class WatchOnRepeat {
     this.renderSavedLoopsTab();
   }
 
+  // --- New Methods for Saved Sessions & Search ---
+  renderSavedSessionsTab() {
+    const listEl = document.getElementById('saved-sessions-list');
+    const emptyEl = document.getElementById('saved-sessions-empty');
+    if (!listEl) return;
+
+    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    const sessions = Object.values(localInstances).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+    if (sessions.length === 0) {
+      listEl.classList.add('hidden');
+      emptyEl.classList.remove('hidden');
+    } else {
+      emptyEl.classList.add('hidden');
+      listEl.classList.remove('hidden');
+      
+      let html = '';
+      sessions.forEach(sess => {
+        const d = new Date(sess.updatedAt);
+        const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        let urlParams = `?instance=${sess.id}`;
+        
+        html += `
+          <div class="video-card note-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid #333; border-radius: 8px; margin-bottom: 8px;">
+            <div style="flex: 1; min-width: 0;">
+              <a href="${urlParams}" style="text-decoration: none; color: white;">
+                <h4 style="margin: 0 0 4px 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${this.escapeHtml(sess.title)}</h4>
+                <div style="display: flex; gap: 8px; align-items: center; color: #888; font-size: 12px;">
+                  <span style="text-transform: uppercase;"><i data-lucide="${sess.platform === 'local' ? 'folder' : 'video'}" style="width: 12px; height: 12px; display: inline; margin-right: 2px;"></i>${sess.platform}</span>
+                  <span>&bull;</span>
+                  <span>${dateStr}</span>
+                </div>
+              </a>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" onclick="app.shareSavedSession('${sess.id}')" title="Share Session"><i data-lucide="link"></i></button>
+              <button class="btn btn-secondary btn-sm" onclick="app.deleteSavedSession('${sess.id}')" title="Delete Session"><i data-lucide="trash-2"></i></button>
+            </div>
+          </div>
+        `;
+      });
+      listEl.innerHTML = html;
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  async deleteSavedSession(id) {
+    const confirm = await this.showConfirmDialog("Delete Session", "Are you sure you want to delete this saved session? This will remove the packaged snapshot of loops, settings, and notes.");
+    if (!confirm) return;
+    
+    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    if (localInstances[id]) {
+      delete localInstances[id];
+      localStorage.setItem('wor_instances', JSON.stringify(localInstances));
+      this.showToast("Session deleted", "trash-2");
+      this.renderSavedSessionsTab();
+    }
+  }
+
+  async shareSavedSession(id) {
+    const url = new URL(window.location);
+    url.search = `?instance=${id}`;
+    
+    try {
+      await navigator.clipboard.writeText(url.href);
+      this.showToast("Session link copied to clipboard!", "link");
+    } catch (err) {
+      this.showToast("Failed to copy link", "alert-triangle");
+    }
+  }
+
+  filterTabList(inputEl) {
+    const targetId = inputEl.getAttribute('data-target');
+    const listEl = document.getElementById(targetId);
+    if (!listEl) return;
+    
+    const term = inputEl.value.toLowerCase();
+    let items = Array.from(listEl.children);
+    
+    if (targetId === 'saved-loops-list') {
+      items.forEach(groupDiv => {
+        if(groupDiv.id === 'saved-loops-empty' || groupDiv.id === 'saved-loops-bulk-actions') return;
+        let matchInGroup = false;
+        const groupTitle = groupDiv.querySelector('span[style*="font-weight: 500"]')?.textContent?.toLowerCase() || '';
+        const segmentItems = groupDiv.querySelectorAll('.saved-loop-item-checkbox');
+        
+        segmentItems.forEach(checkbox => {
+          const row = checkbox.closest('div[style*="display: flex"]');
+          if (!row) return;
+          const rowText = row.textContent.toLowerCase();
+          if (rowText.includes(term) || groupTitle.includes(term)) {
+            row.style.display = 'flex';
+            matchInGroup = true;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+        
+        if (matchInGroup || groupTitle.includes(term)) {
+           groupDiv.style.display = 'flex';
+        } else {
+           groupDiv.style.display = 'none';
+        }
+      });
+      return;
+    }
+
+    items.forEach(item => {
+      if (item.classList.contains('empty-state-list') || item.classList.contains('empty-state')) return;
+      
+      const text = item.textContent.toLowerCase();
+      if (text.includes(term)) {
+        item.style.display = item.classList.contains('video-card') ? 'flex' : (item.style.display === 'none' ? '' : item.style.display);
+        if(item.classList.contains('video-card') || item.tagName === 'DIV') {
+          item.style.display = 'flex'; 
+        } else {
+          item.style.display = 'block';
+        }
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
   renderAnalyticsTab() {
     const db = this.getDb('analytics');
     if (!db.weeklyTime) db.weeklyTime = {};
@@ -4469,7 +4599,7 @@ class WatchOnRepeat {
       
       const delBtn = document.createElement('button');
       delBtn.className = 'icon-btn text-red-500';
-      delBtn.innerHTML = '<i data-lucide="x" style="width:16px;height:16px;"></i>';
+      delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>';
       delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: center; margin-left: auto; background: rgba(0,0,0,0.3);";
       delBtn.onclick = (e) => {
         e.stopPropagation();
