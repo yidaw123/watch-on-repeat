@@ -2093,6 +2093,7 @@ class WatchOnRepeat {
     // Update personal lifetime loops (Main number now)
     if (this.elements.personalLoopCount) {
       this.elements.personalLoopCount.textContent = this.formatNumber(this.state.currentLifetimeLoops || 0);
+    }
     // Update personal lifetime loops (Subtext now)
     if (this.elements.personalLifetimeCount) {
       this.elements.personalLifetimeCount.textContent = this.formatNumber(this.state.personalLoops || 0);
