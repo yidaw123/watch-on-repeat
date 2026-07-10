@@ -934,11 +934,6 @@ class WatchOnRepeat {
   }
 
   async saveInstance() {
-    if (!this.state.user) {
-      this.openLoginModal();
-      this.showToast("Please log in to save sessions.", "info");
-      return;
-    }
     if (!this.state.currentVideo) {
       this.showToast("No video loaded.", "alert-circle");
       return;
@@ -965,9 +960,40 @@ class WatchOnRepeat {
     const customName = this.elements.loopNameInput ? this.elements.loopNameInput.value.trim() : "";
     const sessionTitle = customName || this.state.currentVideo.title;
 
+    // ALSO SAVE TO SAVED LOOPS TAB (analytics.segments) so they appear in the UI
+    const analyticsDb = this.getDb('analytics');
+    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    let segmentsToSave = [];
+    if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+      segmentsToSave = this.state.abLoop.multiSegments;
+    } else {
+      segmentsToSave = [{ start: this.state.abLoop.start, end: this.state.abLoop.end }];
+    }
+    segmentsToSave.forEach((seg, index) => {
+      const key = `${vId}_${seg.start}_${seg.end}`;
+      const finalName = segmentsToSave.length > 1 && customName ? `${customName} (Part ${index + 1})` : (customName || null);
+      if (!analyticsDb.segments[key]) {
+        analyticsDb.segments[key] = {
+          platform: this.state.currentPlatform,
+          videoId: this.state.currentVideo.id,
+          videoTitle: this.state.currentVideo.title,
+          start: seg.start,
+          end: seg.end,
+          name: finalName,
+          loops: 0,
+          savedAt: Date.now(),
+          editedAt: Date.now()
+        };
+      } else if (finalName) {
+        analyticsDb.segments[key].name = finalName;
+        analyticsDb.segments[key].editedAt = Date.now();
+      }
+    });
+    this.saveDb('analytics', analyticsDb);
+
     const instance = {
       id: uuid,
-      userId: this.state.user.id,
+      userId: this.state.user ? this.state.user.id : 'guest',
       videoId: this.state.currentVideo.id,
       platform: this.state.currentPlatform,
       title: sessionTitle,
@@ -989,6 +1015,16 @@ class WatchOnRepeat {
     if (this.elements.loopNameInput) this.elements.loopNameInput.value = '';
     
     this.showToast(`Session "${sessionTitle}" Saved Successfully!`, "check-circle");
+    
+    if (this.state.activeTab === 'analytics') this.renderAnalyticsTab();
+    if (this.state.activeTab === 'saved-loops') this.renderSavedLoopsTab();
+
+    if (!this.state.user && !this.state.guestPromptShown) {
+      this.state.guestPromptShown = true;
+      setTimeout(() => {
+        this.showToast("Loving the features? Create a free account to sync your sessions across devices!", "heart");
+      }, 3000);
+    }
   }
 
   // ==========================================
@@ -4253,13 +4289,15 @@ class WatchOnRepeat {
       
       let headerHtml = `
         <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333;">
-          <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
-          <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
-            <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;">
-              ${this.escapeHtml(videoGroup.title)}
-            </span>
-            <span style="font-size: 11px; color: #888; text-transform: uppercase;">${videoGroup.platform}</span>
-          </div>
+          <a href="?v=${encodeURIComponent(videoGroup.videoId)}&p=${videoGroup.platform}" style="display: flex; align-items: center; gap: 12px; flex: 1; text-decoration: none; color: inherit;">
+            <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
+            <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+              <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;">
+                ${this.escapeHtml(videoGroup.title)}
+              </span>
+              <span style="font-size: 11px; color: #888; text-transform: uppercase;">${videoGroup.platform}</span>
+            </div>
+          </a>
           <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${videoIdsString}', false)" title="Delete all loops for this video"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
         </div>
         <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
