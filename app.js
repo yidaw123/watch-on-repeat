@@ -4218,7 +4218,6 @@ class WatchOnRepeat {
       
       let headerHtml = `
         <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333;">
-          <input type="checkbox" class="saved-loop-group-checkbox" data-video-id="${videoGroup.platform}_${videoGroup.videoId}" onchange="app.toggleSelectSavedLoopGroup(this, '${videoGroup.platform}_${videoGroup.videoId}')" style="cursor: pointer;">
           <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
           <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
             <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;">
@@ -4226,7 +4225,7 @@ class WatchOnRepeat {
             </span>
             <span style="font-size: 11px; color: #888; text-transform: uppercase;">${videoGroup.platform}</span>
           </div>
-          <button class="btn btn-secondary btn-sm" onclick="app.deleteSavedLoops('${videoIdsString}')" title="Delete all loops for this video"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${videoIdsString}', false)" title="Delete all loops for this video"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
         </div>
         <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
       `;
@@ -4241,7 +4240,7 @@ class WatchOnRepeat {
               <span style="font-weight: 500; font-size: 13px;">${this.escapeHtml(seg.name || 'Unnamed Loop')}</span>
               <span style="font-size: 12px; color: #888; font-family: monospace;">${this.formatTime(seg.start)} - ${this.formatTime(seg.end)}</span>
             </a>
-            <button class="btn btn-secondary btn-sm" onclick="app.deleteSavedLoops('${seg.id}')" title="Delete this loop" style="padding: 0 8px;"><i data-lucide="x" style="width: 14px; height: 14px;"></i></button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${seg.id}', true)" title="Delete this loop" style="padding: 0 8px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
           </div>
         `;
       });
@@ -4249,6 +4248,8 @@ class WatchOnRepeat {
       div.innerHTML = headerHtml + segmentsHtml + `</div>`;
       listEl.appendChild(div);
     });
+    
+    if (window.lucide) window.lucide.createIcons();
   }
 
   toggleSelectAllSavedLoops(event) {
@@ -4259,24 +4260,14 @@ class WatchOnRepeat {
   }
 
   toggleSelectSavedLoopGroup(checkbox, videoId) {
-    const isChecked = checkbox.checked;
-    document.querySelectorAll(`.saved-loop-item-checkbox[data-video-id="${videoId}"]`).forEach(cb => cb.checked = isChecked);
-    this.checkSavedLoopSelection();
+    // Deprecated, no group checkbox anymore
   }
 
   checkSavedLoopSelection() {
     const items = document.querySelectorAll('.saved-loop-item-checkbox');
     const checkedItems = document.querySelectorAll('.saved-loop-item-checkbox:checked');
-    const groups = document.querySelectorAll('.saved-loop-group-checkbox');
     const selectAll = document.getElementById('saved-loops-select-all');
     const bulkDeleteBtn = document.getElementById('saved-loops-bulk-delete-btn');
-    
-    groups.forEach(group => {
-      const vidId = group.getAttribute('data-video-id');
-      const groupItems = document.querySelectorAll(`.saved-loop-item-checkbox[data-video-id="${vidId}"]`);
-      const checkedGroupItems = document.querySelectorAll(`.saved-loop-item-checkbox[data-video-id="${vidId}"]:checked`);
-      group.checked = groupItems.length > 0 && groupItems.length === checkedGroupItems.length;
-    });
     
     if (selectAll && items.length > 0) {
       selectAll.checked = items.length === checkedItems.length;
