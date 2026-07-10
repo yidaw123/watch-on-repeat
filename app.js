@@ -4304,7 +4304,7 @@ class WatchOnRepeat {
       `;
       
       let segmentsHtml = '';
-      videoGroup.segments.forEach(seg => {
+      videoGroup.segments.sort((a, b) => a.start - b.start).forEach(seg => {
         const urlParams = `?v=${encodeURIComponent(seg.videoId)}&p=${seg.platform}&start=${seg.start}&end=${seg.end}`;
         segmentsHtml += `
           <div style="display: flex; align-items: center; gap: 8px;">
