@@ -2505,7 +2505,7 @@ class WatchOnRepeat {
         const delBtn = document.createElement('button');
         delBtn.className = 'icon-btn text-red-500';
         delBtn.innerHTML = '<i data-lucide="x" style="width:16px;height:16px;"></i>';
-        delBtn.style = "position: absolute; right: 8px; top: 8px; padding: 4px; background: rgba(0,0,0,0.5); border-radius: 4px; z-index: 10;";
+        delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: flex-start; margin-left: auto; background: rgba(0,0,0,0.3);";
         delBtn.onclick = (e) => {
           e.stopPropagation();
           this.deleteFavorite(f.videoId || f.id, f.platform);

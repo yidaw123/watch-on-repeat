@@ -462,10 +462,10 @@ h1, h2, h3, h4, .brand-name {
 /* Main Container Grid Layout */
 .main-container {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 420px;
   gap: 2rem;
   padding: 2rem;
-  max-width: 1400px;
+  max-width: 1450px;
   margin: 0 auto;
   flex: 1;
   width: 100%;
