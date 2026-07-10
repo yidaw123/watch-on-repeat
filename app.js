@@ -2407,7 +2407,7 @@ class WatchOnRepeat {
           discoverVideos = data.map(d => ({
             videoId: d.video_id,
             platform: d.platform,
-            title: `Trending ${d.platform} video`,
+            title: d.title || `Trending ${d.platform} video`,
             globalLoops: d.global_loops
           }));
         }
