@@ -2002,13 +2002,9 @@ class WatchOnRepeat {
 
     // Increment personal loops (this video)
     this.state.personalLoops++;
-    this.elements.personalLoopCount.textContent = this.formatNumber(this.state.personalLoops);
     
     // Increment session total loops (all videos)
     this.state.sessionTotalLoops++;
-    if (this.elements.sessionTotalLoopCount) {
-      this.elements.sessionTotalLoopCount.textContent = this.formatNumber(this.state.sessionTotalLoops);
-    }
 
     // Remind free/guest users to sign up every 50 loops
     if (!this.state.user && this.state.sessionTotalLoops > 0 && this.state.sessionTotalLoops % 50 === 0) {
@@ -2094,27 +2090,28 @@ class WatchOnRepeat {
   updateStatsUI() {
     const video = this.state.currentVideo;
 
-    // Update personal session loops
+    // Update personal lifetime loops (Main number now)
     if (this.elements.personalLoopCount) {
-      this.elements.personalLoopCount.textContent = this.formatNumber(this.state.personalLoops || 0);
-    }
-
-    // Update personal lifetime loops
+      this.elements.personalLoopCount.textContent = this.formatNumber(this.state.currentLifetimeLoops || 0);
+    // Update personal lifetime loops (Subtext now)
     if (this.elements.personalLifetimeCount) {
-      this.elements.personalLifetimeCount.textContent = this.formatNumber(this.state.currentLifetimeLoops || 0);
+      this.elements.personalLifetimeCount.textContent = this.formatNumber(this.state.personalLoops || 0);
     }
 
-    // Update all-time loops for all videos
-    if (this.elements.allTimeTotalCount) {
+    // Update all-time loops for all videos (Main number now)
+    if (this.elements.sessionTotalLoopCount) {
       let historyLoops = 0;
       if (this.state.user) {
         const history = this.getDb('history');
         const userHistory = history.filter(h => h.userId === this.state.user.id && (!video || h.videoId !== video.id));
         historyLoops = userHistory.reduce((sum, h) => sum + (h.loopsCount || 0), 0);
-        this.elements.allTimeTotalCount.textContent = this.formatNumber(historyLoops + (this.state.currentLifetimeLoops || 0));
-      } else {
-        this.elements.allTimeTotalCount.textContent = this.formatNumber(this.state.sessionTotalLoops || 0);
       }
+      this.elements.sessionTotalLoopCount.textContent = this.formatNumber(historyLoops + (this.state.currentLifetimeLoops || 0));
+    }
+    
+    // Update session loops for all videos (Subtext now)
+    if (this.elements.allTimeTotalCount) {
+      this.elements.allTimeTotalCount.textContent = this.formatNumber(this.state.sessionTotalLoops || 0);
     }
 
     if (!video) {
@@ -4294,7 +4291,7 @@ class WatchOnRepeat {
       
       let headerHtml = `
         <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333;">
-          <a href="?v=${encodeURIComponent(videoGroup.videoId)}&p=${videoGroup.platform}" style="display: flex; align-items: center; gap: 12px; flex: 1; text-decoration: none; color: inherit;">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer;" onclick="app.loadVideo('${videoGroup.videoId}', '${videoGroup.platform}')">
             <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
             <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
               <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;">
@@ -4314,10 +4311,10 @@ class WatchOnRepeat {
         segmentsHtml += `
           <div style="display: flex; align-items: center; gap: 8px;">
             <input type="checkbox" class="saved-loop-item-checkbox" data-video-id="${videoGroup.platform}_${videoGroup.videoId}" value="${seg.id}" onchange="app.checkSavedLoopSelection()" style="cursor: pointer;">
-            <a href="${urlParams}" style="flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; text-decoration: none; color: white; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
+            <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; color: white; transition: background 0.2s; cursor: pointer;" onclick="history.pushState(null, '', '${urlParams}'); app.handleRouting();" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
               <span style="font-weight: 500; font-size: 13px;">${this.escapeHtml(seg.name || 'Unnamed Loop')}</span>
               <span style="font-size: 12px; color: #888; font-family: monospace;">${this.formatTime(seg.start)} - ${this.formatTime(seg.end)}</span>
-            </a>
+            </div>
             <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${seg.id}', true)" title="Delete this loop" style="padding: 0 8px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
           </div>
         `;
@@ -4420,17 +4417,19 @@ class WatchOnRepeat {
         
         let urlParams = `?instance=${sess.id}`;
         
+        const thumbUrl = this.getThumbnailUrl(sess.platform, sess.videoId);
         html += `
           <div class="video-card note-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid #333; border-radius: 8px; margin-bottom: 8px;">
-            <div style="flex: 1; min-width: 0;">
-              <a href="${urlParams}" style="text-decoration: none; color: white;">
-                <h4 style="margin: 0 0 4px 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${this.escapeHtml(sess.title)}</h4>
+            <div style="flex: 1; min-width: 0; display: flex; gap: 12px; align-items: center; cursor: pointer;" onclick="app.loadInstance('${sess.id}')">
+              <img src="${this.escapeHtml(thumbUrl)}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px;" alt="thumbnail" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
+              <div style="flex: 1; min-width: 0;">
+                <h4 style="margin: 0 0 4px 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: white;">${this.escapeHtml(sess.title)}</h4>
                 <div style="display: flex; gap: 8px; align-items: center; color: #888; font-size: 12px;">
                   <span style="text-transform: uppercase;"><i data-lucide="${sess.platform === 'local' ? 'folder' : 'video'}" style="width: 12px; height: 12px; display: inline; margin-right: 2px;"></i>${sess.platform}</span>
                   <span>&bull;</span>
                   <span>${dateStr}</span>
                 </div>
-              </a>
+              </div>
             </div>
             <div style="display: flex; gap: 8px;">
               <button class="btn btn-secondary btn-sm" onclick="app.shareSavedSession('${sess.id}')" title="Share Session"><i data-lucide="link"></i></button>

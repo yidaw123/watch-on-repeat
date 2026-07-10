@@ -666,8 +666,8 @@
               <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <h3 style="margin-bottom: 0;">Saved Loops</h3>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                  <input type="text" class="search-input tab-search-input" data-target="saved-loops-list" placeholder="Search loops..." style="max-width: 150px;" onkeyup="app.filterTabList(this)">
-                  <select id="saved-loops-sort" class="select-dropdown" onchange="app.renderSavedLoopsTab()" style="max-width: 120px;">
+                  <input type="text" class="search-input tab-search-input" data-target="saved-loops-list" placeholder="Search loops..." style="max-width: 200px;" onkeyup="app.filterTabList(this)">
+                  <select id="saved-loops-sort" class="select-dropdown" onchange="app.renderSavedLoopsTab()" style="max-width: 140px;">
                     <option value="recent_add">Recently Added</option>
                     <option value="recent_edit">Recently Edited</option>
                     <option value="alpha">Alphabetical</option>
@@ -878,10 +878,10 @@
             </div>
             <div class="stat-details">
               <div class="stat-value" id="personal-loop-count">0</div>
-              <div class="stat-label">Your Loops for Current Video (Session)</div>
+              <div class="stat-label">Your Loops for Current Video</div>
             </div>
             <div class="stat-sub">
-              Lifetime: <span id="personal-lifetime-count">0</span>
+              Session: <span id="personal-lifetime-count">0</span>
             </div>
           </div>
           
@@ -891,10 +891,10 @@
             </div>
             <div class="stat-details">
               <div class="stat-value" id="session-total-loop-count">0</div>
-              <div class="stat-label">Your Loops for All Videos (Session)</div>
+              <div class="stat-label">Your Loops for All Videos</div>
             </div>
             <div class="stat-sub">
-              Lifetime: <span id="all-time-total-count">0</span>
+              Session: <span id="all-time-total-count">0</span>
             </div>
           </div>
 
