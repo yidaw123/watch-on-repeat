@@ -1633,7 +1633,6 @@ class WatchOnRepeat {
       if (DEBUG_MODE) console.warn("noembed proxy failed", err);
     }
     
-    // Generate an appealing fake title for unrecognized videos based on the ID to make it look realistic
     let baseId = id;
     if (platform === 'twitch') {
       const parts = id.split('=');
@@ -1642,9 +1641,7 @@ class WatchOnRepeat {
     }
     if (platform === 'wistia') return `Wistia Video`;
 
-    const prefixes = ["Chill Beats", "Synthwave Session", "Ambient Relaxation", "Nature Sounds", "Epic Orchestral", "Developer Focus", "Cozy Coffee Shop", "Live Music Session"];
-    const index = String(baseId).charCodeAt(0) % prefixes.length;
-    return `${prefixes[index]}`;
+    return `Unknown Video`;
   }
 
   // --- YouTube Iframe Controller ---
@@ -4350,6 +4347,21 @@ class WatchOnRepeat {
     
     this.elements.analyticsWeeklyTime.textContent = formatH(db.weeklyTime[weekStr] || 0);
     
+    const fakeTitles = ["Chill Beats", "Synthwave Session", "Ambient Relaxation", "Nature Sounds", "Epic Orchestral", "Developer Focus", "Cozy Coffee Shop", "Live Music Session", "lofi hip hop radio - beats to relax/study to"];
+    
+    let hasFake = false;
+    if (db.segments) {
+      for (const key in db.segments) {
+        if (fakeTitles.includes(db.segments[key].videoTitle) || fakeTitles.includes(db.segments[key].name)) {
+          delete db.segments[key];
+          hasFake = true;
+        }
+      }
+      if (hasFake) {
+        this.saveDb('analytics', db);
+      }
+    }
+
     const segments = Object.values(db.segments || {});
     segments.sort((a,b) => b.loops - a.loops);
     
@@ -4385,6 +4397,17 @@ class WatchOnRepeat {
           ${seg.loops} <span style="font-size:0.7rem; color:var(--text-muted); font-weight:normal;">loops</span>
         </div>
       `;
+      
+      const delBtn = document.createElement('button');
+      delBtn.className = 'icon-btn text-red-500';
+      delBtn.innerHTML = '<i data-lucide="x" style="width:16px;height:16px;"></i>';
+      delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: center; margin-left: auto; background: rgba(0,0,0,0.3);";
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.deleteNamedSegment(seg.id);
+      };
+      div.appendChild(delBtn);
+      
       this.elements.analyticsSegmentsList.appendChild(div);
     });
   }
