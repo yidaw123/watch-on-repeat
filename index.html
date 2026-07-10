@@ -371,11 +371,11 @@
             
             <div class="playback-controls" style="display: flex; align-items: flex-start; justify-content: flex-start; gap: 20px;">
               <div style="display: flex; gap: 16px; align-items: center;">
-                <div class="input-group" id="save-loop-group">
-                  <input type="text" id="loop-name-input" placeholder="Name loop..." style="width: 110px;">
-                  <button class="btn btn-primary btn-sm" aria-label="Save Loop" onclick="app.saveNamedLoop()" title="Save Loop"><i data-lucide="save"></i></button>
+                <input type="text" id="loop-name-input" class="search-input" placeholder="Name session..." style="width: 140px; padding: 6px 12px; height: 32px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <button class="btn btn-primary btn-sm" id="save-session-btn" onclick="app.saveInstance()"><i data-lucide="hard-drive"></i> Save Session</button>
+                  <i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted); cursor: help;" title="Save session saves all loop segments, playback settings, and notes."></i>
                 </div>
-                <button class="btn btn-primary btn-sm" id="save-session-btn" onclick="app.saveInstance()"><i data-lucide="hard-drive"></i> Save Session</button>
                 <button class="btn btn-primary btn-sm" id="toggle-share-btn" onclick="app.generateShareableClip()"><i data-lucide="link"></i> Share Clip</button>
               </div>
               

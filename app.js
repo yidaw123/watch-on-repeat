@@ -962,12 +962,15 @@ class WatchOnRepeat {
       notes: (this.getDb('notes')[`${this.state.currentPlatform}_${this.state.currentVideo.id}`] || [])
     };
     
+    const customName = this.elements.loopNameInput ? this.elements.loopNameInput.value.trim() : "";
+    const sessionTitle = customName || this.state.currentVideo.title;
+
     const instance = {
       id: uuid,
       userId: this.state.user.id,
       videoId: this.state.currentVideo.id,
       platform: this.state.currentPlatform,
-      title: this.state.currentVideo.title,
+      title: sessionTitle,
       settings: settings,
       updatedAt: new Date().toISOString()
     };
@@ -983,7 +986,9 @@ class WatchOnRepeat {
     url.search = `?instance=${uuid}`;
     window.history.replaceState({}, '', url);
     
-    this.showToast("Session Saved Successfully!", "check-circle");
+    if (this.elements.loopNameInput) this.elements.loopNameInput.value = '';
+    
+    this.showToast(`Session "${sessionTitle}" Saved Successfully!`, "check-circle");
   }
 
   // ==========================================
