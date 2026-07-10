@@ -4144,26 +4144,35 @@ class WatchOnRepeat {
     
     const db = this.getDb('analytics');
     const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
-    const start = this.state.abLoop.start;
-    const end = this.state.abLoop.end;
-    const key = `${vId}_${start}_${end}`;
     
-    if (!db.segments[key]) {
-      db.segments[key] = {
-        platform: this.state.currentPlatform,
-        videoId: this.state.currentVideo.id,
-        videoTitle: this.state.currentVideo.title,
-        start: start,
-        end: end,
-        name: name,
-        loops: 0,
-        savedAt: Date.now(),
-        editedAt: Date.now()
-      };
+    let segmentsToSave = [];
+    if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+      segmentsToSave = this.state.abLoop.multiSegments;
     } else {
-      db.segments[key].name = name;
-      db.segments[key].editedAt = Date.now();
+      segmentsToSave = [{ start: this.state.abLoop.start, end: this.state.abLoop.end }];
     }
+
+    segmentsToSave.forEach((seg, index) => {
+      const key = `${vId}_${seg.start}_${seg.end}`;
+      const finalName = segmentsToSave.length > 1 ? `${name} (Part ${index + 1})` : name;
+      
+      if (!db.segments[key]) {
+        db.segments[key] = {
+          platform: this.state.currentPlatform,
+          videoId: this.state.currentVideo.id,
+          videoTitle: this.state.currentVideo.title,
+          start: seg.start,
+          end: seg.end,
+          name: finalName,
+          loops: 0,
+          savedAt: Date.now(),
+          editedAt: Date.now()
+        };
+      } else {
+        db.segments[key].name = finalName;
+        db.segments[key].editedAt = Date.now();
+      }
+    });
     this.saveDb('analytics', db);
     this.elements.loopNameInput.value = '';
     this.showToast(`Loop saved as "${name}"`, "save");
