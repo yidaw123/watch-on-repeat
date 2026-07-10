@@ -2401,12 +2401,18 @@ class WatchOnRepeat {
           .limit(10);
         
         if (data && data.length > 0) {
-          discoverVideos = data.map(d => ({
-            videoId: d.video_id,
-            platform: d.platform,
-            title: d.title || `Trending ${d.platform} video`,
-            globalLoops: d.global_loops
-          }));
+          const fetchPromises = data.map(async (d) => {
+            let title = d.title;
+            if (!title) title = await this.fetchVideoTitleMock(d.video_id, d.platform);
+            if (title === 'Unknown Video' || !title) title = `Trending ${d.platform} video`;
+            return {
+              videoId: d.video_id,
+              platform: d.platform,
+              title: title,
+              globalLoops: d.global_loops
+            };
+          });
+          discoverVideos = await Promise.all(fetchPromises);
         }
       }
       this.state.discoverData = discoverVideos;
@@ -2587,7 +2593,19 @@ class WatchOnRepeat {
     if (window.supabaseClient) {
       const { data } = await supabaseClient.from('global_stats').select('*').neq('platform', 'local').order('global_loops', { ascending: false }).limit(10);
       if (data) {
-        trends = data.map(d => ({ videoId: d.video_id, platform: d.platform, globalLoops: d.global_loops, globalPlays: d.global_plays, title: `Trending ${d.platform} video` }));
+        const fetchPromises = data.map(async (d) => {
+          let title = d.title;
+          if (!title) title = await this.fetchVideoTitleMock(d.video_id, d.platform);
+          if (title === 'Unknown Video' || !title) title = `Trending ${d.platform} video`;
+          return {
+            videoId: d.video_id,
+            platform: d.platform,
+            globalLoops: d.global_loops,
+            globalPlays: d.global_plays,
+            title: title
+          };
+        });
+        trends = await Promise.all(fetchPromises);
       }
     }
 
