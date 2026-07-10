@@ -4162,7 +4162,10 @@ class WatchOnRepeat {
 
   renderSavedLoopsTab() {
     const db = this.getDb('analytics');
-    const segmentsArr = Object.values(db.segments || {}).filter(seg => seg.name && seg.name.trim() !== '');
+    const segmentsArr = Object.entries(db.segments || {}).map(([key, seg]) => {
+      seg.id = key;
+      return seg;
+    }).filter(seg => seg.name && seg.name.trim() !== '');
     
     // Sort logic
     const sortSelect = document.getElementById('saved-loops-sort');
@@ -4313,7 +4316,9 @@ class WatchOnRepeat {
     });
     
     this.saveDb('analytics', db);
-    this.showToast(`Deleted ${ids.length} loop${ids.length > 1 ? 's' : ''}`, "trash-2");
+    if (!skipConfirm) {
+      this.showToast(`Deleted ${ids.length} loop${ids.length > 1 ? 's' : ''}`, "trash-2");
+    }
     this.renderSavedLoopsTab();
   }
 
@@ -4353,7 +4358,10 @@ class WatchOnRepeat {
       }
     }
 
-    const segments = Object.values(db.segments || {});
+    const segments = Object.entries(db.segments || {}).map(([key, seg]) => {
+      seg.id = key;
+      return seg;
+    });
     segments.sort((a,b) => b.loops - a.loops);
     
     this.elements.analyticsSegmentsList.innerHTML = '';
