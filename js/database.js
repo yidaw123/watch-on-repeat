@@ -22,6 +22,9 @@ class DatabaseMixin {
         segments: {}
       }));
     }
+    if (!localStorage.getItem('wor_instances')) {
+      localStorage.setItem('wor_instances', JSON.stringify({}));
+    }
     
     // Global stats are now fetched exclusively from Supabase
 
@@ -79,6 +82,24 @@ class DatabaseMixin {
       if (settings) {
         localStorage.setItem('wor_shortcuts', JSON.stringify(settings.shortcuts || {}));
         localStorage.setItem('wor_analytics', JSON.stringify(settings.analytics || {"totalTime":0,"segments":{}}));
+      }
+
+      const { data: instances } = await supabaseClient.from('video_instances').select('*').eq('user_id', this.state.user.id);
+      if (instances) {
+        const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+        instances.forEach(inst => {
+          localInstances[inst.id] = {
+            id: inst.id,
+            videoId: inst.video_id,
+            platform: inst.platform,
+            title: inst.title,
+            settings: inst.settings,
+            userId: inst.user_id,
+            createdAt: inst.created_at,
+            updatedAt: inst.updated_at
+          };
+        });
+        localStorage.setItem('wor_instances', JSON.stringify(localInstances));
       }
 
       const { data: fullHistory } = await supabaseClient.from('user_history').select('*').eq('user_id', this.state.user.id);
@@ -169,6 +190,26 @@ class DatabaseMixin {
         await supabaseClient.from('user_settings').upsert({ user_id: this.state.user.id, shortcuts: data });
       } else if (key === 'analytics') {
         await supabaseClient.from('user_settings').upsert({ user_id: this.state.user.id, analytics: data });
+      } else if (key === 'instances') {
+        const instancesToPush = [];
+        for (const uuid in data) {
+          const inst = data[uuid];
+          if (!inst.userId || inst.userId === this.state.user.id) {
+            instancesToPush.push({
+              id: inst.id,
+              user_id: this.state.user.id,
+              video_id: inst.videoId,
+              platform: inst.platform,
+              title: inst.title,
+              settings: inst.settings,
+              updated_at: inst.updatedAt || new Date().toISOString()
+            });
+          }
+        }
+        for (const inst of instancesToPush) {
+          const { error } = await supabaseClient.from('video_instances').upsert(inst);
+          if (error) console.error("Instance upsert failed:", error);
+        }
       }
     } catch (e) {
       console.error("Push error:", e);

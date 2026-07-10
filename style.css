@@ -826,6 +826,7 @@ h1, h2, h3, h4, .brand-name {
   display: none;
   flex-direction: column;
   gap: 1rem;
+  padding: 0 16px 16px 16px;
 }
 
 .tab-panel.active {
@@ -2229,13 +2230,14 @@ input[type="checkbox"]:focus {
 
 .playlist-card-modern {
   position: relative;
-  background: transparent;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 12px;
   border-radius: var(--radius-md);
   transition: transform 0.2s ease;
+  overflow: hidden;
 }
 
 .playlist-card-modern:hover {
@@ -2246,7 +2248,6 @@ input[type="checkbox"]:focus {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  margin-top: 12px; /* Space for the stacked effect */
 }
 
 /* Stacked card effect */
@@ -2318,6 +2319,7 @@ input[type="checkbox"]:focus {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 12px;
 }
 
 .playlist-card-modern-title {

@@ -690,6 +690,11 @@ class WatchOnRepeat {
     }
 
     const urlParams = new URLSearchParams(window.location.search);
+    const instanceId = urlParams.get('instance');
+    if (instanceId) {
+      this.loadInstance(instanceId);
+      return;
+    }
     const playlistId = urlParams.get('playlist');
     if (playlistId) {
       this.fetchSharedPlaylist(playlistId);
@@ -860,6 +865,125 @@ class WatchOnRepeat {
     try {
       window.history.pushState({}, document.title, window.location.href.split('?')[0]);
     } catch (e) {}
+  }
+
+  async loadInstance(uuid) {
+    try {
+      this.state.currentInstanceId = uuid;
+      
+      let instance = null;
+      // Try local storage first
+      const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+      if (localInstances[uuid]) {
+        instance = localInstances[uuid];
+      }
+      
+      // If not local, try fetching from Supabase (public read)
+      if (!instance && window.supabaseClient) {
+        const { data, error } = await supabaseClient.from('video_instances').select('*').eq('id', uuid).single();
+        if (data && !error) {
+          instance = {
+            id: data.id,
+            videoId: data.video_id,
+            platform: data.platform,
+            title: data.title,
+            settings: data.settings
+          };
+          localInstances[uuid] = instance;
+          localStorage.setItem('wor_instances', JSON.stringify(localInstances));
+        }
+      }
+      
+      if (!instance) {
+        this.showToast("Could not find this saved session.", "alert-circle");
+        this.loadHome();
+        return;
+      }
+      
+      const settings = instance.settings || {};
+      
+      // Inject settings into URL params silently so loadVideo picks them up
+      const url = new URL(window.location);
+      url.searchParams.set('v', instance.videoId);
+      url.searchParams.set('p', instance.platform);
+      
+      if (settings.start !== undefined) url.searchParams.set('start', settings.start);
+      if (settings.end !== undefined) url.searchParams.set('end', settings.end);
+      if (settings.playbackRate !== undefined) url.searchParams.set('rate', settings.playbackRate);
+      
+      if (settings.multiSegments && settings.multiSegments.length > 0) {
+        const segs = settings.multiSegments.map(s => `${s.start}-${s.end}@${s.speed || 1}`).join(',');
+        url.searchParams.set('segments', segs);
+      }
+      
+      if (settings.notes && settings.notes.length > 0) {
+        try {
+          const notesStr = btoa(encodeURIComponent(JSON.stringify(settings.notes)));
+          url.searchParams.set('n', notesStr);
+        } catch(e){}
+      }
+      
+      window.history.replaceState({}, '', url);
+      this.handleRouting(); // Re-trigger with injected parameters
+      
+    } catch (e) {
+      if (DEBUG_MODE) console.error("Error loading instance", e);
+      this.showToast("Failed to load instance.", "alert-circle");
+      this.loadHome();
+    }
+  }
+
+  async saveInstance() {
+    if (!this.state.user) {
+      this.openLoginModal();
+      this.showToast("Please log in to save sessions.", "info");
+      return;
+    }
+    if (!this.state.currentVideo) {
+      this.showToast("No video loaded.", "alert-circle");
+      return;
+    }
+    if (this.state.isReadOnlyShared) {
+      this.showToast("Read-only mode. Cannot save this instance.", "lock");
+      return;
+    }
+    
+    // Generate UUID if we don't have one
+    const uuid = this.state.currentInstanceId || ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    }));
+    
+    const settings = {
+      start: this.state.abLoop.start,
+      end: this.state.abLoop.end,
+      playbackRate: this.state.playbackRate,
+      multiSegments: this.state.abLoop.multiSegments || [],
+      notes: (this.getDb('notes')[`${this.state.currentPlatform}_${this.state.currentVideo.id}`] || [])
+    };
+    
+    const instance = {
+      id: uuid,
+      userId: this.state.user.id,
+      videoId: this.state.currentVideo.id,
+      platform: this.state.currentPlatform,
+      title: this.state.currentVideo.title,
+      settings: settings,
+      updatedAt: new Date().toISOString()
+    };
+    
+    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    localInstances[uuid] = instance;
+    this.saveDb('instances', localInstances);
+    
+    this.state.currentInstanceId = uuid;
+    
+    // Update URL gracefully
+    const url = new URL(window.location);
+    url.search = `?instance=${uuid}`;
+    window.history.replaceState({}, '', url);
+    
+    this.showToast("Session Saved Successfully!", "check-circle");
   }
 
   // ==========================================
@@ -1283,6 +1407,13 @@ class WatchOnRepeat {
 
   saveLoopData() {
     if (!this.state.currentVideo || !this.state.currentVideo.id) return;
+    
+    // If we're inside a specific instance, auto-save to that instance!
+    if (this.state.currentInstanceId) {
+       this.saveInstance();
+       return;
+    }
+
     const id = this.state.currentVideo.id;
     const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
     
@@ -1313,9 +1444,24 @@ class WatchOnRepeat {
 
   loadLoopData(id) {
     if (!id) return;
+    const dur = this.state.currentVideoDuration || 0;
+    
+    if (this.state.currentInstanceId) {
+      const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+      const instance = localInstances[this.state.currentInstanceId];
+      if (instance && instance.settings) {
+        this.state.abLoop.start = instance.settings.start || 0;
+        this.state.abLoop.end = instance.settings.end || dur;
+        if (dur > 0 && this.state.abLoop.end > dur) this.state.abLoop.end = dur;
+        this.state.abLoop.multiSegments = instance.settings.multiSegments || [];
+        this.state.isMultiSegment = this.state.abLoop.multiSegments.length > 0;
+        this.state.abLoop.active = true;
+        return;
+      }
+    }
+
     const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
     const data = savedLoops[id];
-    const dur = this.state.currentVideoDuration || 0;
     
     // First apply base data if available
     if (data) {
@@ -2322,11 +2468,14 @@ class WatchOnRepeat {
   }
 
   renderFavoritesTab() {
+    const delAllBtn = document.getElementById('delete-all-favorites-btn');
+
     if (!this.state.user) {
       this.elements.favAuthRequired.classList.remove('hidden');
       this.elements.favoritesList.classList.add('hidden');
       this.elements.favoritesEmpty.classList.add('hidden');
       this.elements.favoritesCountBadge.textContent = '0';
+      if (delAllBtn) delAllBtn.classList.add('hidden');
       return;
     }
 
@@ -2338,10 +2487,12 @@ class WatchOnRepeat {
     if (favorites.length === 0) {
       this.elements.favoritesList.classList.add('hidden');
       this.elements.favoritesEmpty.classList.remove('hidden');
+      if (delAllBtn) delAllBtn.classList.add('hidden');
     } else {
       this.elements.favoritesEmpty.classList.add('hidden');
       this.elements.favoritesList.innerHTML = '';
       this.elements.favoritesList.classList.remove('hidden');
+      if (delAllBtn) delAllBtn.classList.remove('hidden');
       
       const historyDb = this.getDb('history').filter(h => h.userId === this.state.user.id);
       
@@ -2349,9 +2500,51 @@ class WatchOnRepeat {
         const historyItem = historyDb.find(h => h.videoId === f.videoId && h.platform === f.platform);
         f.loopsCount = historyItem ? historyItem.loopsCount : 0;
         const card = this.createVideoCard(f, true); // true to show loopsCount instead of global
+        
+        // Add delete button specifically for favorites
+        const delBtn = document.createElement('button');
+        delBtn.className = 'icon-btn text-red-500';
+        delBtn.innerHTML = '<i data-lucide="x" style="width:16px;height:16px;"></i>';
+        delBtn.style = "position: absolute; right: 8px; top: 8px; padding: 4px; background: rgba(0,0,0,0.5); border-radius: 4px; z-index: 10;";
+        delBtn.onclick = (e) => {
+          e.stopPropagation();
+          this.deleteFavorite(f.videoId || f.id, f.platform);
+        };
+        card.appendChild(delBtn);
+
         this.elements.favoritesList.appendChild(card);
       });
       lucide.createIcons();
+    }
+  }
+
+  async deleteAllFavorites() {
+    if (!this.state.user) return;
+    const confirmResult = await this.showConfirmDialog("Delete All Favorites", "Are you sure you want to remove ALL your favorite videos? This cannot be undone.");
+    if (!confirmResult) return;
+    
+    let db = this.getDb('favorites');
+    db = db.filter(f => f.userId !== this.state.user.id);
+    this.saveDb('favorites', db);
+    this.showToast("All favorites cleared", "trash-2");
+    this.renderFavoritesTab();
+  }
+
+  deleteFavorite(videoId, platform) {
+    if (!this.state.user) return;
+    let db = this.getDb('favorites');
+    const index = db.findIndex(f => f.userId === this.state.user.id && (f.videoId === videoId || f.id === videoId) && f.platform === platform);
+    if (index !== -1) {
+      db.splice(index, 1);
+      this.saveDb('favorites', db);
+      
+      // Also update current state if the video is currently playing
+      if (this.state.currentVideo && this.state.currentVideo.id === videoId) {
+        this.updateFavoriteButton(false);
+      }
+      
+      this.showToast("Removed from favorites", "trash-2");
+      this.renderFavoritesTab();
     }
   }
 
@@ -2432,7 +2625,7 @@ class WatchOnRepeat {
     if (isHistory) {
       subMeta = `<span>Loops: <strong>${video.loopsCount || 0}</strong></span> • <span>${this.formatTimeAgo(video.lastPlayed || video.timestamp)}</span>`;
     } else {
-      subMeta = `<span class="global-count"><i data-lucide="refresh-cw"></i> <strong>${this.formatNumber(globalLoops)}</strong> loops</span>`;
+      subMeta = ''; // Removed loop count per request
     }
 
     // Rank prefix for leaderboard
@@ -2523,6 +2716,23 @@ class WatchOnRepeat {
         }
       }, 300);
     }, 3000);
+  }
+
+  showInfoModal(message) {
+    const modal = document.getElementById('info-modal');
+    const msgEl = document.getElementById('info-modal-message');
+    if (modal && msgEl) {
+      msgEl.textContent = message;
+      modal.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  closeInfoModal() {
+    const modal = document.getElementById('info-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
   }
 
   showConfirmDialog(title, message, isPrompt = false) {
@@ -3376,6 +3586,21 @@ class WatchOnRepeat {
       return;
     }
 
+    if (this.state.currentInstanceId) {
+      const shareUrl = `${window.location.href.split('?')[0]}?instance=${this.state.currentInstanceId}`;
+      const menu = document.getElementById('share-modal');
+      const input = document.getElementById('share-link-input');
+      if (menu && input) {
+        input.value = shareUrl;
+        menu.classList.remove('hidden');
+        if (window.lucide) window.lucide.createIcons();
+      } else {
+        app.showToast("Link copied to clipboard!", "check-circle");
+        navigator.clipboard.writeText(shareUrl).catch(e => console.error(e));
+      }
+      return;
+    }
+
     let urlParams = new URLSearchParams();
     urlParams.set('v', video.id);
     urlParams.set('p', video.platform);
@@ -3959,9 +4184,15 @@ class WatchOnRepeat {
     
     if (segmentsArr.length === 0) {
       if (this.elements.savedLoopsEmpty) this.elements.savedLoopsEmpty.classList.remove('hidden');
+      const bulkActions = document.getElementById('saved-loops-bulk-actions');
+      if (bulkActions) bulkActions.classList.add('hidden');
       return;
     }
     if (this.elements.savedLoopsEmpty) this.elements.savedLoopsEmpty.classList.add('hidden');
+    const bulkActions = document.getElementById('saved-loops-bulk-actions');
+    if (bulkActions) bulkActions.classList.remove('hidden');
+    const selectAllCheckbox = document.getElementById('saved-loops-select-all');
+    if (selectAllCheckbox) selectAllCheckbox.checked = false;
 
     // Group by video
     const grouped = {};
@@ -3985,8 +4216,12 @@ class WatchOnRepeat {
       
       const thumbUrl = this.getThumbnailUrl(videoGroup.platform, videoGroup.videoId);
       
+      // Video group IDs to pass to deletion logic
+      const videoIdsString = videoGroup.segments.map(s => s.id).join(',');
+      
       let headerHtml = `
         <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333;">
+          <input type="checkbox" class="saved-loop-group-checkbox" data-video-id="${videoGroup.platform}_${videoGroup.videoId}" onchange="app.toggleSelectSavedLoopGroup(this, '${videoGroup.platform}_${videoGroup.videoId}')" style="cursor: pointer;">
           <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
           <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
             <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;">
@@ -3994,24 +4229,104 @@ class WatchOnRepeat {
             </span>
             <span style="font-size: 11px; color: #888; text-transform: uppercase;">${videoGroup.platform}</span>
           </div>
+          <button class="btn btn-secondary btn-sm" onclick="app.deleteSavedLoops('${videoIdsString}')" title="Delete all loops for this video"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
         </div>
         <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
       `;
       
       let segmentsHtml = '';
       videoGroup.segments.forEach(seg => {
-        const urlParams = `?url=${encodeURIComponent(seg.platform + '_' + seg.videoId)}&start=${seg.start}&end=${seg.end}`;
+        const urlParams = `?v=${encodeURIComponent(seg.videoId)}&p=${seg.platform}&start=${seg.start}&end=${seg.end}`;
         segmentsHtml += `
-          <a href="${urlParams}" style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; text-decoration: none; color: white; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
-            <span style="font-weight: 500; font-size: 13px;">${this.escapeHtml(seg.name || 'Unnamed Loop')}</span>
-            <span style="font-size: 12px; color: #888; font-family: monospace;">${this.formatTime(seg.start)} - ${this.formatTime(seg.end)}</span>
-          </a>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" class="saved-loop-item-checkbox" data-video-id="${videoGroup.platform}_${videoGroup.videoId}" value="${seg.id}" onchange="app.checkSavedLoopSelection()" style="cursor: pointer;">
+            <a href="${urlParams}" style="flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; text-decoration: none; color: white; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
+              <span style="font-weight: 500; font-size: 13px;">${this.escapeHtml(seg.name || 'Unnamed Loop')}</span>
+              <span style="font-size: 12px; color: #888; font-family: monospace;">${this.formatTime(seg.start)} - ${this.formatTime(seg.end)}</span>
+            </a>
+            <button class="btn btn-secondary btn-sm" onclick="app.deleteSavedLoops('${seg.id}')" title="Delete this loop" style="padding: 0 8px;"><i data-lucide="x" style="width: 14px; height: 14px;"></i></button>
+          </div>
         `;
       });
       
       div.innerHTML = headerHtml + segmentsHtml + `</div>`;
       listEl.appendChild(div);
     });
+  }
+
+  toggleSelectAllSavedLoops(event) {
+    const isChecked = event.target.checked;
+    document.querySelectorAll('.saved-loop-group-checkbox').forEach(cb => cb.checked = isChecked);
+    document.querySelectorAll('.saved-loop-item-checkbox').forEach(cb => cb.checked = isChecked);
+    this.checkSavedLoopSelection();
+  }
+
+  toggleSelectSavedLoopGroup(checkbox, videoId) {
+    const isChecked = checkbox.checked;
+    document.querySelectorAll(`.saved-loop-item-checkbox[data-video-id="${videoId}"]`).forEach(cb => cb.checked = isChecked);
+    this.checkSavedLoopSelection();
+  }
+
+  checkSavedLoopSelection() {
+    const items = document.querySelectorAll('.saved-loop-item-checkbox');
+    const checkedItems = document.querySelectorAll('.saved-loop-item-checkbox:checked');
+    const groups = document.querySelectorAll('.saved-loop-group-checkbox');
+    const selectAll = document.getElementById('saved-loops-select-all');
+    const bulkDeleteBtn = document.getElementById('saved-loops-bulk-delete-btn');
+    
+    groups.forEach(group => {
+      const vidId = group.getAttribute('data-video-id');
+      const groupItems = document.querySelectorAll(`.saved-loop-item-checkbox[data-video-id="${vidId}"]`);
+      const checkedGroupItems = document.querySelectorAll(`.saved-loop-item-checkbox[data-video-id="${vidId}"]:checked`);
+      group.checked = groupItems.length > 0 && groupItems.length === checkedGroupItems.length;
+    });
+    
+    if (selectAll && items.length > 0) {
+      selectAll.checked = items.length === checkedItems.length;
+    }
+    
+    if (bulkDeleteBtn) {
+      if (checkedItems.length > 0) {
+        bulkDeleteBtn.classList.remove('hidden');
+        bulkDeleteBtn.innerHTML = `<i data-lucide="trash-2"></i> Delete Selected (${checkedItems.length})`;
+        if (window.lucide) window.lucide.createIcons();
+      } else {
+        bulkDeleteBtn.classList.add('hidden');
+      }
+    }
+  }
+
+  async deleteSelectedSavedLoops() {
+    const checkedItems = document.querySelectorAll('.saved-loop-item-checkbox:checked');
+    if (checkedItems.length === 0) return;
+    
+    const count = checkedItems.length;
+    const confirm = await this.showConfirmDialog("Delete Loops", `Are you sure you want to delete ${count} saved loop${count > 1 ? 's' : ''}?`);
+    if (!confirm) return;
+    
+    const ids = Array.from(checkedItems).map(cb => cb.value).join(',');
+    this.deleteSavedLoops(ids, true);
+  }
+
+  async deleteSavedLoops(idsString, skipConfirm = false) {
+    if (!idsString) return;
+    const ids = idsString.split(',');
+    
+    if (!skipConfirm) {
+      const confirm = await this.showConfirmDialog("Delete Loops", `Are you sure you want to delete ${ids.length === 1 ? 'this' : ids.length} saved loop${ids.length > 1 ? 's' : ''}?`);
+      if (!confirm) return;
+    }
+    
+    const db = this.getDb('analytics');
+    if (!db.segments) return;
+    
+    ids.forEach(id => {
+      delete db.segments[id];
+    });
+    
+    this.saveDb('analytics', db);
+    this.showToast(`Deleted ${ids.length} loop${ids.length > 1 ? 's' : ''}`, "trash-2");
+    this.renderSavedLoopsTab();
   }
 
   renderAnalyticsTab() {

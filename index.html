@@ -311,7 +311,7 @@
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding-left: 12px; border-left: 1px solid var(--border-color);">
                   <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
                     Gradual Tempo
-                    <span title="Disabled when using Custom Playback Speeds or Advanced Loop Segments." tabindex="0" onclick="app.showToast(this.title, 'info')" style="outline:none; cursor:pointer;">
+                    <span title="Disabled when using Custom Playback Speeds or Advanced Loop Segments." tabindex="0" onclick="app.showInfoModal(this.title)" style="outline:none; cursor:pointer;">
                       <i data-lucide="info" style="width:12px; height:12px; color:var(--text-muted);"></i>
                     </span>
                   </span>
@@ -322,27 +322,6 @@
                 </div>
               </div>
 
-
-              <div class="multi-segment-wrapper" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-                <div style="display: flex; align-items: center; flex-wrap: wrap;">
-                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" id="multi-segment-checkbox" onchange="app.toggleMultiSegment(event)">
-                    <span class="text-sm font-bold text-white" style="display:flex; align-items:center;">
-                      <i data-lucide="layers" style="width:14px; height:14px; display:inline-block; margin-right:4px;"></i> Advanced Loop Segments
-                    </span>
-                  </label>
-                  <span title="When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments." tabindex="0" onclick="app.showToast(this.title, 'info')" style="margin-left:6px;margin-right:6px;outline:none;cursor:pointer;"><i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);cursor:pointer;"></i></span>
-                  <span class="premium-badge" style="cursor: pointer;" onclick="app.openUpgradeModal('Unlock Pro features including Advanced Segments and unlimited Audio Recording!')">Upgrade</span>
-                </div>
-                
-                <div id="multi-segment-list" class="hidden" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-                  <!-- Dynamic segment list will go here -->
-                </div>
-                <div style="display: flex; gap: 8px; margin-top: 8px; width: 100%;">
-                  <button class="btn btn-secondary btn-sm hidden" id="add-segment-btn" onclick="app.addLoopSegment()" style="flex: 1;"><i data-lucide="plus"></i> Add Segment</button>
-                  <button class="btn btn-error btn-sm hidden" id="delete-all-segments-btn" onclick="app.deleteAllSegments()" style="flex: 1;"><i data-lucide="trash-2"></i> Delete All</button>
-                </div>
-              </div>
 
               <!-- Audio Recorder Studio -->
               <div class="audio-recorder-wrapper" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
@@ -365,6 +344,27 @@
                    <div id="recording-time-display" style="position: absolute; top: 4px; left: 8px; font-family: monospace; font-size: 12px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">00:00 / 00:30</div>
                 </div>
               </div>
+
+              <div class="multi-segment-wrapper" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="multi-segment-checkbox" onchange="app.toggleMultiSegment(event)">
+                    <span class="text-sm font-bold text-white" style="display:flex; align-items:center;">
+                      <i data-lucide="layers" style="width:14px; height:14px; display:inline-block; margin-right:4px;"></i> Advanced Loop Segments
+                    </span>
+                  </label>
+                  <span title="When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments." tabindex="0" onclick="app.showInfoModal(this.title)" style="margin-left:6px;margin-right:6px;outline:none;cursor:pointer;"><i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);cursor:pointer;"></i></span>
+                  <span class="premium-badge" style="cursor: pointer;" onclick="app.openUpgradeModal('Unlock Pro features including Advanced Segments and unlimited Audio Recording!')">Upgrade</span>
+                </div>
+                
+                <div id="multi-segment-list" class="hidden" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Dynamic segment list will go here -->
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 8px; width: 100%;">
+                  <button class="btn btn-secondary btn-sm hidden" id="add-segment-btn" onclick="app.addLoopSegment()" style="flex: 1;"><i data-lucide="plus"></i> Add Segment</button>
+                  <button class="btn btn-error btn-sm hidden" id="delete-all-segments-btn" onclick="app.deleteAllSegments()" style="flex: 1;"><i data-lucide="trash-2"></i> Delete All</button>
+                </div>
+              </div>
             </div>
             
             <div class="playback-controls" style="display: flex; align-items: flex-start; justify-content: flex-start; gap: 20px;">
@@ -373,7 +373,7 @@
                   <input type="text" id="loop-name-input" placeholder="Name loop..." style="width: 110px;">
                   <button class="btn btn-primary btn-sm" aria-label="Save Loop" onclick="app.saveNamedLoop()" title="Save Loop"><i data-lucide="save"></i></button>
                 </div>
-
+                <button class="btn btn-primary btn-sm" id="save-session-btn" onclick="app.saveInstance()"><i data-lucide="hard-drive"></i> Save Session</button>
                 <button class="btn btn-primary btn-sm" id="toggle-share-btn" onclick="app.generateShareableClip()"><i data-lucide="link"></i> Share Clip</button>
               </div>
               
@@ -666,6 +666,15 @@
               </div>
               <div class="notes-container">
                 <div class="active-notes-section" style="padding-top: 0;">
+                  <!-- Bulk Actions Toolbar -->
+                  <div id="saved-loops-bulk-actions" class="hidden" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
+                      <input type="checkbox" id="saved-loops-select-all" onchange="app.toggleSelectAllSavedLoops(event)">
+                      <span style="font-size: 13px; font-weight: bold;">Select All</span>
+                    </label>
+                    <button class="btn btn-error btn-sm hidden" id="saved-loops-bulk-delete-btn" onclick="app.deleteSelectedSavedLoops()"><i data-lucide="trash-2"></i> Delete Selected</button>
+                  </div>
+                  
                   <div id="saved-loops-list" style="display: flex; flex-direction: column; gap: 8px;">
                     <!-- Saved loops rendered here -->
                   </div>
@@ -738,7 +747,7 @@
             <!-- Discover Tab -->
             <div id="tab-discover" class="tab-panel active">
               
-              <h3>Popular Videos to Loop</h3>
+              <h3 style="margin-left: 12px;">Most watched youtube videos</h3>
               <div class="video-grid" id="discover-list">
                 <!-- Will be loaded dynamically -->
               </div>
@@ -1015,7 +1024,6 @@
     </div>
   </div>
 
-  <!-- Custom Confirm/Prompt Modal -->
   <div id="custom-confirm-modal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 400px;">
       <h2 id="confirm-modal-title" style="margin-bottom: 8px;">Confirm</h2>
@@ -1026,6 +1034,19 @@
       <div style="display: flex; gap: 12px; justify-content: flex-end;">
         <button id="confirm-modal-cancel" class="btn btn-outline">Cancel</button>
         <button id="confirm-modal-ok" class="btn btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Modal -->
+  <div id="info-modal" class="modal-backdrop hidden" onclick="app.closeInfoModal()">
+    <div class="modal-content" style="max-width: 400px; position: relative;" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="app.closeInfoModal()" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+      <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 8px 4px 8px;">
+        <i data-lucide="info" style="color: var(--color-primary); width: 24px; height: 24px; flex-shrink: 0; margin-top: 2px;"></i>
+        <p id="info-modal-message" style="margin: 0; color: var(--text-primary); line-height: 1.5; padding-right: 20px; font-size: 15px;"></p>
       </div>
     </div>
   </div>

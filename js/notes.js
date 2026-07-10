@@ -45,7 +45,7 @@ window.NotesMixin = {
     }
     
     const notes = this.getDb('notes');
-    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     if (!notes[vId]) notes[vId] = [];
     
     const noteObj = {
@@ -94,7 +94,7 @@ window.NotesMixin = {
   },
 
   deleteNote(noteId) {
-    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     if (db[vId]) {
       const index = db[vId].findIndex(n => n.id && n.id.toString() === noteId.toString());
@@ -108,11 +108,12 @@ window.NotesMixin = {
     }
   },
 
-  deleteAllNotes() {
-    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+  async deleteAllNotes() {
+    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     if (db[vId] && db[vId].length > 0) {
-      if (!confirm("Are you sure you want to delete all notes for this video?")) return;
+      const confirmResult = await this.showConfirmDialog("Delete All Notes", "Are you sure you want to delete all notes for this video?");
+      if (!confirmResult) return;
       db[vId] = [];
       this.saveDb('notes', db);
       this.syncNotesToCloud(vId, db[vId]);
@@ -123,7 +124,7 @@ window.NotesMixin = {
 
   renderNotes() {
     if (!this.state.currentVideo) return;
-    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     const notes = db[vId] || [];
     
