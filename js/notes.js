@@ -260,7 +260,17 @@ class NotesMixin {
       return b.maxAdd - a.maxAdd; // recent_add
     });
 
-    videosData.forEach(vData => {
+    const itemsPerPage = 5;
+    let currentPage = app.state.pagination.savedNotes || 1;
+    const totalPages = Math.ceil(videosData.length / itemsPerPage) || 1;
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+      app.state.pagination.savedNotes = currentPage;
+    }
+    
+    const paginatedVideos = videosData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    paginatedVideos.forEach(vData => {
       const id = vData.id;
       let title = vData.title;
       const noteCount = vData.notesCount;
@@ -296,6 +306,11 @@ class NotesMixin {
       `;
       listEl.appendChild(div);
     });
+    
+    const paginationControls = app.renderPaginationControls('savedNotes', videosData.length, itemsPerPage, currentPage, () => this.renderActiveNotesSummary(db, currentVId));
+    if (paginationControls) {
+      listEl.appendChild(paginationControls);
+    }
     
     if (window.lucide) window.lucide.createIcons();
   }

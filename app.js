@@ -250,6 +250,14 @@ class WatchOnRepeat {
         title: null,
         loops: 0,
         startTime: null
+      },
+      pagination: {
+        favorites: 1,
+        playlists: 1,
+        history: 1,
+        savedSessions: 1,
+        savedLoops: 1,
+        savedNotes: 1
       }
     };
 
@@ -958,14 +966,14 @@ class WatchOnRepeat {
       const userId = this.state.user ? this.state.user.id : 'guest';
       const userInstancesCount = Object.values(localInstances).filter(i => i.userId === userId).length;
       
-      let maxSessions = 3;
-      if (userTier === 'premium') maxSessions = 7;
-      if (userTier === 'pro') maxSessions = 10;
+      let maxSessions = 5;
+      if (userTier === 'premium') maxSessions = 10;
+      if (userTier === 'pro') maxSessions = 15;
       
       if (userInstancesCount >= maxSessions) {
         if (userTier !== 'pro') {
           const nextTier = userTier === 'free' ? 'Premium' : 'Pro';
-          const nextLimit = userTier === 'free' ? 7 : 10;
+          const nextLimit = userTier === 'free' ? 10 : 15;
           this.openUpgradeModal(`You've reached the limit of ${maxSessions} saved sessions. Upgrade to ${nextTier} for ${nextLimit} sessions!`);
         } else {
           this.showToast(`You have reached the maximum limit of ${maxSessions} saved sessions! Please delete older ones first.`, "alert-circle");
@@ -2699,7 +2707,17 @@ class WatchOnRepeat {
       
       const historyDb = this.getDb('history').filter(h => h.userId === this.state.user.id);
       
-      favorites.forEach(f => {
+      const itemsPerPage = 10;
+      let currentPage = this.state.pagination.favorites;
+      const totalPages = Math.ceil(favorites.length / itemsPerPage) || 1;
+      if (currentPage > totalPages) {
+        currentPage = totalPages;
+        this.state.pagination.favorites = currentPage;
+      }
+      
+      const paginatedFavorites = favorites.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+      
+      paginatedFavorites.forEach(f => {
         const historyItem = historyDb.find(h => h.videoId === f.videoId && h.platform === f.platform);
         f.loopsCount = historyItem ? historyItem.loopsCount : 0;
         const card = this.createVideoCard(f, true); // true to show loopsCount instead of global
@@ -2725,6 +2743,12 @@ class WatchOnRepeat {
 
         this.elements.favoritesList.appendChild(wrapper);
       });
+      
+      const paginationControls = this.renderPaginationControls('favorites', favorites.length, itemsPerPage, currentPage, () => this.renderFavoritesTab());
+      if (paginationControls) {
+        this.elements.favoritesList.appendChild(paginationControls);
+      }
+      
       lucide.createIcons();
     }
   }
@@ -2794,10 +2818,26 @@ class WatchOnRepeat {
       this.elements.historyList.innerHTML = '';
       this.elements.historyList.classList.remove('hidden');
       
-      history.forEach(h => {
+      const itemsPerPage = 10;
+      let currentPage = this.state.pagination.history;
+      const totalPages = Math.ceil(history.length / itemsPerPage) || 1;
+      if (currentPage > totalPages) {
+        currentPage = totalPages;
+        this.state.pagination.history = currentPage;
+      }
+      
+      const paginatedHistory = history.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+      
+      paginatedHistory.forEach(h => {
         const card = this.createVideoCard(h, true); // true indicates history item
         this.elements.historyList.appendChild(card);
       });
+      
+      const paginationControls = this.renderPaginationControls('history', history.length, itemsPerPage, currentPage, () => this.renderHistoryTab());
+      if (paginationControls) {
+        this.elements.historyList.appendChild(paginationControls);
+      }
+      
       lucide.createIcons();
     }
   }
@@ -2923,6 +2963,73 @@ class WatchOnRepeat {
   // ==========================================
   // UTILITIES
   // ==========================================
+
+  renderPaginationControls(tabId, totalItems, itemsPerPage, currentPage, onPageChange) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+    if (totalPages <= 1) return null;
+
+    const container = document.createElement('div');
+    container.className = 'pagination-controls';
+    
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn btn-outline';
+    prevBtn.innerHTML = '<i data-lucide="chevron-left"></i> Prev';
+    prevBtn.disabled = currentPage <= 1;
+    prevBtn.onclick = () => {
+      if (currentPage > 1) {
+        this.state.pagination[tabId] = currentPage - 1;
+        onPageChange();
+      }
+    };
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-outline';
+    nextBtn.innerHTML = 'Next <i data-lucide="chevron-right"></i>';
+    nextBtn.disabled = currentPage >= totalPages;
+    nextBtn.onclick = () => {
+      if (currentPage < totalPages) {
+        this.state.pagination[tabId] = currentPage + 1;
+        onPageChange();
+      }
+    };
+
+    const pageIndicator = document.createElement('div');
+    pageIndicator.className = 'pagination-indicator';
+    
+    if (tabId === 'favorites' || tabId === 'history') {
+      const inputWrapper = document.createElement('div');
+      inputWrapper.style = "display: flex; align-items: center; gap: 4px;";
+      
+      const inputEl = document.createElement('input');
+      inputEl.type = 'number';
+      inputEl.min = '1';
+      inputEl.max = totalPages;
+      inputEl.value = currentPage;
+      inputEl.className = 'pagination-input';
+      inputEl.onchange = (e) => {
+        let val = parseInt(e.target.value);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > totalPages) val = totalPages;
+        this.state.pagination[tabId] = val;
+        onPageChange();
+      };
+      
+      const totalSpan = document.createElement('span');
+      totalSpan.textContent = ` of ${totalPages}`;
+      
+      inputWrapper.appendChild(inputEl);
+      inputWrapper.appendChild(totalSpan);
+      pageIndicator.appendChild(inputWrapper);
+    } else {
+      pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+    }
+
+    container.appendChild(prevBtn);
+    container.appendChild(pageIndicator);
+    container.appendChild(nextBtn);
+
+    return container;
+  }
 
   showToast(message, iconName = 'info') {
     this.elements.toastIcon.innerHTML = `<i data-lucide="${iconName}"></i>`;
@@ -4520,7 +4627,18 @@ class WatchOnRepeat {
       grouped[vId].segments.push(seg);
     });
 
-    Object.values(grouped).forEach(videoGroup => {
+    const videoGroups = Object.values(grouped);
+    const itemsPerPage = 5;
+    let currentPage = this.state.pagination.savedLoops || 1;
+    const totalPages = Math.ceil(videoGroups.length / itemsPerPage) || 1;
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+      this.state.pagination.savedLoops = currentPage;
+    }
+    
+    const paginatedGroups = videoGroups.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    paginatedGroups.forEach(videoGroup => {
       const div = document.createElement('div');
       div.className = 'note-item';
       div.style = "display: flex; flex-direction: column; background: var(--surface-color); border: 1px solid #333; border-radius: 8px; overflow: hidden; margin-bottom: 8px;";
@@ -4564,6 +4682,11 @@ class WatchOnRepeat {
       div.innerHTML = headerHtml + segmentsHtml + `</div>`;
       listEl.appendChild(div);
     });
+    
+    const paginationControls = this.renderPaginationControls('savedLoops', videoGroups.length, itemsPerPage, currentPage, () => this.renderSavedLoopsTab());
+    if (paginationControls) {
+      listEl.appendChild(paginationControls);
+    }
     
     if (window.lucide) window.lucide.createIcons();
   }
@@ -4671,8 +4794,18 @@ class WatchOnRepeat {
       emptyEl.classList.add('hidden');
       listEl.classList.remove('hidden');
       
+      const itemsPerPage = 5;
+      let currentPage = this.state.pagination.savedSessions || 1;
+      const totalPages = Math.ceil(sessions.length / itemsPerPage) || 1;
+      if (currentPage > totalPages) {
+        currentPage = totalPages;
+        this.state.pagination.savedSessions = currentPage;
+      }
+      
+      const paginatedSessions = sessions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+      
       let html = '';
-      sessions.forEach(sess => {
+      paginatedSessions.forEach(sess => {
         const d = new Date(sess.updatedAt);
         const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
@@ -4700,6 +4833,12 @@ class WatchOnRepeat {
         `;
       });
       listEl.innerHTML = html;
+      
+      const paginationControls = this.renderPaginationControls('savedSessions', sessions.length, itemsPerPage, currentPage, () => this.renderSavedSessionsTab());
+      if (paginationControls) {
+        listEl.appendChild(paginationControls);
+      }
+      
       if (window.lucide) window.lucide.createIcons();
     }
   }

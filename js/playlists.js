@@ -197,7 +197,17 @@ class PlaylistsMixin {
       return;
     }
 
-    playlists.forEach(p => {
+    const itemsPerPage = 3;
+    let currentPage = app.state.pagination.playlists || 1;
+    const totalPages = Math.ceil(playlists.length / itemsPerPage) || 1;
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+      app.state.pagination.playlists = currentPage;
+    }
+    
+    const paginatedPlaylists = playlists.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    paginatedPlaylists.forEach(p => {
       const card = document.createElement('div');
       card.className = 'playlist-card-modern';
       card.onclick = (e) => {
@@ -247,6 +257,15 @@ class PlaylistsMixin {
       `;
       list.appendChild(card);
     });
+    
+    // Create a container for the grid and pagination to avoid pagination stretching like a grid item
+    const paginationControls = app.renderPaginationControls('playlists', playlists.length, itemsPerPage, currentPage, () => this.renderPlaylistsTab());
+    if (paginationControls) {
+      // Need to place pagination OUTSIDE the grid, so we append it to the parent (content) after list
+      // Or we can just append it to 'list' and make it span full width
+      paginationControls.style.gridColumn = "1 / -1";
+      list.appendChild(paginationControls);
+    }
     
     if (window.lucide) window.lucide.createIcons();
   }
