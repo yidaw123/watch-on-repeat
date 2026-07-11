@@ -2632,9 +2632,9 @@ class WatchOnRepeat {
         
         // Add delete button specifically for favorites
         const delBtn = document.createElement('button');
-        delBtn.className = 'icon-btn text-red-500';
+        delBtn.className = 'icon-btn text-white';
         delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>';
-        delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: flex-start; margin-left: auto; background: rgba(0,0,0,0.3);";
+        delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: flex-start; margin-left: auto; background: rgba(0,0,0,0.3); opacity: 0.8;";
         delBtn.onclick = (e) => {
           e.stopPropagation();
           this.deleteFavorite(f.videoId || f.id, f.platform);
@@ -4686,9 +4686,9 @@ class WatchOnRepeat {
       `;
       
       const delBtn = document.createElement('button');
-      delBtn.className = 'icon-btn text-red-500';
+      delBtn.className = 'icon-btn text-white';
       delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>';
-      delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: center; margin-left: auto; background: rgba(0,0,0,0.3);";
+      delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: center; margin-left: auto; background: rgba(0,0,0,0.3); opacity: 0.8;";
       delBtn.onclick = (e) => {
         e.stopPropagation();
         this.deleteNamedSegment(seg.id);
