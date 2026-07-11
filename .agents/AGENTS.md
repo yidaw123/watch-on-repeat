@@ -32,3 +32,6 @@ To do this:
 3. If the script outputs [FAIL], you must fix the error before pushing. Do not ask for user permission to fix it, just fix it.
 
 Never skip this step, even for small changes.
+
+### Data Protection Rule
+Never use destructive database commands or blind upserts that could accidentally overwrite or erase existing user data. Always check if data exists first before updating.
