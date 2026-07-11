@@ -62,3 +62,6 @@ Before suggesting a commit or deployment, verify that all affected UI states and
 
 ### Data Hydration Rule
 When building features that rely on aggregate or global data, explicitly define a single source of truth for data hydration during the application's initial load sequence, rather than scattering lazy-loading logic across disconnected UI tabs.
+
+### Dependency Tracing Rule
+Before modifying a shared UI component, global CSS class, or database table, explicitly trace its dependencies across the entire application to ensure changes do not cause collateral damage or break unrelated features.
