@@ -1261,8 +1261,21 @@ class WatchOnRepeat {
     // Simulate ready
     videoEl.onloadedmetadata = () => {
       this.setVideoDuration(videoEl.duration);
-
     };
+
+    videoEl.addEventListener('play', () => {
+      if (this.elements.playbackState) this.elements.playbackState.textContent = 'Playing';
+      this.startTimer();
+    });
+
+    videoEl.addEventListener('pause', () => {
+      if (this.elements.playbackState) this.elements.playbackState.textContent = 'Paused';
+      this.stopTimer();
+    });
+
+    videoEl.addEventListener('ended', () => {
+      this.handleLoop(this.state.currentVideo, this.state.abLoop.start || 0);
+    });
 
     if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
     this.elements.playerLoaded.classList.remove('hidden');
