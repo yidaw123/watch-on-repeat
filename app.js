@@ -321,7 +321,7 @@ class WatchOnRepeat {
     try {
       const { data, error } = await supabaseClient
         .from('user_history')
-        .select('video_id, platform, saved_loop_data, notes_data')
+        .select('video_id, platform, loops_count, saved_loop_data, notes_data')
         .eq('user_id', this.state.user.id);
         
       if (error) {
@@ -332,6 +332,8 @@ class WatchOnRepeat {
       if (data && data.length > 0) {
         let localSavedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
         let localNotes = this.getDb('notes');
+        let localHistory = this.getDb('history');
+        let historyChanged = false;
         
         data.forEach(row => {
           if (row.saved_loop_data) {
@@ -341,10 +343,20 @@ class WatchOnRepeat {
             const vId = `${row.platform}_${row.video_id}`;
             localNotes[vId] = row.notes_data;
           }
+          // Sync loops_count to local history to fix the UI bug in Favorites
+          const hIdx = localHistory.findIndex(h => h.videoId === row.video_id && h.platform === row.platform && h.userId === this.state.user.id);
+          if (hIdx !== -1 && localHistory[hIdx].loopsCount !== row.loops_count) {
+            localHistory[hIdx].loopsCount = row.loops_count;
+            historyChanged = true;
+          }
         });
         
         localStorage.setItem('wor_saved_loops', JSON.stringify(localSavedLoops));
         this.saveDb('notes', localNotes);
+        if (historyChanged) {
+          this.saveDb('history', localHistory);
+          if (this.state.activeTab === 'favorites') this.renderFavoritesTab();
+        }
       }
     } catch(err) {
       console.error("Sync error:", err);
@@ -2122,6 +2134,15 @@ class WatchOnRepeat {
     this.state.currentGlobalLoops++;
     if (this.state.user) {
       this.state.currentLifetimeLoops++;
+      
+      // Update local history so UI components like Favorites show accurate counts synchronously
+      const historyDb = this.getDb('history');
+      const idx = historyDb.findIndex(h => h.videoId === video.id && h.platform === video.platform && h.userId === this.state.user.id);
+      if (idx !== -1) {
+        historyDb[idx].loopsCount = this.state.currentLifetimeLoops;
+        this.saveDb('history', historyDb);
+        if (this.state.activeTab === 'favorites') this.renderFavoritesTab();
+      }
     }
     this.updateStatsUI();
 
