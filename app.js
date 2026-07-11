@@ -3077,7 +3077,7 @@ class WatchOnRepeat {
     // Force browser reflow to ensure the CSS transition triggers
     void this.elements.toast.offsetWidth;
     
-    this.elements.toast.classList.show('show');
+    this.elements.toast.classList.add('show');
     
     if (window.lucide) window.lucide.createIcons();
     
