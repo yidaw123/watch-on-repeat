@@ -1387,14 +1387,23 @@ class WatchOnRepeat {
             .eq('video_id', id)
             .eq('platform', platform)
             .single()
-            .then(({ data }) => {
+            .then(({ data, error }) => {
+              // If error is PGRST116, it just means no row exists yet (new video for this user), which is fine.
+              // If it's a different error (e.g. network), we DO NOT want to set historyLoaded to true,
+              // otherwise we might overwrite their real data with 0.
+              if (error && error.code !== 'PGRST116') {
+                if (DEBUG_MODE) console.error("Failed to fetch user history for video:", error);
+                // Do not set historyLoaded = true. This prevents accidental overwriting.
+                return;
+              }
+              
               this.state.historyLoaded = true;
               if (data) {
-                this.state.currentLifetimeLoops = data.loops_count;
+                this.state.currentLifetimeLoops = data.loops_count || 0;
                 const historyDb = this.getDb('history');
                 const idx = historyDb.findIndex(h => h.videoId === id && h.platform === platform && h.userId === this.state.user.id);
                 if (idx !== -1) {
-                  historyDb[idx].loopsCount = data.loops_count;
+                  historyDb[idx].loopsCount = data.loops_count || 0;
                   this.saveDb('history', historyDb);
                 }
                 this.updateStatsUI();
@@ -2253,7 +2262,10 @@ class WatchOnRepeat {
         });
       }, 5000);
 
-      if (this.state.user) {
+      // CRITICAL FIX: Only upsert if we have successfully loaded the user's history!
+      // Otherwise, we would overwrite their lifetime loops with '1' if they loop
+      // before the history fetch completes.
+      if (this.state.user && this.state.historyLoaded) {
         const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
         supabaseClient.from('user_history').upsert({
           user_id: this.state.user.id,
