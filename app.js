@@ -398,7 +398,6 @@ class WatchOnRepeat {
         }).eq('id', user.id);
         if (updateError) {
           console.error("Failed to update user tracking:", updateError);
-          this.showToast("DB Update Error: " + updateError.message, "alert-circle");
         }
       } else {
         const { error: insertError } = await supabaseClient.from('users').insert({ 
@@ -424,6 +423,25 @@ class WatchOnRepeat {
       }
     } else {
       tier = user.user_metadata?.tier || 'free';
+    }
+    
+    // Sync user history in background to ensure 'YOUR LOOPS FOR ALL VIDEOS' is accurate
+    if (window.supabaseClient) {
+      supabaseClient.from('user_history').select('*').eq('user_id', user.id).order('last_played', { ascending: false }).then(({ data }) => {
+        if (data) {
+          const history = data.filter(d => d.last_played).map(d => ({
+            videoId: d.video_id,
+            platform: d.platform,
+            title: d.title,
+            loopsCount: d.loops_count,
+            lastPlayed: d.last_played,
+            userId: user.id,
+            timestamp: new Date(d.last_played).getTime()
+          }));
+          this.saveDb('history', history);
+          this.updateStatsUI();
+        }
+      });
     }
     
     this.state.user = {
@@ -1358,6 +1376,12 @@ class WatchOnRepeat {
               this.state.historyLoaded = true;
               if (data) {
                 this.state.currentLifetimeLoops = data.loops_count;
+                const historyDb = this.getDb('history');
+                const idx = historyDb.findIndex(h => h.videoId === id && h.platform === platform && h.userId === this.state.user.id);
+                if (idx !== -1) {
+                  historyDb[idx].loopsCount = data.loops_count;
+                  this.saveDb('history', historyDb);
+                }
                 this.updateStatsUI();
               }
             })
