@@ -79,7 +79,7 @@ class PlaylistsMixin {
               <button class="btn btn-sm btn-outline" onclick="app.backToPlaylists()"><i data-lucide="arrow-left"></i> Back</button>
               <div style="display: flex; gap: 8px;">
                 <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${this.escapeHtml(p.id)}')" style="white-space: nowrap;"><i data-lucide="play"></i> Play Through</button>
-                <button class="btn btn-danger btn-sm" onclick="app.deletePlaylist('${this.escapeHtml(p.id)}')" title="Delete Playlist" style="padding: 4px 8px; background: rgba(239,68,68,0.2); color: white !important; border: 1px solid rgba(239,68,68,0.4);"><i data-lucide="trash-2" style="color: white;"></i></button>
+                <button class="btn-icon-delete" onclick="app.deletePlaylist('${this.escapeHtml(p.id)}')" title="Delete Playlist"><i data-lucide="trash-2"></i></button>
               </div>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; gap: 8px;">
@@ -156,7 +156,7 @@ class PlaylistsMixin {
             <div class="yt-playlist-title">${this.escapeHtml(v.title)}</div>
             <div class="yt-playlist-channel">${this.escapeHtml(v.platform)}</div>
           </div>
-          <button class="icon-btn" onclick="app.removeVideoFromPlaylist('${this.escapeHtml(p.id)}', '${this.escapeHtml(v.videoId || v.id)}')" style="padding: 6px; border-radius: 4px; flex-shrink: 0; background: rgba(0,0,0,0.3); opacity: 1; color: white !important;" title="Remove Video"><i data-lucide="trash-2" style="width:16px;height:16px; color: white;"></i></button>
+          <button class="btn-icon-delete" onclick="app.removeVideoFromPlaylist('${this.escapeHtml(p.id)}', '${this.escapeHtml(v.videoId || v.id)}')" title="Remove Video"><i data-lucide="trash-2"></i></button>
         `;
         vidsContainer.appendChild(card);
       });
@@ -239,7 +239,7 @@ class PlaylistsMixin {
                 <input type="checkbox" ${p.isPublic ? 'checked' : ''} onchange="app.togglePlaylistPublic('${this.escapeHtml(p.id)}', this.checked)"> Public
               </label>
             </div>
-            <button class="btn btn-danger btn-sm" onclick="app.deletePlaylist('${this.escapeHtml(p.id)}')" title="Delete Playlist" style="padding: 4px 8px; background: rgba(239,68,68,0.2); color: white !important; border: 1px solid rgba(239,68,68,0.4); border-radius: 4px;"><i data-lucide="trash-2" style="width:14px; height:14px; color: white;"></i></button>
+            <button class="btn-icon-delete" onclick="app.deletePlaylist('${this.escapeHtml(p.id)}')" title="Delete Playlist"><i data-lucide="trash-2"></i></button>
           </div>
         </div>
       `;

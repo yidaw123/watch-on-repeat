@@ -204,7 +204,7 @@ class NotesMixin {
       div.innerHTML = `
         <div class="note-header">
           <span class="note-timestamp" onclick="app.seekToTime(${note.time})">[${timeStr}]</span>
-          ${isReadOnly ? '' : `<button class="note-delete" aria-label="Delete note" onclick="app.deleteNote('${note.id}')" title="Delete note" style="color: white !important;"><i data-lucide="trash-2" style="color: white;"></i></button>`}
+          ${isReadOnly ? '' : `<button class="btn-icon-delete" aria-label="Delete note" title="Delete Note" onclick="app.deleteNote('${this.escapeHtml(note.id)}')"><i data-lucide="trash-2"></i></button>`}
         </div>
         <div class="note-content">${this.escapeHtml(note.text)}</div>
       `;
@@ -227,9 +227,8 @@ class NotesMixin {
       return;
     }
 
-    uniqueVideos.forEach(id => {
+    let videosData = uniqueVideos.map(id => {
       let title = (db.__titles && db.__titles[id]) ? db.__titles[id] : 'Unknown Video';
-      const noteCount = db[id].length;
       
       const parts = id.split('_');
       const platform = parts[0];
@@ -240,14 +239,33 @@ class NotesMixin {
         const hItem = history.find(h => h.videoId === videoId && h.platform === platform);
         if (hItem && hItem.title && hItem.title !== 'Loading title...') {
           title = hItem.title;
-          // Optionally save it back to notes db so we don't have to look it up next time
           if (!db.__titles) db.__titles = {};
           db.__titles[id] = title;
           this.saveDb('notes', db);
         } else {
-          title = `Video: ${videoId}`; // Fallback to showing ID so it's not totally unknown
+          title = `Video: ${videoId}`;
         }
       }
+
+      const notes = db[id];
+      const maxAdd = Math.max(...notes.map(n => n.timestamp || 0));
+      const maxEdit = Math.max(...notes.map(n => n.editedAt || n.timestamp || 0));
+      return { id, title, platform, videoId, maxAdd, maxEdit, notesCount: notes.length };
+    });
+
+    const sortVal = document.getElementById('notes-sort') ? document.getElementById('notes-sort').value : 'recent_add';
+    videosData.sort((a, b) => {
+      if (sortVal === 'alpha') return a.title.localeCompare(b.title);
+      if (sortVal === 'recent_edit') return b.maxEdit - a.maxEdit;
+      return b.maxAdd - a.maxAdd; // recent_add
+    });
+
+    videosData.forEach(vData => {
+      const id = vData.id;
+      let title = vData.title;
+      const noteCount = vData.notesCount;
+      const platform = vData.platform;
+      const videoId = vData.videoId;
 
       const div = document.createElement('div');
       div.className = 'note-item';
@@ -272,8 +290,8 @@ class NotesMixin {
             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${noteCount} saved note${noteCount !== 1 ? 's' : ''}</div>
           </div>
         </div>
-        <button class="icon-btn text-red-500" aria-label="Clear all notes for this video" onclick="app.clearNotesForVideo('${this.escapeHtml(id)}')" title="Clear all notes for this video" style="padding: 4px; margin-left: 8px; flex-shrink: 0;">
-          <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+        <button class="btn-icon-delete" aria-label="Clear all notes for this video" onclick="app.clearNotesForVideo('${this.escapeHtml(id)}')" title="Clear all notes for this video">
+          <i data-lucide="trash-2"></i>
         </button>
       `;
       listEl.appendChild(div);

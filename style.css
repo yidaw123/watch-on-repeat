@@ -297,13 +297,44 @@ h1, h2, h3, h4, .brand-name {
 
 .btn-error {
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: #ef4444 !important;
   border: 1px solid rgba(239, 68, 68, 0.3);
+  cursor: pointer;
 }
 
 .btn-error:hover {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5 !important;
+}
+
+.btn-error i {
+  color: currentColor !important;
+}
+
+.btn-icon-delete {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-icon-delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.btn-icon-delete i {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
 }
 
 

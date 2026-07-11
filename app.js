@@ -2466,10 +2466,18 @@ class WatchOnRepeat {
       this.renderSavedLoopsTab();
     } else if (tabId === 'saved-sessions') {
       this.renderSavedSessionsTab();
+    } else if (tabId === 'notes') {
+      this.renderSavedNotesTab();
     } else if (tabId === 'trends') {
       this.renderTrendsTab();
     } else if (tabId === 'analytics') {
       this.renderAnalyticsTab();
+    }
+  }
+
+  renderSavedNotesTab() {
+    if (this.notesManager) {
+      this.notesManager.renderActiveNotesSummary(this.getDb('notes'), this.state.currentVideo ? this.state.currentVideo.id : null);
     }
   }
 
@@ -2641,8 +2649,17 @@ class WatchOnRepeat {
 
     this.elements.favAuthRequired.classList.add('hidden');
     
-    const favorites = this.getDb('favorites').filter(f => f.userId === this.state.user.id);
+    let favorites = this.getDb('favorites').filter(f => f.userId === this.state.user.id);
     this.elements.favoritesCountBadge.textContent = favorites.length;
+
+    const sortVal = document.getElementById('favorites-sort') ? document.getElementById('favorites-sort').value : 'recent_add';
+    if (sortVal === 'alpha') {
+      favorites.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    } else if (sortVal === 'recent_edit') {
+      favorites.sort((a, b) => (b.updatedAt || b.timestamp || 0) - (a.updatedAt || a.timestamp || 0));
+    } else {
+      favorites.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    }
 
     if (favorites.length === 0) {
       this.elements.favoritesList.classList.add('hidden');
@@ -2663,9 +2680,9 @@ class WatchOnRepeat {
         
         // Add delete button specifically for favorites
         const delBtn = document.createElement('button');
-        delBtn.className = 'icon-btn';
-        delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px; color: white;"></i>';
-        delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: flex-start; margin-left: auto; background: rgba(0,0,0,0.3); opacity: 0.8; color: white !important;";
+        delBtn.className = 'btn-icon-delete';
+        delBtn.innerHTML = '<i data-lucide="trash-2"></i>';
+        delBtn.style = "flex-shrink: 0; align-self: flex-start; margin-left: auto;";
         delBtn.onclick = (e) => {
           e.stopPropagation();
           this.deleteFavorite(f.videoId || f.id, f.platform);
@@ -4420,7 +4437,7 @@ class WatchOnRepeat {
               <span style="font-size: 11px; color: #888; text-transform: uppercase;">${videoGroup.platform}</span>
             </div>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${videoIdsString}', false)" title="Delete all loops for this video" style="color: white !important;"><i data-lucide="trash-2" style="width: 14px; height: 14px; color: white;"></i></button>
+          <button type="button" class="btn-icon-delete" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${videoIdsString}', false)" title="Delete all loops for this video"><i data-lucide="trash-2"></i></button>
         </div>
         <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
       `;
@@ -4435,7 +4452,7 @@ class WatchOnRepeat {
               <span style="font-weight: 500; font-size: 13px;">${this.escapeHtml(seg.name || 'Unnamed Loop')}</span>
               <span style="font-size: 12px; color: #888; font-family: monospace;">${this.formatTime(seg.start)} - ${this.formatTime(seg.end)}</span>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${seg.id}', true)" title="Delete this loop" style="padding: 0 8px; color: white !important;"><i data-lucide="trash-2" style="width: 14px; height: 14px; color: white;"></i></button>
+            <button type="button" class="btn-icon-delete" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${seg.id}', true)" title="Delete this loop"><i data-lucide="trash-2"></i></button>
           </div>
         `;
       });
@@ -4471,7 +4488,7 @@ class WatchOnRepeat {
     if (bulkDeleteBtn) {
       if (checkedItems.length > 0) {
         bulkDeleteBtn.classList.remove('hidden');
-        bulkDeleteBtn.innerHTML = `<i data-lucide="trash-2" style="color: white;"></i> Delete Selected (${checkedItems.length})`;
+        bulkDeleteBtn.innerHTML = `<i data-lucide="trash-2"></i> Delete Selected (${checkedItems.length})`;
         bulkDeleteBtn.style.color = "white";
         if (window.lucide) window.lucide.createIcons();
       } else {
@@ -4485,20 +4502,18 @@ class WatchOnRepeat {
     if (checkedItems.length === 0) return;
     
     const count = checkedItems.length;
-    const confirm = await this.showConfirmDialog("Delete Loops", `Are you sure you want to delete ${count} saved loop${count > 1 ? 's' : ''}?`);
-    if (!confirm) return;
+    if (!confirm(`Are you sure you want to delete ${count} saved loop${count > 1 ? 's' : ''}?`)) return;
     
     const ids = Array.from(checkedItems).map(cb => cb.value).join(',');
     this.deleteSavedLoops(ids, true);
   }
 
-  async deleteSavedLoops(idsString, skipConfirm = false) {
+  deleteSavedLoops(idsString, skipConfirm = false) {
     if (!idsString) return;
     const ids = idsString.split(',');
     
     if (!skipConfirm) {
-      const confirm = await this.showConfirmDialog("Delete Loops", `Are you sure you want to delete ${ids.length === 1 ? 'this' : ids.length} saved loop${ids.length > 1 ? 's' : ''}?`);
-      if (!confirm) return;
+      if (!confirm(`Are you sure you want to delete ${ids.length === 1 ? 'this' : ids.length} saved loop${ids.length > 1 ? 's' : ''}?`)) return;
     }
     
     const db = this.getDb('analytics');
@@ -4522,7 +4537,16 @@ class WatchOnRepeat {
     if (!listEl) return;
 
     const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
-    const sessions = Object.values(localInstances).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    let sessions = Object.values(localInstances);
+    
+    const sortVal = document.getElementById('sessions-sort') ? document.getElementById('sessions-sort').value : 'recent_add';
+    if (sortVal === 'alpha') {
+      sessions.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    } else if (sortVal === 'recent_edit') {
+      sessions.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+    } else {
+      sessions.sort((a, b) => new Date(b.createdAt || b.updatedAt || 0) - new Date(a.createdAt || a.updatedAt || 0));
+    }
 
     if (sessions.length === 0) {
       listEl.classList.add('hidden');
@@ -4554,7 +4578,7 @@ class WatchOnRepeat {
             </div>
             <div style="display: flex; gap: 8px;">
               <button class="btn btn-secondary btn-sm" onclick="app.shareSavedSession('${sess.id}')" title="Share Session"><i data-lucide="link"></i></button>
-              <button class="btn btn-secondary btn-sm" onclick="app.deleteSavedSession('${sess.id}')" title="Delete Session" style="color: white !important;"><i data-lucide="trash-2" style="color: white;"></i></button>
+              <button class="btn-icon-delete" onclick="app.deleteSavedSession('${sess.id}')" title="Delete Session"><i data-lucide="trash-2"></i></button>
             </div>
           </div>
         `;
@@ -4564,9 +4588,8 @@ class WatchOnRepeat {
     }
   }
 
-  async deleteSavedSession(id) {
-    const confirm = await this.showConfirmDialog("Delete Session", "Are you sure you want to delete this saved session? This will remove the packaged snapshot of loops, settings, and notes.");
-    if (!confirm) return;
+  deleteSavedSession(id) {
+    if (!confirm("Are you sure you want to delete this saved session? This will remove the packaged snapshot of loops, settings, and notes.")) return;
     
     const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
     if (localInstances[id]) {
