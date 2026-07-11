@@ -65,3 +65,6 @@ When building features that rely on aggregate or global data, explicitly define 
 
 ### Dependency Tracing Rule
 Before modifying a shared UI component, global CSS class, or database table, explicitly trace its dependencies across the entire application to ensure changes do not cause collateral damage or break unrelated features.
+
+### Zero Assumptions Rule
+Always actively verify existing database schemas, local data structures, and native Web API methods before writing logic that interacts with them. Never rely on assumptions or memory when manipulating state or the DOM.
