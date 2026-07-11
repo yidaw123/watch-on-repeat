@@ -38,3 +38,6 @@ Never use destructive database commands or blind upserts that could accidentally
 
 ### Third-Party Ad Policy
 Never write code that attempts to block, suppress, detect, or circumvent advertisements served inside the YouTube, Vimeo, Dailymotion, or Twitch embedded player. Ad removal features apply only to WatchOnRepeat's own site-level advertisements (e.g. Google AdSense banners in our UI), never to the embedded video player itself.
+
+### Responsive Design Rule
+Every new UI feature must be verified on desktop and mobile layouts before being considered complete.
