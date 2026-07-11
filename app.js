@@ -942,6 +942,29 @@ class WatchOnRepeat {
       return;
     }
     
+    // Check subscription limits if creating a new session
+    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    if (!this.state.currentInstanceId) {
+      const userTier = this.state.user ? (this.state.user.tier || 'free') : 'free';
+      const userId = this.state.user ? this.state.user.id : 'guest';
+      const userInstancesCount = Object.values(localInstances).filter(i => i.userId === userId).length;
+      
+      let maxSessions = 3;
+      if (userTier === 'premium') maxSessions = 7;
+      if (userTier === 'pro') maxSessions = 10;
+      
+      if (userInstancesCount >= maxSessions) {
+        if (userTier !== 'pro') {
+          const nextTier = userTier === 'free' ? 'Premium' : 'Pro';
+          const nextLimit = userTier === 'free' ? 7 : 10;
+          this.openUpgradeModal(`You've reached the limit of ${maxSessions} saved sessions. Upgrade to ${nextTier} for ${nextLimit} sessions!`);
+        } else {
+          this.showToast(`You have reached the maximum limit of ${maxSessions} saved sessions! Please delete older ones first.`, "alert-circle");
+        }
+        return;
+      }
+    }
+    
     // Generate UUID if we don't have one
     const uuid = this.state.currentInstanceId || ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -1000,7 +1023,6 @@ class WatchOnRepeat {
       updatedAt: new Date().toISOString()
     };
     
-    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
     localInstances[uuid] = instance;
     this.saveDb('instances', localInstances);
     
