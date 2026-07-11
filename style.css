@@ -2342,6 +2342,9 @@ input[type="checkbox"]:focus {
   padding: 8px 12px;
   border-radius: var(--radius-md);
   transition: background 0.2s ease;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .yt-playlist-row:hover {
@@ -2386,6 +2389,7 @@ input[type="checkbox"]:focus {
   flex: 1;
   min-width: 0;
   gap: 4px;
+  overflow: hidden;
 }
 
 .yt-playlist-title {

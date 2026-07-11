@@ -77,7 +77,10 @@ class PlaylistsMixin {
           <div style="margin-bottom: 16px; display:flex; flex-direction:column; gap:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <button class="btn btn-sm btn-outline" onclick="app.backToPlaylists()"><i data-lucide="arrow-left"></i> Back</button>
-              <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${this.escapeHtml(p.id)}')" style="white-space: nowrap;"><i data-lucide="play"></i> Play Through</button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${this.escapeHtml(p.id)}')" style="white-space: nowrap;"><i data-lucide="play"></i> Play Through</button>
+                <button class="btn btn-danger btn-sm" onclick="app.deletePlaylist('${this.escapeHtml(p.id)}')" title="Delete Playlist" style="padding: 4px 8px; background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4);"><i data-lucide="trash-2"></i></button>
+              </div>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; gap: 8px;">
               <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 200px;">
@@ -153,7 +156,7 @@ class PlaylistsMixin {
             <div class="yt-playlist-title">${this.escapeHtml(v.title)}</div>
             <div class="yt-playlist-channel">${this.escapeHtml(v.platform)}</div>
           </div>
-          <button class="icon-btn text-red-500" onclick="app.removeVideoFromPlaylist('${this.escapeHtml(p.id)}', '${this.escapeHtml(v.videoId || v.id)}')" style="padding:4px;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
+          <button class="icon-btn text-white" onclick="app.removeVideoFromPlaylist('${this.escapeHtml(p.id)}', '${this.escapeHtml(v.videoId || v.id)}')" style="padding: 6px; border-radius: 4px; flex-shrink: 0; background: rgba(0,0,0,0.3); opacity: 0.8;" title="Remove Video"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
         `;
         vidsContainer.appendChild(card);
       });
