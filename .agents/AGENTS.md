@@ -68,3 +68,6 @@ Before modifying a shared UI component, global CSS class, or database table, exp
 
 ### Zero Assumptions Rule
 Always actively verify existing database schemas, local data structures, and native Web API methods before writing logic that interacts with them. Never rely on assumptions or memory when manipulating state or the DOM.
+
+### Async Management Rule
+Strictly manage asynchronous operations. Never allow background fetches, intervals, or auto-saves to mutate the database or UI until the core application state has been fully initialized and validated.
