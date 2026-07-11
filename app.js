@@ -1327,6 +1327,7 @@ class WatchOnRepeat {
     this.state.currentLifetimeLoops = 0;
     this.state.loopSeconds = 0;
     this.state.currentVideoDuration = 0;
+    this.state.historyLoaded = false;
 
     if (window.supabaseClient) {
       const promises = [
@@ -1354,6 +1355,7 @@ class WatchOnRepeat {
             .eq('platform', platform)
             .single()
             .then(({ data }) => {
+              this.state.historyLoaded = true;
               if (data) {
                 this.state.currentLifetimeLoops = data.loops_count;
                 this.updateStatsUI();
@@ -1559,7 +1561,7 @@ class WatchOnRepeat {
     
     localStorage.setItem('wor_saved_loops', JSON.stringify(savedLoops));
 
-    if (this.state.user && window.supabaseClient) {
+    if (this.state.user && window.supabaseClient && this.state.historyLoaded) {
       supabaseClient.from('user_history').upsert({
         user_id: this.state.user.id,
         video_id: id,
