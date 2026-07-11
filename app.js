@@ -2389,10 +2389,6 @@ class WatchOnRepeat {
     this.saveDb('favorites', favorites);
     this.updateFavoriteButtonUI();
     if (this.state.activeTab === 'favorites') this.renderFavoritesTab();
-
-    this.saveDb('favorites', favorites);
-    this.updateFavoriteButtonUI();
-    this.renderFavoritesTab();
   }
 
   updateFavoriteButtonUI() {
@@ -2704,7 +2700,7 @@ class WatchOnRepeat {
       
       // Also update current state if the video is currently playing
       if (this.state.currentVideo && this.state.currentVideo.id === videoId) {
-        this.updateFavoriteButton(false);
+        this.updateFavoriteButtonUI();
       }
       
       this.showToast("Removed from favorites", "trash-2");
