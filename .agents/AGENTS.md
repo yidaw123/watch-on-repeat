@@ -53,3 +53,6 @@ When creating UI elements, ensure buttons and interactive components share consi
 
 ### Error Handling Rule
 For the WatchOnRepeat project, prefer silent error handling. Unexpected errors should be logged to the browser console with sufficient context for debugging, while the UI should continue functioning whenever possible. Only surface an error to the user when an action cannot be completed or requires their intervention.
+
+### Technology Stack Rule
+For the WatchOnRepeat project, always use Vanilla JavaScript, HTML, and standard CSS unless explicitly instructed otherwise. Do not introduce React, Vue, Tailwind CSS, jQuery, or other frontend frameworks.
