@@ -56,3 +56,6 @@ For the WatchOnRepeat project, prefer silent error handling. Unexpected errors s
 
 ### Technology Stack Rule
 For the WatchOnRepeat project, always use Vanilla JavaScript, HTML, and standard CSS unless explicitly instructed otherwise. Do not introduce React, Vue, Tailwind CSS, jQuery, or other frontend frameworks.
+
+### State Sync & Verification Rule
+Before suggesting a commit or deployment, verify that all affected UI states and user flows have been tested. Database changes should be reflected immediately in the UI without requiring a manual page refresh.
