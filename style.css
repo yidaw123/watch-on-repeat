@@ -2257,7 +2257,7 @@ input[type="checkbox"]:focus {
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-md);
-  overflow: hidden;
+  margin-top: 12px;
 }
 
 .playlist-thumb-wrapper {
@@ -2268,7 +2268,7 @@ input[type="checkbox"]:focus {
 }
 
 /* Stacked card effect */
-.playlist-thumb-wrapper::before {
+.playlist-thumb-wrapper.stacked::before {
   content: '';
   position: absolute;
   top: -6px;
@@ -2276,11 +2276,11 @@ input[type="checkbox"]:focus {
   right: 3%;
   height: 100%;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   z-index: 1;
 }
 
-.playlist-thumb-wrapper::after {
+.playlist-thumb-wrapper.stacked::after {
   content: '';
   position: absolute;
   top: -12px;
@@ -2288,14 +2288,14 @@ input[type="checkbox"]:focus {
   right: 6%;
   height: 100%;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   z-index: 0;
 }
 
 .playlist-thumb-container {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   overflow: hidden;
   z-index: 2;
   background: #111;

@@ -221,8 +221,10 @@ class PlaylistsMixin {
         `;
       }
 
+      const isStacked = vidsCount > 1 ? ' stacked' : '';
+
       card.innerHTML = `
-        <div class="playlist-thumb-wrapper" onclick="app.viewPlaylist('${this.escapeHtml(p.id)}')">
+        <div class="playlist-thumb-wrapper${isStacked}" onclick="app.viewPlaylist('${this.escapeHtml(p.id)}')">
           <div class="playlist-thumb-container">
             ${thumbContent}
           </div>
