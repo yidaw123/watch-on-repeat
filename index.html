@@ -627,38 +627,6 @@
     </div>
   </div>
 
-  <!-- Pro Controls Guide Modal -->
-  <div id="pro-controls-modal" class="modal hidden">
-    <div class="modal-box" style="max-width: 500px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <h3 class="text-xl font-bold">Pro Controls Guide</h3>
-        <button class="btn btn-circle btn-sm" onclick="app.closeProControlsModal()"><i data-lucide="x"></i></button>
-      </div>
-      <div class="space-y-4">
-        <div>
-          <h4 class="font-bold text-white mb-1">Start / End Time Fine Tune (- / +)</h4>
-          <p class="text-sm text-gray-300">Nudges your loop's start or end time by tiny fractions of a second (0.05s) so you can get the timing absolutely perfect.</p>
-        </div>
-        <div>
-          <h4 class="font-bold text-white mb-1">Loop Segment Shift (&lt;- / -&gt;)</h4>
-          <p class="text-sm text-gray-300">Shifts the entire loop window backwards or forwards without changing its total length. Great for moving your loop to the next bar of a song.</p>
-        </div>
-        <div>
-          <h4 class="font-bold text-white mb-1">Loop Window Multiplier (½x / 2x)</h4>
-          <p class="text-sm text-gray-300">Instantly cuts your loop duration in half, or doubles it. Perfect for breaking down tricky sections into smaller pieces.</p>
-        </div>
-        <div>
-          <h4 class="font-bold text-white mb-1">Gradual Tempo (Auto-increase)</h4>
-          <p class="text-sm text-gray-300">Automatically increases the playback speed slightly (+0.05x) every time the video loops, helping you build up your speed naturally.</p>
-        </div>
-      </div>
-      <div class="modal-action">
-        <button class="btn w-full" onclick="app.closeProControlsModal()">Got it!</button>
-      </div>
-    </div>
-  </div>
-
-
   <!-- Login Modal -->
 
             <!-- Saved Loops Tab -->
@@ -1179,5 +1147,38 @@
       </div>
     </div>
   </div>
+  <!-- Pro Controls Guide Modal -->
+  <div class="modal-overlay hidden" id="pro-controls-modal" onclick="app.closeProControlsModal()" style="z-index: 9999;">
+    <div class="modal-card" style="max-width: 500px; padding: 24px; text-align: left;" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="app.closeProControlsModal()" style="position: absolute; top: 16px; right: 16px;">
+        <i data-lucide="x"></i>
+      </button>
+      <div class="modal-header border-b pb-4 mb-4 border-gray-800">
+        <h3 class="text-xl font-bold" style="color: var(--text-bright);">Pro Controls Guide</h3>
+      </div>
+      <div class="modal-body space-y-4">
+        <div>
+          <h4 class="font-bold text-white mb-1">Start / End Time Fine Tune (- / +)</h4>
+          <p class="text-sm text-gray-300">Nudges your loop's start or end time by tiny fractions of a second (0.05s) so you can get the timing absolutely perfect.</p>
+        </div>
+        <div>
+          <h4 class="font-bold text-white mb-1">Loop Segment Shift (&lt;- / -&gt;)</h4>
+          <p class="text-sm text-gray-300">Shifts the entire loop window backwards or forwards without changing its total length. Great for moving your loop to the next bar of a song.</p>
+        </div>
+        <div>
+          <h4 class="font-bold text-white mb-1">Loop Window Multiplier (½x / 2x)</h4>
+          <p class="text-sm text-gray-300">Instantly cuts your loop duration in half, or doubles it. Perfect for breaking down tricky sections into smaller pieces.</p>
+        </div>
+        <div>
+          <h4 class="font-bold text-white mb-1">Gradual Tempo (Auto-increase)</h4>
+          <p class="text-sm text-gray-300">Automatically increases the playback speed slightly (+0.05x) every time the video loops, helping you build up your speed naturally.</p>
+        </div>
+      </div>
+      <div class="modal-footer" style="margin-top: 24px;">
+        <button class="btn btn-primary w-full" onclick="app.closeProControlsModal()">Got it!</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
