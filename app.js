@@ -2704,18 +2704,26 @@ class WatchOnRepeat {
         f.loopsCount = historyItem ? historyItem.loopsCount : 0;
         const card = this.createVideoCard(f, true); // true to show loopsCount instead of global
         
+        const wrapper = document.createElement('div');
+        wrapper.style = "display: flex; align-items: center; gap: 12px;";
+        
+        card.style.flex = "1";
+        card.style.minWidth = "0";
+        
         // Add delete button specifically for favorites
         const delBtn = document.createElement('button');
         delBtn.className = 'btn-icon-delete';
         delBtn.innerHTML = '<i data-lucide="trash-2"></i>';
-        delBtn.style = "flex-shrink: 0; align-self: flex-start; margin-left: auto;";
+        delBtn.style = "flex-shrink: 0;";
         delBtn.onclick = (e) => {
           e.stopPropagation();
           this.deleteFavorite(f.videoId || f.id, f.platform);
         };
-        card.appendChild(delBtn);
+        
+        wrapper.appendChild(card);
+        wrapper.appendChild(delBtn);
 
-        this.elements.favoritesList.appendChild(card);
+        this.elements.favoritesList.appendChild(wrapper);
       });
       lucide.createIcons();
     }
