@@ -3977,15 +3977,8 @@ class WatchOnRepeat {
       const tempoCheckbox = document.getElementById('auto-tempo-checkbox');
       if (tempoCheckbox) {
         if (rate !== 1) {
-          tempoCheckbox.disabled = true;
           tempoCheckbox.checked = false;
           this.state.isAutoTempoEnabled = false;
-          tempoCheckbox.parentElement.style.opacity = '0.4';
-          tempoCheckbox.parentElement.title = "Gradual Tempo requires 1x Master Speed";
-        } else {
-          tempoCheckbox.disabled = false;
-          tempoCheckbox.parentElement.style.opacity = '1';
-          tempoCheckbox.parentElement.title = "";
         }
       }
     }

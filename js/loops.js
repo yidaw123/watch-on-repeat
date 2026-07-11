@@ -200,19 +200,14 @@ class LoopsMixin {
     }
     this.state.isAutoTempoEnabled = e.target.checked;
     
-    // Freeze playback speed dropdown to prevent conflicts
     const speedSelect = document.getElementById('playback-speed');
     if (speedSelect) {
       if (this.state.isAutoTempoEnabled) {
-        speedSelect.disabled = true;
-        speedSelect.parentElement.style.opacity = '0.4';
-        speedSelect.parentElement.title = "Playback Speed is frozen while Gradual Tempo is active";
+        if (this.state.playbackRate !== 1) {
+          this.setPlaybackSpeed(1);
+        }
       } else {
-        speedSelect.disabled = false;
-        speedSelect.parentElement.style.opacity = '1';
-        speedSelect.parentElement.title = "";
-        
-        // Remove all temporary Auto options and reset to 1x
+        // Remove all temporary Auto options when disabling
         Array.from(speedSelect.options).forEach(opt => {
           if (opt.text.includes('(Auto)')) speedSelect.removeChild(opt);
         });
