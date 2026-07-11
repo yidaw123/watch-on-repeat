@@ -1333,16 +1333,7 @@ h1, h2, h3, h4, .brand-name {
     display: none !important;
   }
   
-  #url-shortcut-tip {
-    display: none !important;
-  }
-  #url-shortcut-tip.mobile-expanded {
-    display: flex !important;
-    margin-top: 8px;
-  }
-  #mobile-pro-tip-btn {
-    display: inline-flex !important;
-  }
+
   
   .advanced-loop-controls {
     padding: 8px !important;
