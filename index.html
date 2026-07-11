@@ -336,7 +336,7 @@
                   </div>
                   <div style="display: flex; gap: 8px; align-items: center;">
                      <button id="record-btn" class="btn btn-error btn-sm" onclick="app.toggleRecording()"><i data-lucide="mic"></i> Record (30s Free)</button>
-                     <i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted); cursor: help;" title="Recorded audio is only saved temporarily and will be lost if you close the session. Download it to keep it!"></i>
+                     <span onclick="app.showInfoModal('Recorded audio is only saved temporarily and will be lost if you close the session. Download it to keep it!')" style="cursor:help;" title="Recorded audio is only saved temporarily and will be lost if you close the session. Download it to keep it!"><i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted);"></i></span>
                      <button id="play-recording-btn" class="btn btn-secondary btn-sm hidden" onclick="app.toggleRecordingPlayback()"><i data-lucide="play"></i> Play</button>
                      <a id="download-recording-btn" class="btn btn-secondary btn-sm hidden" download="recording.webm" style="text-decoration: none;"><i data-lucide="download"></i></a>
                      <button id="delete-recording-btn" class="btn btn-secondary btn-sm hidden" onclick="app.deleteCurrentRecording()"><i data-lucide="trash-2"></i></button>
@@ -357,7 +357,7 @@
                       <i data-lucide="layers" style="width:14px; height:14px; display:inline-block; margin-right:4px;"></i> Advanced Loop Segments
                     </span>
                   </label>
-                  <span title="When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments." tabindex="0" onclick="app.showInfoModal(this.title)" style="margin-left:6px;margin-right:6px;outline:none;cursor:pointer;"><i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);cursor:pointer;"></i></span>
+                  <span title="When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments." tabindex="0" onclick="app.showInfoModal('When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments.')" style="margin-left:6px;margin-right:6px;outline:none;cursor:pointer;"><i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);cursor:pointer;"></i></span>
                   <span class="premium-badge" style="cursor: pointer;" onclick="app.openUpgradeModal('Unlock Pro features including Advanced Segments and unlimited Audio Recording!')">Upgrade</span>
                 </div>
                 
@@ -376,7 +376,7 @@
                 <input type="text" id="loop-name-input" class="search-input" placeholder="Name session..." style="width: 140px; padding: 6px 12px; height: 32px;">
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <button class="btn btn-primary btn-sm" id="save-session-btn" onclick="app.saveInstance()"><i data-lucide="hard-drive"></i> Save Session</button>
-                  <i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted); cursor: help;" title="Save session saves all loop segments, playback settings, and notes."></i>
+                  <span onclick="app.showInfoModal('Save session saves all loop segments, playback settings, and notes.')" style="cursor:help;" title="Save session saves all loop segments, playback settings, and notes."><i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted);"></i></span>
                 </div>
                 <button class="btn btn-primary btn-sm" id="toggle-share-btn" onclick="app.generateShareableClip()"><i data-lucide="link"></i> Share Clip</button>
               </div>
