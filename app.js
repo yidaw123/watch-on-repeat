@@ -822,10 +822,8 @@ class WatchOnRepeat {
           hasProFeatures = true;
         }
         
-        // Save to DB so when loadVideo renders it reads these
-        const db = this.getDb('notes');
-        db[`${platform}_${videoId}`] = notesArr;
-        this.saveDb('notes', db);
+        // Save temporary notes in state so users can view them before choosing to save
+        this.state.sharedNotesToLoad = notesArr.sort((a,b) => a.time - b.time);
       } catch (e) {
         if (DEBUG_MODE) console.error("Failed to parse shared notes", e);
       }
@@ -847,11 +845,12 @@ class WatchOnRepeat {
     
     document.title = "Watch On Repeat | Loop YouTube Videos & Practice Tool";
 
-    // Show the player UI but leave the video area blank
-    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
-    this.elements.playerLoaded.classList.remove('hidden');
+    // Show the playerEmpty state and hide playerLoaded
+    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.remove('hidden');
+    if (this.elements.playerLoaded) this.elements.playerLoaded.classList.add('hidden');
     
     // Clear iframe container to keep it completely blank
+    this.destroyPlayers();
     this.elements.playerContainer.innerHTML = '';
     
     // Reset title and stats for empty state
@@ -1177,6 +1176,7 @@ class WatchOnRepeat {
     const videoUrl = URL.createObjectURL(file);
     
     // Clear container
+    this.destroyPlayers();
     this.elements.playerContainer.innerHTML = '';
     
     // Create native HTML5 video element
@@ -1224,6 +1224,44 @@ class WatchOnRepeat {
   // ==========================================
   // VIDEO LOADING & API WRAPPERS
   // ==========================================
+
+  destroyPlayers() {
+    if (this.state.players) {
+      if (this.state.players.youtube && typeof this.state.players.youtube.destroy === 'function') {
+        try { this.state.players.youtube.destroy(); } catch(e) {}
+      }
+      if (this.state.players.vimeo && typeof this.state.players.vimeo.destroy === 'function') {
+        try { this.state.players.vimeo.destroy(); } catch(e) {}
+      }
+      if (this.state.players.twitch && typeof this.state.players.twitch.destroy === 'function') {
+        try { this.state.players.twitch.destroy(); } catch(e) {}
+      }
+      if (this.state.players.dailymotion && typeof this.state.players.dailymotion.cleanup === 'function') {
+        try { this.state.players.dailymotion.cleanup(); } catch(e) {}
+      }
+      if (this.state.players.wistia && typeof this.state.players.wistia.remove === 'function') {
+        try { this.state.players.wistia.remove(); } catch(e) {}
+      }
+      if (this.state.players.html5) {
+        try { 
+           this.state.players.html5.pause();
+           this.state.players.html5.removeAttribute('src');
+           this.state.players.html5.load();
+        } catch(e) {}
+      }
+      
+      this.state.players = {
+        youtube: null,
+        vimeo: null,
+        dailymotion: null,
+        html5: null,
+        twitch: null,
+        soundcloud: null,
+        wistia: null,
+        local: null
+      };
+    }
+  }
 
   async  loadVideo(id, platform = 'youtube') {
     this.flushAnalytics();
@@ -1318,6 +1356,7 @@ class WatchOnRepeat {
     }
     
     // Clear previous iframes
+    this.destroyPlayers();
     this.elements.playerContainer.innerHTML = '';
     
     // Show Loaded State
@@ -1884,6 +1923,7 @@ class WatchOnRepeat {
 
   // --- Dailymotion Player Controller ---
   initDailymotionPlayer(id) {
+    this.destroyPlayers();
     this.elements.playerContainer.innerHTML = '';
     const iframe = document.createElement('iframe');
     iframe.id = "dm-player-target";
@@ -2134,9 +2174,18 @@ class WatchOnRepeat {
     this.state.loopSeconds = 0;
     this.state.loopTimer = setInterval(() => {
       this.state.loopSeconds++;
-      const mins = Math.floor(this.state.loopSeconds / 60).toString().padStart(2, '0');
-      const secs = (this.state.loopSeconds % 60).toString().padStart(2, '0');
-      this.elements.loopTimer.textContent = `Session time: ${mins}:${secs}`;
+      let timeStr = "";
+      if (this.state.loopSeconds >= 3600) {
+        const hrs = Math.floor(this.state.loopSeconds / 3600).toString().padStart(2, '0');
+        const mins = Math.floor((this.state.loopSeconds % 3600) / 60).toString().padStart(2, '0');
+        const secs = (this.state.loopSeconds % 60).toString().padStart(2, '0');
+        timeStr = `${hrs}:${mins}:${secs}`;
+      } else {
+        const mins = Math.floor(this.state.loopSeconds / 60).toString().padStart(2, '0');
+        const secs = (this.state.loopSeconds % 60).toString().padStart(2, '0');
+        timeStr = `${mins}:${secs}`;
+      }
+      this.elements.loopTimer.textContent = `Session time: ${timeStr}`;
       this.updateAnalyticsTime();
     }, 1000);
 
@@ -3403,6 +3452,7 @@ class WatchOnRepeat {
   }
 
   initSoundCloudPlayer(id) {
+    this.destroyPlayers();
     this.elements.playerContainer.innerHTML = '';
     const iframe = document.createElement('iframe');
     iframe.src = `https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${id}&auto_play=true&show_artwork=true&visual=true`;
@@ -4292,7 +4342,7 @@ class WatchOnRepeat {
       
       let headerHtml = `
         <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333;">
-          <div style="display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer;" onclick="app.loadVideo('${videoGroup.videoId}', '${videoGroup.platform}')">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer;" onclick="app.loadVideo('${this.escapeHtml(videoGroup.videoId)}', '${this.escapeHtml(videoGroup.platform)}')">
             <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
             <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
               <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;">

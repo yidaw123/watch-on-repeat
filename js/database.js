@@ -42,7 +42,15 @@ class DatabaseMixin {
 
   saveDb(key, data) {
     localStorage.setItem('wor_' + key, JSON.stringify(data));
-    this.pushToSupabase(key, data);
+    
+    if (key === 'analytics') {
+      if (this._analyticsTimeout) clearTimeout(this._analyticsTimeout);
+      this._analyticsTimeout = setTimeout(() => {
+        this.pushToSupabase(key, data);
+      }, 5000);
+    } else {
+      this.pushToSupabase(key, data);
+    }
   }
 
   async syncFromSupabase() {

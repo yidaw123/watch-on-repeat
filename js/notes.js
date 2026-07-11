@@ -1,4 +1,4 @@
-window.NotesMixin = {
+class NotesMixin {
   syncNotesToCloud(vId, notesArray) {
     if (!this.state.user || !window.supabaseClient || !this.state.currentVideo) return;
     
@@ -16,7 +16,7 @@ window.NotesMixin = {
     }, { onConflict: 'user_id, video_id, platform' }).then(({ error }) => {
       if (error && DEBUG_MODE) console.error("Notes Data Sync Error:", error);
     });
-  },
+  }
 
   async addNote(isManual = false) {
     if (!this.state.currentVideo) return;
@@ -46,20 +46,15 @@ window.NotesMixin = {
     
     const notes = this.getDb('notes');
     const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
-    if (!notes[vId]) notes[vId] = [];
-    
-    const noteObj = {
-      id: Date.now().toString(),
-      time: Math.floor(time),
-      text: text
-    };
     
     // Enforce Notes Limit for Free tier
-    const tier = this.state.user ? this.state.user.tier : 'free';
-    if (tier === 'free') {
+    const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+    if (!isPremium) {
       // 2. Max 5 videos with notes
-      const uniqueVideos = Object.keys(notes).filter(k => k !== '__titles');
-      if (!notes[vId] && uniqueVideos.length >= 5) {
+      const uniqueVideos = Object.keys(notes).filter(k => k !== '__titles' && Array.isArray(notes[k]) && notes[k].length > 0);
+      const isNewVideo = !notes[vId] || notes[vId].length === 0;
+      
+      if (isNewVideo && uniqueVideos.length >= 5) {
         this.openUpgradeModal("Free accounts can only add notes to 5 videos total. Upgrade to keep adding notes!");
         return;
       }
@@ -71,6 +66,14 @@ window.NotesMixin = {
         return;
       }
     }
+
+    if (!notes[vId]) notes[vId] = [];
+    
+    const noteObj = {
+      id: Date.now().toString(),
+      time: Math.floor(time),
+      text: text
+    };
 
     if (!notes.__titles) notes.__titles = {};
     notes.__titles[vId] = this.state.currentVideo.title;
@@ -91,7 +94,7 @@ window.NotesMixin = {
         this.showToast("Loving the features? Create a free account to save your loops, notes, and playlists so you never lose them!", "heart");
       }, 2000);
     }
-  },
+  }
 
   deleteNote(noteId) {
     const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
@@ -106,7 +109,7 @@ window.NotesMixin = {
         this.showToast("Note deleted", "trash-2");
       }
     }
-  },
+  }
 
   async deleteAllNotes() {
     const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
@@ -120,13 +123,17 @@ window.NotesMixin = {
       this.renderNotes();
       if (this.showToast) this.showToast("All notes deleted", "trash-2");
     }
-  },
+  }
 
   renderNotes() {
     if (!this.state.currentVideo) return;
     const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
-    const notes = db[vId] || [];
+    let notes = db[vId] || [];
+
+    if (this.state.sharedNotesToLoad) {
+      notes = this.state.sharedNotesToLoad;
+    }
     
     const isReadOnly = this.state.isReadOnlyShared;
     const noteInput = document.getElementById('note-input');
@@ -158,6 +165,21 @@ window.NotesMixin = {
     }
     
     this.elements.notesList.innerHTML = '';
+    
+    if (this.state.sharedNotesToLoad) {
+      const saveBtnContainer = document.createElement('div');
+      saveBtnContainer.style.marginBottom = '12px';
+      saveBtnContainer.innerHTML = `
+        <div style="background: rgba(147, 51, 234, 0.1); padding: 12px; border-radius: 8px; border: 1px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="color: var(--primary-color); font-weight: 500; font-size: 14px;">Viewing Shared Notes</div>
+            <div style="color: var(--text-muted); font-size: 12px;">This is a temporary view.</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="app.saveSharedNotes()">Save & Override</button>
+        </div>
+      `;
+      this.elements.notesList.appendChild(saveBtnContainer);
+    }
     
     const deleteAllNotesBtn = document.getElementById('delete-all-notes-btn');
     if (notes.length === 0) {
@@ -191,7 +213,7 @@ window.NotesMixin = {
     
     this.renderNoteMarkers();
     this.renderActiveNotesSummary(db, vId);
-  },
+  }
 
   renderActiveNotesSummary(db, currentVId) {
     const listEl = document.getElementById('active-notes-list');
@@ -244,13 +266,13 @@ window.NotesMixin = {
 
       div.innerHTML = `
         <div style="display: flex; align-items: center; gap: 12px; flex: 1; overflow: hidden;">
-          <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0; cursor: pointer;" alt="thumbnail" onclick="app.loadVideo('${videoId}', '${platform}'); window.scrollTo({top: 0, behavior: 'smooth'});">
+          <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0; cursor: pointer;" alt="thumbnail" onclick="app.loadVideo('${this.escapeHtml(videoId)}', '${this.escapeHtml(platform)}'); window.scrollTo({top: 0, behavior: 'smooth'});">
           <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            <a href="${appUrl}" onclick="event.preventDefault(); app.loadVideo('${videoId}', '${platform}'); window.scrollTo({top: 0, behavior: 'smooth'});" style="color: var(--primary-color); display: block; overflow: hidden; text-overflow: ellipsis; font-weight: 500; text-decoration: none;">${this.escapeHtml(title)}</a>
+            <a href="${appUrl}" onclick="event.preventDefault(); app.loadVideo('${this.escapeHtml(videoId)}', '${this.escapeHtml(platform)}'); window.scrollTo({top: 0, behavior: 'smooth'});" style="color: var(--primary-color); display: block; overflow: hidden; text-overflow: ellipsis; font-weight: 500; text-decoration: none;">${this.escapeHtml(title)}</a>
             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${noteCount} saved note${noteCount !== 1 ? 's' : ''}</div>
           </div>
         </div>
-        <button class="icon-btn text-red-500" aria-label="Clear all notes for this video" onclick="app.clearNotesForVideo('${id}')" title="Clear all notes for this video" style="padding: 4px; margin-left: 8px; flex-shrink: 0;">
+        <button class="icon-btn text-red-500" aria-label="Clear all notes for this video" onclick="app.clearNotesForVideo('${this.escapeHtml(id)}')" title="Clear all notes for this video" style="padding: 4px; margin-left: 8px; flex-shrink: 0;">
           <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
         </button>
       `;
@@ -258,7 +280,7 @@ window.NotesMixin = {
     });
     
     if (window.lucide) window.lucide.createIcons();
-  },
+  }
 
   clearNotesForVideo(vId) {
     const db = this.getDb('notes');
@@ -269,12 +291,12 @@ window.NotesMixin = {
       this.renderNotes();
       this.showToast("Notes cleared for video", "trash-2");
     }
-  },
+  }
 
   toggleNoteMarkers(e) {
     this.state.showNoteMarkers = e.target.checked;
     this.renderNoteMarkers();
-  },
+  }
 
   renderNoteMarkers() {
     const container = document.getElementById('timeline-markers');
@@ -311,4 +333,17 @@ window.NotesMixin = {
       }
     });
   }
-};
+
+  saveSharedNotes() {
+    if (!this.state.sharedNotesToLoad || !this.state.currentVideo) return;
+    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const db = this.getDb('notes');
+    db[vId] = this.state.sharedNotesToLoad;
+    this.saveDb('notes', db);
+    this.state.sharedNotesToLoad = null;
+    this.showToast("Shared notes saved to your session!", "check");
+    this.renderNotes();
+  }
+}
+
+window.NotesMixin = NotesMixin;

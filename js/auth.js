@@ -1,4 +1,12 @@
 class AuthMixin {
+  validatePassword(password) {
+    if (password.length < 7 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      this.showToast("Password must be at least 7 characters and contain both letters and numbers.", "alert-circle");
+      return false;
+    }
+    return true;
+  }
+
   openLoginModal() {
     this.elements.loginModal.classList.remove('hidden');
     this.elements.authOptions.classList.remove('hidden');
@@ -151,6 +159,10 @@ class AuthMixin {
 
     if (!email || !password) return;
 
+    if (!this.validatePassword(password)) {
+      return;
+    }
+
     this.elements.authOptions.classList.add('hidden');
     this.elements.authLoading.classList.remove('hidden');
     this.elements.authLoadingText.textContent = "Authenticating with Supabase...";
@@ -191,8 +203,7 @@ class AuthMixin {
       return;
     }
 
-    if (password.length < 7 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-      this.showToast("Password must be at least 7 characters and contain both letters and numbers.", "alert-circle");
+    if (!this.validatePassword(password)) {
       return;
     }
 

@@ -53,7 +53,7 @@ class PlaylistsMixin {
           </div>
           <div class="yt-playlist-info">
             <div class="yt-playlist-title">${this.escapeHtml(v.title)}</div>
-            <div class="yt-playlist-channel">${v.platform}</div>
+            <div class="yt-playlist-channel">${this.escapeHtml(v.platform)}</div>
           </div>
         `;
         list.appendChild(card);
@@ -77,12 +77,12 @@ class PlaylistsMixin {
           <div style="margin-bottom: 16px; display:flex; flex-direction:column; gap:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <button class="btn btn-sm btn-outline" onclick="app.backToPlaylists()"><i data-lucide="arrow-left"></i> Back</button>
-              <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${p.id}')" style="white-space: nowrap;"><i data-lucide="play"></i> Play Through</button>
+              <button class="btn btn-primary btn-sm" onclick="app.playPlaylist('${this.escapeHtml(p.id)}')" style="white-space: nowrap;"><i data-lucide="play"></i> Play Through</button>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; gap: 8px;">
               <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 200px;">
                 <input type="text" class="search-input" data-target="playlist-videos-container" placeholder="Search videos..." style="flex: 1;" onkeyup="app.filterTabList(this)">
-                <select class="search-input" style="padding: 6px 10px; width: auto; font-size: 13px;" onchange="app.sortPlaylist('${p.id}', this.value)">
+                <select class="search-input" style="padding: 6px 10px; width: auto; font-size: 13px;" onchange="app.sortPlaylist('${this.escapeHtml(p.id)}', this.value)">
                   <option value="">Sort By...</option>
                   <option value="date">Date Added</option>
                   <option value="alpha">Alphabetical</option>
@@ -146,14 +146,14 @@ class PlaylistsMixin {
           <div class="yt-playlist-index">
             ${isActive ? '<i data-lucide="play" style="width:14px;height:14px;color:var(--color-primary)"></i>' : (index + 1)}
           </div>
-          <div class="yt-playlist-thumb-wrapper" onclick="app.loadVideo('${v.videoId || v.id}', '${v.platform}')" style="cursor:pointer;">
+          <div class="yt-playlist-thumb-wrapper" onclick="app.loadVideo('${this.escapeHtml(v.videoId || v.id)}', '${this.escapeHtml(v.platform)}')" style="cursor:pointer;">
             <img src="${this.escapeHtml(thumbUrl)}" class="yt-playlist-thumb" alt="${this.escapeHtml(v.title)}">
           </div>
-          <div class="yt-playlist-info" onclick="app.loadVideo('${v.videoId || v.id}', '${v.platform}')" style="cursor:pointer;">
+          <div class="yt-playlist-info" onclick="app.loadVideo('${this.escapeHtml(v.videoId || v.id)}', '${this.escapeHtml(v.platform)}')" style="cursor:pointer;">
             <div class="yt-playlist-title">${this.escapeHtml(v.title)}</div>
-            <div class="yt-playlist-channel">${v.platform}</div>
+            <div class="yt-playlist-channel">${this.escapeHtml(v.platform)}</div>
           </div>
-          <button class="icon-btn text-red-500" onclick="app.removeVideoFromPlaylist('${p.id}', '${v.videoId || v.id}')" style="padding:4px;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
+          <button class="icon-btn text-red-500" onclick="app.removeVideoFromPlaylist('${this.escapeHtml(p.id)}', '${this.escapeHtml(v.videoId || v.id)}')" style="padding:4px;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
         `;
         vidsContainer.appendChild(card);
       });
@@ -231,12 +231,12 @@ class PlaylistsMixin {
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
             <div style="display:flex; gap:8px;">
-              ${p.isPublic ? `<button class="btn btn-outline" style="padding:4px 8px; font-size:11px;" onclick="app.copyPlaylistLink('${p.id}')"><i data-lucide="link" style="width:12px;height:12px;"></i> Share</button>` : ''}
+              ${p.isPublic ? `<button class="btn btn-outline" style="padding:4px 8px; font-size:11px;" onclick="app.copyPlaylistLink('${this.escapeHtml(p.id)}')"><i data-lucide="link" style="width:12px;height:12px;"></i> Share</button>` : ''}
               <label style="display:flex; align-items:center; gap:4px; font-size:12px; cursor:pointer;">
-                <input type="checkbox" ${p.isPublic ? 'checked' : ''} onchange="app.togglePlaylistPublic('${p.id}', this.checked)"> Public
+                <input type="checkbox" ${p.isPublic ? 'checked' : ''} onchange="app.togglePlaylistPublic('${this.escapeHtml(p.id)}', this.checked)"> Public
               </label>
             </div>
-            <button class="icon-btn text-red-500" onclick="app.deletePlaylist('${p.id}')" style="padding:0;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
+            <button class="icon-btn text-red-500" onclick="app.deletePlaylist('${this.escapeHtml(p.id)}')" style="padding:0;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
           </div>
         </div>
       `;
@@ -282,6 +282,15 @@ class PlaylistsMixin {
     const v = p.videos[0];
     this.showToast(`Starting Playlist: ${this.escapeHtml(p.name)}`, 'play');
     this.loadVideo(v.videoId || v.id, v.platform);
+  }
+
+  deletePlaylist(id) {
+    if (!confirm('Are you sure you want to delete this playlist?')) return;
+    const playlists = this.getDb('playlists');
+    const filtered = playlists.filter(p => !(p.id === id && p.userId === this.state.user.id));
+    this.saveDb('playlists', filtered);
+    this.renderPlaylistsTab();
+    this.showToast("Playlist deleted", "trash-2");
   }
 
   removeVideoFromPlaylist(playlistId, videoId) {

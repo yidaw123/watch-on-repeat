@@ -122,7 +122,7 @@ class AudioRecorderMixin {
       
       if (!isPremium && elapsed >= 30) {
         this.stopRecording();
-        this.showPremiumModal("Recording longer than 30 seconds requires a Premium account.");
+        this.openUpgradeModal("Recording longer than 30 seconds requires a Premium account.");
       }
     }, 1000);
   }
@@ -152,9 +152,10 @@ class AudioRecorderMixin {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
     
+    const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
     const recordBtn = document.getElementById('record-btn');
     if (recordBtn) {
-      recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (30s Free)';
+      recordBtn.innerHTML = isPremium ? '<i data-lucide="mic"></i> Record (1hr)' : '<i data-lucide="mic"></i> Record (30s Free)';
       recordBtn.classList.remove('btn-secondary');
       recordBtn.classList.add('btn-error');
       if (window.lucide) window.lucide.createIcons();
