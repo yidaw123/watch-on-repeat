@@ -4653,16 +4653,30 @@ class WatchOnRepeat {
     
     this.elements.analyticsWeeklyTime.textContent = formatH(db.weeklyTime[weekStr] || 0);
     
-    const fakeTitles = ["Chill Beats", "Synthwave Session", "Ambient Relaxation", "Nature Sounds", "Epic Orchestral", "Developer Focus", "Cozy Coffee Shop", "Live Music Session", "lofi hip hop radio - beats to relax/study to"];
+    const fakeKeywords = ["Chill Beats", "Synthwave Session", "Ambient Relaxation", "Nature Sounds", "Epic Orchestral", "Developer Focus", "Cozy Coffee Shop", "Live Music Session", "lofi hip hop radio", "Twitch Stream:", "Movie Buff Builds", "Joyner Lucas - Monsters"];
     
     let hasFake = false;
     if (db.segments) {
       for (const key in db.segments) {
-        if (fakeTitles.includes(db.segments[key].videoTitle) || fakeTitles.includes(db.segments[key].name)) {
+        const title = db.segments[key].videoTitle || '';
+        const name = db.segments[key].name || '';
+        if (fakeKeywords.some(fk => title.includes(fk) || name.includes(fk))) {
           delete db.segments[key];
           hasFake = true;
         }
       }
+      
+      // Reset fake hours that were injected by the mock script
+      if (db.totalTime > 200000) {
+        db.totalTime = 0;
+        db.weeklyTime = {};
+        hasFake = true;
+        
+        // Recalculate visual UI immediately
+        this.elements.analyticsTotalTime.textContent = formatH(0);
+        this.elements.analyticsWeeklyTime.textContent = formatH(0);
+      }
+      
       if (hasFake) {
         this.saveDb('analytics', db);
       }
