@@ -2275,7 +2275,9 @@ input[type="checkbox"]:focus {
   left: 3%;
   right: 3%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.4);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   z-index: 1;
 }
@@ -2287,7 +2289,9 @@ input[type="checkbox"]:focus {
   left: 6%;
   right: 6%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.3);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   z-index: 0;
 }
