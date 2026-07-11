@@ -806,7 +806,7 @@ h1, h2, h3, h4, .brand-name {
 /* Sidebar Tabs */
 .sidebar-tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   background: rgba(15, 23, 42, 0.4);
   border-bottom: 1px solid var(--border-glass);
   padding: 0.25rem;
@@ -828,6 +828,8 @@ h1, h2, h3, h4, .brand-name {
   transition: var(--transition-fast);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center;
+  word-break: break-word;
 }
 
 .tab-btn:hover {
