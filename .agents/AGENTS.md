@@ -44,3 +44,6 @@ Every new UI feature must be verified on desktop and mobile layouts before being
 
 ### Functionality Preservation Rule
 When modifying existing functionality, preserve current features and user workflows unless explicitly instructed to change them.
+
+### DOM Manipulation Rule
+Avoid destructive DOM operations that unnecessarily recreate elements or break existing event listeners. Prefer targeted updates and preserve component state whenever practical.
