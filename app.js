@@ -984,7 +984,7 @@ class WatchOnRepeat {
       const userId = this.state.user ? this.state.user.id : 'guest';
       const userInstancesCount = Object.values(localInstances).filter(i => i.userId === userId).length;
       
-      let maxSessions = 5;
+      let maxSessions = 3;
       if (userTier === 'premium') maxSessions = 10;
       if (userTier === 'pro') maxSessions = 15;
       
