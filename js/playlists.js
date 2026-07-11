@@ -289,8 +289,14 @@ class PlaylistsMixin {
     this.loadVideo(v.videoId || v.id, v.platform);
   }
 
-  deletePlaylist(id) {
-    if (!confirm('Are you sure you want to delete this playlist?')) return;
+  async deletePlaylist(id) {
+    const confirmed = await window.app.showCustomConfirm({
+      title: 'Delete Playlist',
+      message: 'Are you sure you want to delete this playlist?',
+      isDestructive: true,
+      okText: 'Delete'
+    });
+    if (!confirmed) return;
     const playlists = this.getDb('playlists');
     const filtered = playlists.filter(p => !(p.id === id && p.userId === this.state.user.id));
     this.saveDb('playlists', filtered);

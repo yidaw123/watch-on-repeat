@@ -487,8 +487,14 @@ class LoopsMixin {
     if (this.updateTimelineUI) this.updateTimelineUI();
   }
 
-  deleteAllSegments() {
-    if (!confirm("Are you sure you want to delete all segments?")) return;
+  async deleteAllSegments() {
+    const confirmed = await window.app.showCustomConfirm({
+      title: 'Delete All Segments',
+      message: 'Are you sure you want to delete all segments?',
+      isDestructive: true,
+      okText: 'Delete All'
+    });
+    if (!confirmed) return;
     const dur = this.state.currentVideoDuration || 0;
     this.state.abLoop.multiSegments = [];
     this.state.abLoop.multiSegments.push({ start: 0, end: dur, speed: 1.0 });

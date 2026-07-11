@@ -2344,7 +2344,13 @@ class WatchOnRepeat {
   async clearHistory() {
     if (!this.state.user) return;
     
-    if (!confirm("Are you sure you want to clear your entire loop history?")) return;
+    const confirmed = await this.showCustomConfirm({
+      title: 'Clear History',
+      message: 'Are you sure you want to clear your entire loop history? This action cannot be undone.',
+      isDestructive: true,
+      okText: 'Clear History'
+    });
+    if (!confirmed) return;
 
     const btnEl = document.getElementById('clear-history-btn');
     this.setButtonLoading(btnEl, true);
@@ -2717,7 +2723,14 @@ class WatchOnRepeat {
 
   async deleteAllFavorites() {
     if (!this.state.user) return;
-    if (!confirm("Are you sure you want to remove ALL your favorite videos? This cannot be undone.")) return;
+    
+    const confirmed = await this.showCustomConfirm({
+      title: 'Remove All Favorites',
+      message: 'Are you sure you want to remove ALL your favorite videos? This cannot be undone.',
+      isDestructive: true,
+      okText: 'Remove All'
+    });
+    if (!confirmed) return;
     
     let db = this.getDb('favorites');
     db = db.filter(f => f.userId !== this.state.user.id);
@@ -2911,7 +2924,7 @@ class WatchOnRepeat {
     // Force browser reflow to ensure the CSS transition triggers
     void this.elements.toast.offsetWidth;
     
-    this.elements.toast.classList.add('show');
+    this.elements.toast.classList.show('show');
     
     lucide.createIcons();
     
@@ -2938,9 +2951,100 @@ class WatchOnRepeat {
 
   closeInfoModal() {
     const modal = document.getElementById('info-modal');
-    if (modal) {
-      modal.classList.add('hidden');
-    }
+    if (modal) modal.classList.add('hidden');
+  }
+
+  showCustomConfirm(options) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('new-confirm-modal');
+      const titleEl = document.getElementById('new-confirm-title');
+      const msgEl = document.getElementById('new-confirm-message');
+      const promptContainer = document.getElementById('new-confirm-prompt-container');
+      const inputEl = document.getElementById('new-confirm-input');
+      const cancelBtn = document.getElementById('new-confirm-cancel');
+      const okBtn = document.getElementById('new-confirm-ok');
+
+      if (!modal) {
+        // Fallback to native
+        if (options.requireWord) {
+          const val = prompt(options.message + `\nType '${options.requireWord}' to confirm.`);
+          return resolve(val === options.requireWord);
+        } else {
+          return resolve(confirm(options.message));
+        }
+      }
+
+      // Configure Modal
+      titleEl.textContent = options.title || 'Confirm Action';
+      msgEl.textContent = options.message || 'Are you sure?';
+      okBtn.textContent = options.okText || 'Confirm';
+
+      if (options.isDestructive) {
+        okBtn.className = 'btn btn-error';
+      } else {
+        okBtn.className = 'btn btn-primary';
+      }
+
+      if (options.requireWord) {
+        promptContainer.classList.remove('hidden');
+        inputEl.value = '';
+        inputEl.placeholder = `Type '${options.requireWord}'`;
+        okBtn.disabled = true;
+
+        inputEl.oninput = () => {
+          okBtn.disabled = (inputEl.value !== options.requireWord);
+        };
+      } else {
+        promptContainer.classList.add('hidden');
+        okBtn.disabled = false;
+        inputEl.oninput = null;
+      }
+
+      modal.classList.remove('hidden');
+      if (options.requireWord) {
+        setTimeout(() => inputEl.focus(), 50);
+      } else {
+        setTimeout(() => okBtn.focus(), 50);
+      }
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        cancelBtn.removeEventListener('click', onCancel);
+        okBtn.removeEventListener('click', onOk);
+        modal.removeEventListener('click', onBackdropClick);
+        document.removeEventListener('keydown', onEscape);
+      };
+
+      const onCancel = (e) => {
+        if (e) e.stopPropagation();
+        cleanup();
+        resolve(false);
+      };
+
+      const onOk = (e) => {
+        if (e) e.stopPropagation();
+        if (options.requireWord && inputEl.value !== options.requireWord) return;
+        cleanup();
+        resolve(true);
+      };
+
+      const onBackdropClick = (e) => {
+        if (e.target === modal) {
+          onCancel(e);
+        }
+      };
+
+      const onEscape = (e) => {
+        if (e.key === 'Escape') {
+          onCancel(e);
+        }
+      };
+
+      cancelBtn.addEventListener('click', onCancel);
+      okBtn.addEventListener('click', onOk);
+      modal.addEventListener('click', onBackdropClick);
+      document.addEventListener('keydown', onEscape);
+    });
   }
 
 
@@ -2989,7 +3093,7 @@ class WatchOnRepeat {
     if (parts.length === 3) {
       return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
     } else if (parts.length === 2) {
-      return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+      return parseInt(parts[0]) * 60 + parseInt(parts[1]);
     }
     return parseFloat(str) || 0;
   }
@@ -4084,7 +4188,14 @@ class WatchOnRepeat {
   }
 
   async clearLocalCache() {
-    if (confirm("Are you sure you want to clear your local application cache? This will NOT delete your cloud data.")) {
+    const confirmed = await this.showCustomConfirm({
+      title: 'Clear Local Cache',
+      message: 'Are you sure you want to clear your local application cache? This will NOT delete your cloud data.',
+      isDestructive: true,
+      okText: 'Clear Cache'
+    });
+    
+    if (confirmed) {
       const btnEl = document.querySelector('button[onclick="app.clearLocalCache()"]');
       this.setButtonLoading(btnEl, true);
       // Only remove keys starting with wor_
@@ -4099,9 +4210,17 @@ class WatchOnRepeat {
   }
 
   async deleteAccount() {
-    if (!window.supabaseClient) return;
-    const confirmation = prompt("Are you absolutely sure? This will permanently delete your account, history, and playlists. Type 'DELETE' to confirm.");
-    if (confirmation === 'DELETE') {
+    if (!this.state.user) return;
+    
+    const confirmed = await this.showCustomConfirm({
+      title: 'Delete Account',
+      message: "Are you absolutely sure? This will permanently delete your account, history, and playlists.",
+      isDestructive: true,
+      okText: 'Permanently Delete',
+      requireWord: 'DELETE'
+    });
+    
+    if (confirmed) {
       const btnEl = document.querySelector('button[onclick="app.deleteAccount()"]');
       this.setButtonLoading(btnEl, true);
       try {
@@ -4120,8 +4239,14 @@ class WatchOnRepeat {
   }
 
   async cancelSubscription() {
-    if (!window.supabaseClient) return;
-    if (confirm("Are you sure you want to cancel your subscription? You will retain access until the end of your billing cycle.")) {
+    const confirmed = await this.showCustomConfirm({
+      title: 'Cancel Subscription',
+      message: 'Are you sure you want to cancel your subscription? You will retain access until the end of your billing cycle.',
+      isDestructive: true,
+      okText: 'Cancel Subscription'
+    });
+    
+    if (confirmed) {
       const btnEl = document.getElementById('settings-cancel-sub-btn');
       this.setButtonLoading(btnEl, true);
       const { error } = await supabaseClient.from('users').update({ cancel_at_period_end: true }).eq('id', this.state.user.id);
@@ -4400,7 +4525,7 @@ class WatchOnRepeat {
       let headerHtml = `
         <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333;">
           <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer;" onclick="app.loadVideo('${this.escapeHtml(videoGroup.videoId)}', '${this.escapeHtml(videoGroup.platform)}')">
-            <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
+            <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
             <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
               <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;">
                 ${this.escapeHtml(videoGroup.title)}
@@ -4473,18 +4598,30 @@ class WatchOnRepeat {
     if (checkedItems.length === 0) return;
     
     const count = checkedItems.length;
-    if (!confirm(`Are you sure you want to delete ${count} saved loop${count > 1 ? 's' : ''}?`)) return;
+    const confirmed = await this.showCustomConfirm({
+      title: 'Delete Saved Loops',
+      message: `Are you sure you want to delete ${count} saved loop${count > 1 ? 's' : ''}?`,
+      isDestructive: true,
+      okText: 'Delete'
+    });
+    if (!confirmed) return;
     
     const ids = Array.from(checkedItems).map(cb => cb.value).join(',');
     this.deleteSavedLoops(ids, true);
   }
 
-  deleteSavedLoops(idsString, skipConfirm = false) {
+  async deleteSavedLoops(idsString, skipConfirm = false) {
     if (!idsString) return;
     const ids = idsString.split(',');
     
     if (!skipConfirm) {
-      if (!confirm(`Are you sure you want to delete ${ids.length === 1 ? 'this' : ids.length} saved loop${ids.length > 1 ? 's' : ''}?`)) return;
+      const confirmed = await this.showCustomConfirm({
+        title: 'Delete Saved Loop',
+        message: `Are you sure you want to delete ${ids.length === 1 ? 'this' : ids.length} saved loop${ids.length > 1 ? 's' : ''}?`,
+        isDestructive: true,
+        okText: 'Delete'
+      });
+      if (!confirmed) return;
     }
     
     const db = this.getDb('analytics');
@@ -4537,7 +4674,7 @@ class WatchOnRepeat {
         html += `
           <div class="video-card note-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid #333; border-radius: 8px; margin-bottom: 8px;">
             <div style="flex: 1; min-width: 0; display: flex; gap: 12px; align-items: center; cursor: pointer;" onclick="app.loadInstance('${sess.id}')">
-              <img src="${this.escapeHtml(thumbUrl)}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px;" alt="thumbnail" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
+              <img src="${this.escapeHtml(thumbUrl)}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px;" alt="thumbnail" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
               <div style="flex: 1; min-width: 0;">
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: white;">${this.escapeHtml(sess.title)}</h4>
                 <div style="display: flex; gap: 8px; align-items: center; color: #888; font-size: 12px;">
@@ -4559,12 +4696,18 @@ class WatchOnRepeat {
     }
   }
 
-  deleteSavedSession(id) {
-    if (!confirm("Are you sure you want to delete this saved session? This will remove the packaged snapshot of loops, settings, and notes.")) return;
+  async deleteSavedSession(sessionId) {
+    const confirmed = await this.showCustomConfirm({
+      title: 'Delete Session',
+      message: 'Are you sure you want to delete this saved session? This will remove the packaged snapshot of loops, settings, and notes.',
+      isDestructive: true,
+      okText: 'Delete Session'
+    });
+    if (!confirmed) return;
     
     const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
-    if (localInstances[id]) {
-      delete localInstances[id];
+    if (localInstances[sessionId]) {
+      delete localInstances[sessionId];
       localStorage.setItem('wor_instances', JSON.stringify(localInstances));
       this.showToast("Session deleted", "trash-2");
       this.renderSavedSessionsTab();

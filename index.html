@@ -1045,6 +1045,27 @@
 
 
 
+  <!-- Custom Confirm Modal -->
+  <div id="new-confirm-modal" class="modal-overlay hidden" style="z-index: 10000;">
+    <div class="modal-card confirm-modal-card">
+      <div class="confirm-modal-icon">
+        <i data-lucide="alert-triangle" style="color: var(--error);"></i>
+      </div>
+      <div class="confirm-modal-content">
+        <h2 id="new-confirm-title">Confirm Action</h2>
+        <p id="new-confirm-message" class="text-secondary">Are you sure you want to proceed?</p>
+        
+        <div id="new-confirm-prompt-container" class="hidden" style="margin-top: 1rem;">
+          <input type="text" id="new-confirm-input" class="auth-input" placeholder="Type here..." autocomplete="off">
+        </div>
+      </div>
+      <div class="confirm-modal-actions">
+        <button id="new-confirm-cancel" class="btn btn-outline" style="flex: 1;">Cancel</button>
+        <button id="new-confirm-ok" class="btn btn-error" style="flex: 1;">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Info Modal -->
   <div class="modal-overlay hidden" id="info-modal" onclick="app.closeInfoModal()" style="z-index: 9999;">
     <div class="modal-card" style="max-width: 400px; padding: 24px; text-align: center;" onclick="event.stopPropagation()">
