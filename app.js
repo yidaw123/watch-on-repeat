@@ -729,7 +729,10 @@ class WatchOnRepeat {
             platform = 'vimeo'; // fallback for /video/123456
           }
         } else if (type === 'videos') {
-          videoId = id;
+          videoId = 'video=' + id;
+          platform = 'twitch';
+        } else if (parts.length >= 3 && id.toLowerCase() === 'clip') {
+          videoId = 'clip=' + parts[2];
           platform = 'twitch';
         }
       }
