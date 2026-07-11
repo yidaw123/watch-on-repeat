@@ -1485,8 +1485,17 @@ class WatchOnRepeat {
     }, 10);
   }
 
+  saveSharedSegments() {
+    this.state.isViewingSharedSegments = false;
+    this.saveLoopData();
+    const banner = document.getElementById('shared-segments-banner');
+    if (banner) banner.remove();
+    this.showToast("Shared session loops saved!", "check");
+  }
+
   saveLoopData() {
     if (!this.state.currentVideo || !this.state.currentVideo.id) return;
+    if (this.state.isViewingSharedSegments) return; // Prevent auto-saving shared session
     
     // If we're inside a specific instance, auto-save to that instance!
     if (this.state.currentInstanceId) {
@@ -1576,6 +1585,7 @@ class WatchOnRepeat {
          }
       }
       // Clear to prevent leaking to other videos
+      this.state.isViewingSharedSegments = true;
       this.state.sharedSegmentsToLoad = null; 
     } else if (data) {
       const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
@@ -1615,6 +1625,27 @@ class WatchOnRepeat {
       this.renderMultiSegments();
     }
     
+    let banner = document.getElementById('shared-segments-banner');
+    if (this.state.isViewingSharedSegments) {
+      if (!banner && this.elements.timelineContainer) {
+        banner = document.createElement('div');
+        banner.id = 'shared-segments-banner';
+        banner.style.marginBottom = '12px';
+        banner.innerHTML = `
+          <div style="background: rgba(147, 51, 234, 0.1); padding: 12px; border-radius: 8px; border: 1px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="color: var(--primary-color); font-weight: 500; font-size: 14px;">Viewing Shared Loops</div>
+              <div style="color: var(--text-muted); font-size: 12px;">This is a temporary view.</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="app.saveSharedSegments()">Save & Override</button>
+          </div>
+        `;
+        this.elements.timelineContainer.parentNode.insertBefore(banner, this.elements.timelineContainer);
+      }
+    } else if (banner) {
+      banner.remove();
+    }
+
     // Re-save to clean up any corrupted data in localStorage ONLY if we aren't viewing a shared read-only link
     if (!this.state.isReadOnlyShared && (data || this.state.abLoop.multiSegments.length > 0)) {
       this.saveLoopData();
