@@ -50,3 +50,6 @@ Avoid destructive DOM operations that unnecessarily recreate elements or break e
 
 ### UI Consistency & Polish Rule
 When creating UI elements, ensure buttons and interactive components share consistent visual weight, padding, typography, and alignment using a unified CSS class system. Include subtle CSS hover and active micro-animations (like slight scale or color transitions) to make the interface feel dynamic.
+
+### Error Handling Rule
+For the WatchOnRepeat project, prefer silent error handling. Unexpected errors should be logged to the browser console with sufficient context for debugging, while the UI should continue functioning whenever possible. Only surface an error to the user when an action cannot be completed or requires their intervention.
