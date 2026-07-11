@@ -4423,7 +4423,7 @@ class WatchOnRepeat {
               </span>
               <span style="font-size: 11px; color: #888; text-transform: uppercase;">${videoGroup.platform}</span>
             </div>
-          </a>
+          </div>
           <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${videoIdsString}', false)" title="Delete all loops for this video" style="color: white !important;"><i data-lucide="trash-2" style="width: 14px; height: 14px; color: white;"></i></button>
         </div>
         <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
