@@ -59,3 +59,6 @@ For the WatchOnRepeat project, always use Vanilla JavaScript, HTML, and standard
 
 ### State Sync & Verification Rule
 Before suggesting a commit or deployment, verify that all affected UI states and user flows have been tested. Database changes should be reflected immediately in the UI without requiring a manual page refresh.
+
+### Data Hydration Rule
+When building features that rely on aggregate or global data, explicitly define a single source of truth for data hydration during the application's initial load sequence, rather than scattering lazy-loading logic across disconnected UI tabs.
