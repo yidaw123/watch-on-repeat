@@ -71,3 +71,4 @@ Always actively verify existing database schemas, local data structures, and nat
 
 ### Async Management Rule
 Strictly manage asynchronous operations. Never allow background fetches, intervals, or auto-saves to mutate the database or UI until the core application state has been fully initialized and validated.
+- Never use client-side absolute overwrites for database counters. Always use server-side increments (RPCs) to prevent race conditions from wiping data.
