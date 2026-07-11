@@ -245,6 +245,8 @@ class PlaylistsMixin {
       `;
       list.appendChild(card);
     });
+    
+    if (window.lucide) window.lucide.createIcons();
   }
 
   viewPlaylist(id) {
