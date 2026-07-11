@@ -1215,7 +1215,7 @@ class WatchOnRepeat {
     document.title = file.name + " | Watch On Repeat";
     this.updatePlatformBadge('local');
     
-    this.updateNotesUI();
+    this.renderNotes();
     if (this.state.currentVideo) {
       this.loadLoopData(this.state.currentVideo.id);
     }
@@ -2063,14 +2063,16 @@ class WatchOnRepeat {
 
     // Fire and forget direct upserts to Supabase to completely bypass RPCs
     if (window.supabaseClient && video.platform !== 'local') {
-      supabaseClient.rpc('increment_global_loops', {
-        p_video_id: video.id,
-        p_platform: video.platform,
-        p_video_title: video.title || ''
-      }).then(({ error }) => {
-        if (!error) this.fetchPlatformTotalLoops(); // Refresh the massive platform number
-        if (error && DEBUG_MODE) console.error("Global Loops RPC Error:", error);
-      });
+      if (this._globalLoopsTimeout) clearTimeout(this._globalLoopsTimeout);
+      this._globalLoopsTimeout = setTimeout(() => {
+        supabaseClient.rpc('increment_global_loops', {
+          p_video_id: video.id,
+          p_platform: video.platform,
+          p_video_title: video.title || ''
+        }).then(({ error }) => {
+          if (!error) this.fetchPlatformTotalLoops();
+        });
+      }, 5000);
 
       if (this.state.user) {
         const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
@@ -2084,7 +2086,7 @@ class WatchOnRepeat {
           last_played: new Date().toISOString()
         }, { onConflict: 'user_id, video_id, platform' }).then(({ error }) => {
           if (error && DEBUG_MODE) console.error("User History Upsert Error:", error);
-          this.renderHistoryTab();
+          if (this.state.activeTab === 'history') this.renderHistoryTab();
         });
       }
     }
@@ -3132,7 +3134,7 @@ class WatchOnRepeat {
               }
             }
             
-            this.saveABLoop();
+            this.saveLoopData();
           }
         };
 
@@ -4034,7 +4036,12 @@ class WatchOnRepeat {
     if (confirmClear) {
       const btnEl = document.querySelector('button[onclick="app.clearLocalCache()"]');
       this.setButtonLoading(btnEl, true);
-      localStorage.clear();
+      // Only remove keys starting with wor_
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('wor_')) {
+          localStorage.removeItem(key);
+        }
+      });
       this.showToast("Cache cleared! Reloading...", "check-circle");
       setTimeout(() => window.location.reload(), 1500);
     }
