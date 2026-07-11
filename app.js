@@ -4380,7 +4380,7 @@ class WatchOnRepeat {
       
       let headerHtml = `
         <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333;">
-          <div style="display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer;" onclick="app.loadVideo('${this.escapeHtml(videoGroup.videoId)}', '${this.escapeHtml(videoGroup.platform)}')">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer;" onclick="app.loadVideo('${this.escapeHtml(videoGroup.videoId)}', '${this.escapeHtml(videoGroup.platform)}')">
             <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
             <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
               <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;">

@@ -631,8 +631,8 @@
 
             <!-- Saved Loops Tab -->
             <div id="tab-saved-loops" class="tab-panel">
-              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <h3 style="margin-bottom: 0;">Saved Loops</h3>
+              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 12px;">
+                <h3 style="margin-bottom: 0; white-space: nowrap;">Saved Loops</h3>
                 <div style="display: flex; gap: 8px; align-items: center;">
                   <input type="text" class="search-input tab-search-input" data-target="saved-loops-list" placeholder="Search loops..." style="max-width: 200px;" onkeyup="app.filterTabList(this)">
                   <select id="saved-loops-sort" class="select-dropdown" onchange="app.renderSavedLoopsTab()" style="max-width: 140px;">
