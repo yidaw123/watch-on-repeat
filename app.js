@@ -2323,8 +2323,7 @@ class WatchOnRepeat {
   async clearHistory() {
     if (!this.state.user) return;
     
-    const confirmClear = await this.showConfirmDialog("Clear History", "Are you sure you want to clear your entire loop history?");
-    if (!confirmClear) return;
+    if (!confirm("Are you sure you want to clear your entire loop history?")) return;
 
     const btnEl = document.getElementById('clear-history-btn');
     this.setButtonLoading(btnEl, true);
@@ -2697,8 +2696,7 @@ class WatchOnRepeat {
 
   async deleteAllFavorites() {
     if (!this.state.user) return;
-    const confirmResult = await this.showConfirmDialog("Delete All Favorites", "Are you sure you want to remove ALL your favorite videos? This cannot be undone.");
-    if (!confirmResult) return;
+    if (!confirm("Are you sure you want to remove ALL your favorite videos? This cannot be undone.")) return;
     
     let db = this.getDb('favorites');
     db = db.filter(f => f.userId !== this.state.user.id);
@@ -2924,53 +2922,7 @@ class WatchOnRepeat {
     }
   }
 
-  showConfirmDialog(title, message, isPrompt = false) {
-    return new Promise((resolve) => {
-      const modal = document.getElementById('custom-confirm-modal');
-      const titleEl = document.getElementById('confirm-modal-title');
-      const msgEl = document.getElementById('confirm-modal-message');
-      const inputEl = document.getElementById('confirm-modal-input');
-      const cancelBtn = document.getElementById('confirm-modal-cancel');
-      const okBtn = document.getElementById('confirm-modal-ok');
 
-      titleEl.textContent = title;
-      msgEl.textContent = message;
-      
-      if (isPrompt) {
-        inputEl.classList.remove('hidden');
-        inputEl.value = '';
-        inputEl.focus();
-        okBtn.textContent = 'Delete Account';
-        okBtn.style.background = '#ef4444'; // Red for destructive
-      } else {
-        inputEl.classList.add('hidden');
-        okBtn.textContent = 'Confirm';
-        okBtn.style.background = ''; // Default primary
-      }
-
-      modal.classList.remove('hidden');
-
-      const cleanup = () => {
-        modal.classList.add('hidden');
-        cancelBtn.removeEventListener('click', onCancel);
-        okBtn.removeEventListener('click', onOk);
-      };
-
-      const onCancel = () => {
-        cleanup();
-        resolve(false);
-      };
-
-      const onOk = () => {
-        cleanup();
-        if (isPrompt) resolve(inputEl.value);
-        else resolve(true);
-      };
-
-      cancelBtn.addEventListener('click', onCancel);
-      okBtn.addEventListener('click', onOk);
-    });
-  }
 
   setButtonLoading(btnEl, isLoading, originalHTML = '') {
     if (!btnEl) return;
@@ -4111,8 +4063,7 @@ class WatchOnRepeat {
   }
 
   async clearLocalCache() {
-    const confirmClear = await this.showConfirmDialog("Clear Local Cache", "Are you sure you want to clear your local application cache? This will NOT delete your cloud data.");
-    if (confirmClear) {
+    if (confirm("Are you sure you want to clear your local application cache? This will NOT delete your cloud data.")) {
       const btnEl = document.querySelector('button[onclick="app.clearLocalCache()"]');
       this.setButtonLoading(btnEl, true);
       // Only remove keys starting with wor_
@@ -4128,7 +4079,7 @@ class WatchOnRepeat {
 
   async deleteAccount() {
     if (!window.supabaseClient) return;
-    const confirmation = await this.showConfirmDialog("Delete Account", "Are you absolutely sure? This will permanently delete your account, history, and playlists. Type 'DELETE' to confirm.", true);
+    const confirmation = prompt("Are you absolutely sure? This will permanently delete your account, history, and playlists. Type 'DELETE' to confirm.");
     if (confirmation === 'DELETE') {
       const btnEl = document.querySelector('button[onclick="app.deleteAccount()"]');
       this.setButtonLoading(btnEl, true);
@@ -4149,8 +4100,7 @@ class WatchOnRepeat {
 
   async cancelSubscription() {
     if (!window.supabaseClient) return;
-    const confirmCancel = await this.showConfirmDialog("Cancel Subscription", "Are you sure you want to cancel your subscription? You will retain access until the end of your billing cycle.");
-    if (confirmCancel) {
+    if (confirm("Are you sure you want to cancel your subscription? You will retain access until the end of your billing cycle.")) {
       const btnEl = document.getElementById('settings-cancel-sub-btn');
       this.setButtonLoading(btnEl, true);
       const { error } = await supabaseClient.from('users').update({ cancel_at_period_end: true }).eq('id', this.state.user.id);
