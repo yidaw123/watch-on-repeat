@@ -41,3 +41,6 @@ Never write code that attempts to block, suppress, detect, or circumvent adverti
 
 ### Responsive Design Rule
 Every new UI feature must be verified on desktop and mobile layouts before being considered complete.
+
+### Functionality Preservation Rule
+When modifying existing functionality, preserve current features and user workflows unless explicitly instructed to change them.
