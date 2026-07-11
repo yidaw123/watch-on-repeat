@@ -206,15 +206,9 @@ if (typeof lucide === 'undefined') {
 
 window.addEventListener('error', function(e) {
   console.error("Global Error Caught:", e.error);
-  if (window.app && typeof window.app.showToast === 'function') {
-    window.app.showToast("An unexpected error occurred. " + (e.message || ""), "alert-circle");
-  }
 });
 window.addEventListener('unhandledrejection', function(e) {
   console.error("Unhandled Promise Rejection:", e.reason);
-  if (window.app && typeof window.app.showToast === 'function') {
-    window.app.showToast("An unexpected error occurred. " + (e.reason?.message || "Promise failed"), "alert-circle");
-  }
 });
 
 
@@ -856,9 +850,9 @@ class WatchOnRepeat {
     // Reset title and stats for empty state
     if (this.elements.videoTitle) this.elements.videoTitle.textContent = "Ready to Loop";
     const loopDisplay = document.getElementById('personal-loop-count');
-    const sessionDisplay = document.getElementById('session-duration');
+    const sessionDisplay = document.getElementById('loop-timer');
     if (loopDisplay) loopDisplay.textContent = '0';
-    if (sessionDisplay) sessionDisplay.textContent = '00:00:00';
+    if (sessionDisplay) sessionDisplay.textContent = 'Session time: 00:00:00';
     
     // Ensure the URL remains clean (without ?v=...) for the home state
     try {
@@ -1466,23 +1460,27 @@ class WatchOnRepeat {
       }
     }, 1500);
 
-    // Setup Timeline UI
-    if (!this.timelineInitialized) {
-      this.initTimeline();
-      this.timelineInitialized = true;
+    try {
+      // Setup Timeline UI
+      if (!this.timelineInitialized) {
+        this.initTimeline();
+        this.timelineInitialized = true;
+      }
+
+      // Render notes
+      this.renderNotes();
+      
+      // Render Up Next
+      this.renderUpNextQueue(id);
+
+      // Add to loop history (if signed in)
+      this.addToHistory(id, platform, videoTitle);
+      
+      // Increment global play count (but loops starts after 2nd play)
+      this.incrementGlobalPlayCount(id, platform);
+    } catch (e) {
+      if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.warn("Error in loadVideo initializations", e);
     }
-
-    // Render notes
-    this.renderNotes();
-    
-    // Render Up Next
-    this.renderUpNextQueue(id);
-
-    // Add to loop history (if signed in)
-    this.addToHistory(id, platform, videoTitle);
-    
-    // Increment global play count (but loops starts after 2nd play)
-    this.incrementGlobalPlayCount(id, platform);
     
     this.startTimer();
   }
@@ -1791,13 +1789,23 @@ class WatchOnRepeat {
       document.getElementById('yt-player-target').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&loop=1&playlist=${id}&rel=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
       
       // Mock the YT.Player API to prevent crashes elsewhere in the app
+      let mockCurrentTime = 0;
+      let mockDuration = 300; // Fake 5 mins duration
+      let mockInterval = setInterval(() => {
+        mockCurrentTime += 0.5;
+        if (mockCurrentTime >= mockDuration) {
+          mockCurrentTime = 0;
+          if (this.incrementLoops) this.incrementLoops();
+        }
+      }, 500);
+
       this.state.players.youtube = {
         playVideo: () => {},
         pauseVideo: () => {},
-        seekTo: () => {},
+        seekTo: (t) => { mockCurrentTime = t; },
         setPlaybackRate: () => {},
-        getCurrentTime: () => 0,
-        getDuration: () => 0
+        getCurrentTime: () => mockCurrentTime,
+        getDuration: () => mockDuration
       };
       
       // Force UI to recognize it's playing
@@ -2240,7 +2248,9 @@ class WatchOnRepeat {
         const secs = (this.state.loopSeconds % 60).toString().padStart(2, '0');
         timeStr = `${mins}:${secs}`;
       }
-      this.elements.loopTimer.textContent = `Session time: ${timeStr}`;
+      if (this.elements.loopTimer) {
+        this.elements.loopTimer.textContent = `Session time: ${timeStr}`;
+      }
       this.updateAnalyticsTime();
     }, 1000);
 
@@ -4771,7 +4781,7 @@ function applyMixin(targetClass, mixinClass) {
 // Apply Mixins
 if (window.DatabaseMixin) applyMixin(WatchOnRepeat, window.DatabaseMixin);
 if (window.AuthMixin) applyMixin(WatchOnRepeat, window.AuthMixin);
-if (window.NotesMixin) Object.assign(WatchOnRepeat.prototype, window.NotesMixin);
+if (window.NotesMixin) applyMixin(WatchOnRepeat, window.NotesMixin);
 if (window.PlaylistsMixin) applyMixin(WatchOnRepeat, window.PlaylistsMixin);
 if (window.LoopsMixin) applyMixin(WatchOnRepeat, window.LoopsMixin);
 if (window.AudioRecorderMixin) applyMixin(WatchOnRepeat, window.AudioRecorderMixin);

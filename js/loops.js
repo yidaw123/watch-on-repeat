@@ -252,6 +252,8 @@ class LoopsMixin {
 
   async _doCheckABLoop() {
     const t = await this.getCurrentTime();
+    const prevT = this.state.abLoop.lastTime || 0;
+    this.state.abLoop.lastTime = t;
     
     if (!this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
       this.state.abLoop.multiSegments = [{ start: null, end: null }];
@@ -307,6 +309,13 @@ class LoopsMixin {
     
     // 2. Not in any segment. Did we just naturally finish the current segment?
     if (t >= seg.end && t < seg.end + 1.5) {
+      this.state.abLoop.lastLoopAdvance = now;
+      this.advanceLoopSegment();
+      return;
+    }
+    
+    // 2.5. Natural loop jump (YouTube's native loop=1 skipped the t >= seg.end check)
+    if (prevT > seg.end - 2.0 && t < (seg.start !== null ? seg.start : 0) + 2.0) {
       this.state.abLoop.lastLoopAdvance = now;
       this.advanceLoopSegment();
       return;
