@@ -2223,22 +2223,17 @@ input[type="checkbox"]:focus {
   position: relative;
   background: var(--surface-color);
   border: 1px solid var(--border-color);
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-md);
-  transition: transform 0.2s ease;
   overflow: hidden;
-}
-
-.playlist-card-modern:hover {
-  transform: translateY(-2px);
 }
 
 .playlist-thumb-wrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
+  cursor: pointer;
 }
 
 /* Stacked card effect */
@@ -2285,7 +2280,7 @@ input[type="checkbox"]:focus {
   transition: opacity 0.2s ease;
 }
 
-.playlist-card-modern:hover .playlist-thumb-img {
+.playlist-thumb-wrapper:hover .playlist-thumb-img {
   opacity: 1;
 }
 
@@ -2323,6 +2318,12 @@ input[type="checkbox"]:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: 0.1px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.playlist-card-modern-title:hover {
+  color: white;
 }
 
 .playlist-card-modern-meta {

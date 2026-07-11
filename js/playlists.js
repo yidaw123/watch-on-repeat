@@ -201,8 +201,8 @@ class PlaylistsMixin {
       const card = document.createElement('div');
       card.className = 'playlist-card-modern';
       card.onclick = (e) => {
+        // Prevent clicks on inputs/buttons from doing anything weird
         if (e.target.closest('button') || e.target.closest('input') || e.target.closest('label')) return;
-        app.viewPlaylist(p.id);
       };
       
       const vidsCount = p.videos ? p.videos.length : 0;
@@ -222,13 +222,13 @@ class PlaylistsMixin {
       }
 
       card.innerHTML = `
-        <div class="playlist-thumb-wrapper">
+        <div class="playlist-thumb-wrapper" onclick="app.viewPlaylist('${this.escapeHtml(p.id)}')">
           <div class="playlist-thumb-container">
             ${thumbContent}
           </div>
         </div>
         <div class="playlist-card-modern-info">
-          <div class="playlist-card-modern-title">${this.escapeHtml(p.name)}</div>
+          <div class="playlist-card-modern-title" onclick="app.viewPlaylist('${this.escapeHtml(p.id)}')">${this.escapeHtml(p.name)}</div>
           <div class="playlist-card-modern-meta">
             ${p.isPublic ? 'Public' : 'Private'} • ${vidsCount} video${vidsCount !== 1 ? 's' : ''}
           </div>
