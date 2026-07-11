@@ -2369,7 +2369,14 @@ class WatchOnRepeat {
       this.saveDb('history', history);
       
       if (window.supabaseClient) {
-        await supabaseClient.from('user_history').delete().eq('user_id', this.state.user.id);
+        const { error } = await supabaseClient.from('user_history')
+          .update({ last_played: null, loops_count: 0 })
+          .eq('user_id', this.state.user.id);
+          
+        if (error) {
+          console.error("Supabase clear history error:", error);
+          throw error;
+        }
       }
 
       await this.renderHistoryTab();
@@ -2833,7 +2840,9 @@ class WatchOnRepeat {
     if (window.supabaseClient) {
       const { data } = await supabaseClient.from('user_history').select('*').eq('user_id', this.state.user.id).order('last_played', { ascending: false });
       if (data) {
-        history = data.map(d => ({ videoId: d.video_id, platform: d.platform, title: d.title, loopsCount: d.loops_count, lastPlayed: d.last_played }));
+        history = data
+          .filter(d => d.last_played)
+          .map(d => ({ videoId: d.video_id, platform: d.platform, title: d.title, loopsCount: d.loops_count, lastPlayed: d.last_played }));
       }
     } else {
       history = this.getDb('history').filter(h => h.userId === this.state.user.id);
