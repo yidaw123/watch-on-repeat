@@ -2363,19 +2363,23 @@ class WatchOnRepeat {
     const btnEl = document.getElementById('clear-history-btn');
     this.setButtonLoading(btnEl, true);
 
-    let history = this.getDb('history');
-    // Filter out records belonging to current user
-    history = history.filter(h => h.userId !== this.state.user.id);
-    this.saveDb('history', history);
-    
-    // Also delete from Supabase if online
-    if (window.supabaseClient) {
-      await supabaseClient.from('user_history').delete().eq('user_id', this.state.user.id);
-    }
+    try {
+      let history = this.getDb('history');
+      history = history.filter(h => h.userId !== this.state.user.id);
+      this.saveDb('history', history);
+      
+      if (window.supabaseClient) {
+        await supabaseClient.from('user_history').delete().eq('user_id', this.state.user.id);
+      }
 
-    this.setButtonLoading(btnEl, false);
-    this.renderHistoryTab();
-    this.showToast("Your history has been cleared.");
+      await this.renderHistoryTab();
+      this.showToast("Your history has been cleared.");
+    } catch (e) {
+      console.error("Error clearing history:", e);
+      this.showToast("An error occurred while clearing history.", "alert-circle");
+    } finally {
+      this.setButtonLoading(btnEl, false);
+    }
   }
 
   toggleFavorite() {
@@ -2730,10 +2734,12 @@ class WatchOnRepeat {
         
         // Add delete button specifically for favorites
         const delBtn = document.createElement('button');
+        delBtn.type = 'button';
         delBtn.className = 'btn-icon-delete';
         delBtn.innerHTML = '<i data-lucide="trash-2"></i>';
         delBtn.style = "flex-shrink: 0;";
         delBtn.onclick = (e) => {
+          e.preventDefault();
           e.stopPropagation();
           this.deleteFavorite(f.videoId || f.id, f.platform);
         };
@@ -2764,28 +2770,51 @@ class WatchOnRepeat {
     });
     if (!confirmed) return;
     
-    let db = this.getDb('favorites');
-    db = db.filter(f => f.userId !== this.state.user.id);
-    this.saveDb('favorites', db);
-    this.showToast("All favorites cleared", "trash-2");
-    this.renderFavoritesTab();
-  }
-
-  deleteFavorite(videoId, platform) {
-    if (!this.state.user) return;
-    let db = this.getDb('favorites');
-    const index = db.findIndex(f => f.userId === this.state.user.id && (f.videoId === videoId || f.id === videoId) && f.platform === platform);
-    if (index !== -1) {
-      db.splice(index, 1);
+    try {
+      let db = this.getDb('favorites');
+      db = db.filter(f => f.userId !== this.state.user.id);
       this.saveDb('favorites', db);
       
-      // Also update current state if the video is currently playing
-      if (this.state.currentVideo && this.state.currentVideo.id === videoId) {
-        this.updateFavoriteButtonUI();
+      if (window.supabaseClient) {
+        await supabaseClient.from('user_history').update({ is_favorite: false }).eq('user_id', this.state.user.id);
       }
       
-      this.showToast("Removed from favorites", "trash-2");
-      this.renderFavoritesTab();
+      this.updateFavoriteButtonUI();
+      this.showToast("All favorites removed", "trash-2");
+      await this.renderFavoritesTab();
+    } catch (e) {
+      console.error("Error deleting all favorites:", e);
+      this.showToast("An error occurred.", "alert-circle");
+    }
+  }
+
+  async deleteFavorite(videoId, platform) {
+    if (!this.state.user) return;
+    try {
+      let db = this.getDb('favorites');
+      const index = db.findIndex(f => f.userId === this.state.user.id && (f.videoId === videoId || f.id === videoId) && f.platform === platform);
+      if (index !== -1) {
+        db.splice(index, 1);
+        this.saveDb('favorites', db);
+        
+        if (window.supabaseClient) {
+          await supabaseClient.from('user_history').update({ is_favorite: false })
+            .eq('user_id', this.state.user.id)
+            .eq('video_id', videoId)
+            .eq('platform', platform);
+        }
+        
+        // Also update current state if the video is currently playing
+        if (this.state.currentVideo && this.state.currentVideo.id === videoId) {
+          this.updateFavoriteButtonUI();
+        }
+        
+        this.showToast("Removed from favorites", "trash-2");
+        await this.renderFavoritesTab();
+      }
+    } catch (e) {
+      console.error("Error deleting favorite:", e);
+      this.showToast("An error occurred while deleting.", "alert-circle");
     }
   }
 
