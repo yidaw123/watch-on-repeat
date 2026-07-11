@@ -234,7 +234,7 @@ class PlaylistsMixin {
           <div class="playlist-card-modern-meta">
             ${p.isPublic ? 'Public' : 'Private'} • ${vidsCount} video${vidsCount !== 1 ? 's' : ''}
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
             <div style="display:flex; gap:8px;">
               ${p.isPublic ? `<button class="btn btn-outline" style="padding:4px 8px; font-size:11px;" onclick="app.copyPlaylistLink('${this.escapeHtml(p.id)}')"><i data-lucide="link" style="width:12px;height:12px;"></i> Share</button>` : ''}
               <label style="display:flex; align-items:center; gap:4px; font-size:12px; cursor:pointer;">
