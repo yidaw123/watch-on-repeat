@@ -1284,6 +1284,7 @@ class WatchOnRepeat {
     if (this.elements.videoTitle) this.elements.videoTitle.textContent = file.name;
     document.title = file.name + " | Watch On Repeat";
     this.updatePlatformBadge('local');
+    this.toggleLocalVideoRestrictions(true);
     
     this.renderNotes();
     if (this.state.currentVideo) {
@@ -1335,6 +1336,7 @@ class WatchOnRepeat {
 
   async  loadVideo(id, platform = 'youtube') {
     this.flushAnalytics();
+    this.toggleLocalVideoRestrictions(false);
     
     // Clean up any stray Dailymotion message listeners when switching platforms
     if (this.state.players.dailymotion && this.state.players.dailymotion.cleanup) {
@@ -1565,6 +1567,51 @@ class WatchOnRepeat {
     setTimeout(() => {
       if (window.lucide) window.lucide.createIcons();
     }, 10);
+  }
+
+  toggleLocalVideoRestrictions(isLocal) {
+    const opacity = isLocal ? '0.4' : '1';
+    const cursor = isLocal ? 'not-allowed' : 'pointer';
+    
+    // Favorite Button
+    if (this.elements.favoriteBtn) {
+      this.elements.favoriteBtn.disabled = isLocal;
+      this.elements.favoriteBtn.style.opacity = opacity;
+      this.elements.favoriteBtn.style.cursor = cursor;
+      this.elements.favoriteBtn.title = isLocal ? "Favorites are disabled for local files" : "Add to Favorites";
+      if (isLocal) {
+        this.elements.favoriteBtn.classList.remove('active');
+        const svg = this.elements.favoriteBtn.querySelector('svg');
+        if (svg) svg.setAttribute('fill', 'none');
+      }
+    }
+    
+    // Playlist Button
+    const playlistBtn = document.getElementById('add-playlist-btn');
+    if (playlistBtn) {
+      playlistBtn.disabled = isLocal;
+      playlistBtn.style.opacity = opacity;
+      playlistBtn.style.cursor = cursor;
+      playlistBtn.title = isLocal ? "Playlists are disabled for local files" : "Add to Playlist";
+    }
+    
+    // Share Icon
+    const shareIcon = document.querySelector('button[aria-label="Share Link"]');
+    if (shareIcon) {
+      shareIcon.disabled = isLocal;
+      shareIcon.style.opacity = opacity;
+      shareIcon.style.cursor = cursor;
+      shareIcon.title = isLocal ? "Cannot share local files" : "Share Link";
+    }
+    
+    // Share Clip Button
+    const shareClipBtn = document.getElementById('toggle-share-btn');
+    if (shareClipBtn) {
+      shareClipBtn.disabled = isLocal;
+      shareClipBtn.style.opacity = opacity;
+      shareClipBtn.style.cursor = cursor;
+      shareClipBtn.title = isLocal ? "Cannot share local files" : "";
+    }
   }
 
   saveSharedSegments() {
