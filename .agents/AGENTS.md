@@ -47,3 +47,6 @@ When modifying existing functionality, preserve current features and user workfl
 
 ### DOM Manipulation Rule
 Avoid destructive DOM operations that unnecessarily recreate elements or break existing event listeners. Prefer targeted updates and preserve component state whenever practical.
+
+### UI Consistency & Polish Rule
+When creating UI elements, ensure buttons and interactive components share consistent visual weight, padding, typography, and alignment using a unified CSS class system. Include subtle CSS hover and active micro-animations (like slight scale or color transitions) to make the interface feel dynamic.
