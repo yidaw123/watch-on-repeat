@@ -239,7 +239,7 @@ class PlaylistsMixin {
                 <input type="checkbox" ${p.isPublic ? 'checked' : ''} onchange="app.togglePlaylistPublic('${this.escapeHtml(p.id)}', this.checked)"> Public
               </label>
             </div>
-            <button class="icon-btn" onclick="app.deletePlaylist('${this.escapeHtml(p.id)}')" style="padding:0; color: white !important;"><i data-lucide="trash-2" style="width:16px;height:16px; color: white;"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="app.deletePlaylist('${this.escapeHtml(p.id)}')" title="Delete Playlist" style="padding: 4px 8px; background: rgba(239,68,68,0.2); color: white !important; border: 1px solid rgba(239,68,68,0.4); border-radius: 4px;"><i data-lucide="trash-2" style="width:14px; height:14px; color: white;"></i></button>
           </div>
         </div>
       `;
