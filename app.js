@@ -4712,38 +4712,37 @@ class WatchOnRepeat {
     
     segments.slice(0, 10).forEach(seg => {
       const mStart = Math.floor(seg.start / 60).toString().padStart(2, '0');
-      const sStart = (seg.start % 60).toString().padStart(2, '0');
+      const sStart = Math.floor(seg.start % 60).toString().padStart(2, '0');
       const mEnd = Math.floor(seg.end / 60).toString().padStart(2, '0');
-      const sEnd = (seg.end % 60).toString().padStart(2, '0');
+      const sEnd = Math.floor(seg.end % 60).toString().padStart(2, '0');
       
       const displayName = seg.name || this.truncateString(seg.videoTitle, 30);
       const timeStr = `[${mStart}:${sStart} - ${mEnd}:${sEnd}]`;
       
       const div = document.createElement('div');
-      div.className = 'segment-item';
+      div.className = 'video-card';
+      div.style.cursor = 'pointer';
       div.onclick = () => {
         window.location.href = `/?v=${seg.videoId}&p=${seg.platform}&start=${seg.start}&end=${seg.end}`;
       };
       
+      let thumbUrl = '';
+      if (seg.platform === 'youtube') {
+        thumbUrl = `https://img.youtube.com/vi/${seg.videoId || seg.id}/hqdefault.jpg`;
+      } else {
+        thumbUrl = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60' viewBox='0 0 90 60'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%238b5cf6'/><stop offset='100%' stop-color='%23ec4899'/></linearGradient></defs><rect width='90' height='60' fill='url(%23g)' opacity='0.85'/><text x='45' y='35' font-family='Outfit,sans-serif' font-size='10' font-weight='bold' fill='white' text-anchor='middle'>${seg.platform.toUpperCase()}</text></svg>`;
+      }
+      
       div.innerHTML = `
-        <div class="segment-info">
-          <span class="segment-name">${this.escapeHtml(displayName)}</span>
-          <span class="segment-time">${timeStr}</span>
-        </div>
-        <div class="segment-loops">
-          ${seg.loops} <span style="font-size:0.7rem; color:var(--text-muted); font-weight:normal;">loops</span>
+        <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" alt="${this.escapeHtml(displayName)}">
+        <div class="video-card-details">
+          <h4 class="video-card-title">${this.escapeHtml(displayName)}</h4>
+          <div class="video-card-meta">
+            <span class="badge">${seg.platform}</span>
+            <span>Loops: <strong>${seg.loops}</strong></span> &bull; <span>${timeStr}</span>
+          </div>
         </div>
       `;
-      
-      const delBtn = document.createElement('button');
-      delBtn.className = 'icon-btn';
-      delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px; color: white;"></i>';
-      delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: center; margin-left: 8px; background: rgba(0,0,0,0.3); opacity: 0.8; color: white !important;";
-      delBtn.onclick = (e) => {
-        e.stopPropagation();
-        this.deleteNamedSegment(seg.id);
-      };
-      div.appendChild(delBtn);
       
       this.elements.analyticsSegmentsList.appendChild(div);
     });
