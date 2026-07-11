@@ -664,7 +664,7 @@ class LoopsMixin {
         </div>
         ${isReadOnly ? '' : `
           <button class="icon-btn text-green-500 save-segment-btn" data-tip="Save Segment" style="padding: 4px; margin-right: 2px;"><i data-lucide="save" style="width: 14px; height: 14px;"></i></button>
-          <button class="icon-btn text-red-500 delete-segment-btn" style="padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+          <button class="icon-btn delete-segment-btn" style="padding: 4px; color: white !important;"><i data-lucide="trash-2" style="width: 14px; height: 14px; color: white;"></i></button>
         `}
       `;
       const saveBtn = row.querySelector('.save-segment-btn');

@@ -339,7 +339,7 @@
                      <span onclick="app.showInfoModal('Recorded audio is only saved temporarily and will be lost if you close the session. Download it to keep it!')" style="cursor:help;" title="Recorded audio is only saved temporarily and will be lost if you close the session. Download it to keep it!"><i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted);"></i></span>
                      <button id="play-recording-btn" class="btn btn-secondary btn-sm hidden" onclick="app.toggleRecordingPlayback()"><i data-lucide="play"></i> Play</button>
                      <a id="download-recording-btn" class="btn btn-secondary btn-sm hidden" download="recording.webm" style="text-decoration: none;"><i data-lucide="download"></i></a>
-                     <button id="delete-recording-btn" class="btn btn-secondary btn-sm hidden" onclick="app.deleteCurrentRecording()"><i data-lucide="trash-2"></i></button>
+                     <button id="delete-recording-btn" class="btn btn-secondary btn-sm hidden" onclick="app.deleteCurrentRecording()" style="color: white !important;"><i data-lucide="trash-2" style="color: white;"></i></button>
                      <input type="range" id="recording-volume" min="0" max="1" step="0.1" value="1" class="hidden" style="width: 80px;" onchange="app.setRecordingVolume(this.value)" oninput="app.setRecordingVolume(this.value)" title="Recording Volume">
                   </div>
                 </div>
@@ -366,7 +366,7 @@
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: 8px; width: 100%;">
                   <button class="btn btn-secondary btn-sm hidden" id="add-segment-btn" onclick="app.addLoopSegment()" style="flex: 1;"><i data-lucide="plus"></i> Add Segment</button>
-                  <button class="btn btn-error btn-sm hidden" id="delete-all-segments-btn" onclick="app.deleteAllSegments()" style="flex: 1;"><i data-lucide="trash-2"></i> Delete All</button>
+                  <button class="btn btn-error btn-sm hidden" id="delete-all-segments-btn" onclick="app.deleteAllSegments()" style="flex: 1; color: white !important;"><i data-lucide="trash-2" style="color: white;"></i> Delete All</button>
                 </div>
               </div>
             </div>
@@ -650,7 +650,7 @@
                       <input type="checkbox" id="saved-loops-select-all" onchange="app.toggleSelectAllSavedLoops(event)">
                       <span style="font-size: 13px; font-weight: bold;">Select All</span>
                     </label>
-                    <button class="btn btn-error btn-sm hidden" id="saved-loops-bulk-delete-btn" onclick="app.deleteSelectedSavedLoops()"><i data-lucide="trash-2"></i> Delete Selected</button>
+                    <button class="btn btn-error btn-sm hidden" id="saved-loops-bulk-delete-btn" onclick="app.deleteSelectedSavedLoops()" style="color: white !important;"><i data-lucide="trash-2" style="color: white;"></i> Delete Selected</button>
                   </div>
                   
                   <div id="saved-loops-list" style="display: flex; flex-direction: column; gap: 8px;">
@@ -704,7 +704,7 @@
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; margin-top: 16px;">
                   <h4 style="margin: 0; color: #fff; font-size: 14px;">Notes List</h4>
-                  <button class="btn btn-error btn-sm hidden" id="delete-all-notes-btn" onclick="app.deleteAllNotes()"><i data-lucide="trash-2"></i> Delete All</button>
+                  <button class="btn btn-error btn-sm hidden" id="delete-all-notes-btn" onclick="app.deleteAllNotes()" style="color: white !important;"><i data-lucide="trash-2" style="color: white;"></i> Delete All</button>
                 </div>
                 <div class="notes-list" id="notes-list">
                   <!-- Notes loaded here -->

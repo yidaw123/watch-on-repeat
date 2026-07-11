@@ -204,7 +204,7 @@ class NotesMixin {
       div.innerHTML = `
         <div class="note-header">
           <span class="note-timestamp" onclick="app.seekToTime(${note.time})">[${timeStr}]</span>
-          ${isReadOnly ? '' : `<button class="note-delete" aria-label="Delete note" onclick="app.deleteNote('${note.id}')" title="Delete note"><i data-lucide="trash-2"></i></button>`}
+          ${isReadOnly ? '' : `<button class="note-delete" aria-label="Delete note" onclick="app.deleteNote('${note.id}')" title="Delete note" style="color: white !important;"><i data-lucide="trash-2" style="color: white;"></i></button>`}
         </div>
         <div class="note-content">${this.escapeHtml(note.text)}</div>
       `;

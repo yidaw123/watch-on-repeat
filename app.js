@@ -2667,9 +2667,9 @@ class WatchOnRepeat {
         
         // Add delete button specifically for favorites
         const delBtn = document.createElement('button');
-        delBtn.className = 'icon-btn text-white';
-        delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>';
-        delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: flex-start; margin-left: auto; background: rgba(0,0,0,0.3); opacity: 0.8;";
+        delBtn.className = 'icon-btn';
+        delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px; color: white;"></i>';
+        delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: flex-start; margin-left: auto; background: rgba(0,0,0,0.3); opacity: 0.8; color: white !important;";
         delBtn.onclick = (e) => {
           e.stopPropagation();
           this.deleteFavorite(f.videoId || f.id, f.platform);
@@ -4424,7 +4424,7 @@ class WatchOnRepeat {
               <span style="font-size: 11px; color: #888; text-transform: uppercase;">${videoGroup.platform}</span>
             </div>
           </a>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${videoIdsString}', false)" title="Delete all loops for this video"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${videoIdsString}', false)" title="Delete all loops for this video" style="color: white !important;"><i data-lucide="trash-2" style="width: 14px; height: 14px; color: white;"></i></button>
         </div>
         <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
       `;
@@ -4439,7 +4439,7 @@ class WatchOnRepeat {
               <span style="font-weight: 500; font-size: 13px;">${this.escapeHtml(seg.name || 'Unnamed Loop')}</span>
               <span style="font-size: 12px; color: #888; font-family: monospace;">${this.formatTime(seg.start)} - ${this.formatTime(seg.end)}</span>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${seg.id}', true)" title="Delete this loop" style="padding: 0 8px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${seg.id}', true)" title="Delete this loop" style="padding: 0 8px; color: white !important;"><i data-lucide="trash-2" style="width: 14px; height: 14px; color: white;"></i></button>
           </div>
         `;
       });
@@ -4475,7 +4475,8 @@ class WatchOnRepeat {
     if (bulkDeleteBtn) {
       if (checkedItems.length > 0) {
         bulkDeleteBtn.classList.remove('hidden');
-        bulkDeleteBtn.innerHTML = `<i data-lucide="trash-2"></i> Delete Selected (${checkedItems.length})`;
+        bulkDeleteBtn.innerHTML = `<i data-lucide="trash-2" style="color: white;"></i> Delete Selected (${checkedItems.length})`;
+        bulkDeleteBtn.style.color = "white";
         if (window.lucide) window.lucide.createIcons();
       } else {
         bulkDeleteBtn.classList.add('hidden');
@@ -4557,7 +4558,7 @@ class WatchOnRepeat {
             </div>
             <div style="display: flex; gap: 8px;">
               <button class="btn btn-secondary btn-sm" onclick="app.shareSavedSession('${sess.id}')" title="Share Session"><i data-lucide="link"></i></button>
-              <button class="btn btn-secondary btn-sm" onclick="app.deleteSavedSession('${sess.id}')" title="Delete Session"><i data-lucide="trash-2"></i></button>
+              <button class="btn btn-secondary btn-sm" onclick="app.deleteSavedSession('${sess.id}')" title="Delete Session" style="color: white !important;"><i data-lucide="trash-2" style="color: white;"></i></button>
             </div>
           </div>
         `;
@@ -4735,9 +4736,9 @@ class WatchOnRepeat {
       `;
       
       const delBtn = document.createElement('button');
-      delBtn.className = 'icon-btn text-white';
-      delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>';
-      delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: center; margin-left: auto; background: rgba(0,0,0,0.3); opacity: 0.8;";
+      delBtn.className = 'icon-btn';
+      delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px; color: white;"></i>';
+      delBtn.style = "padding: 4px; border-radius: 4px; flex-shrink: 0; align-self: center; margin-left: 8px; background: rgba(0,0,0,0.3); opacity: 0.8; color: white !important;";
       delBtn.onclick = (e) => {
         e.stopPropagation();
         this.deleteNamedSegment(seg.id);
