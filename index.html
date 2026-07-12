@@ -332,7 +332,7 @@
                   </div>
                   <div style="display: flex; gap: 8px; align-items: center;">
                      <button id="record-btn" class="btn btn-error btn-sm" onclick="app.toggleRecording()"><i data-lucide="mic"></i> Record (30s Free)</button>
-                     <span onclick="app.showInfoModal('Recorded audio is only saved temporarily and will be lost if you close the session. Download it to keep it!')" style="cursor:help;" title="Recorded audio is only saved temporarily and will be lost if you close the session. Download it to keep it!"><i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted);"></i></span>
+                     <span onclick="app.showInfoModal('Recorded audio is only saved temporarily and will be lost if you close the session. Download it in the Recorded Audio tab on the right to keep it!')" style="cursor:help;" title="Recorded audio is only saved temporarily and will be lost if you close the session. Download it in the Recorded Audio tab on the right to keep it!"><i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted);"></i></span>
                      <button id="play-recording-btn" class="btn btn-secondary btn-sm hidden" onclick="app.toggleRecordingPlayback()"><i data-lucide="play"></i> Play</button>
                      <a id="download-recording-btn" class="btn btn-secondary btn-sm hidden" download="recording.webm" style="text-decoration: none;"><i data-lucide="download"></i></a>
                      <button id="delete-recording-btn" class="btn-icon-delete hidden" onclick="app.deleteCurrentRecording()" title="Delete Recording"><i data-lucide="trash-2"></i></button>
