@@ -242,6 +242,7 @@ class AuthMixin {
         if (DEBUG_MODE) console.warn("Could not insert user row:", insertErr);
       }
       this.showToast(`Account created successfully!`, 'shield-check');
+      this.closeLoginModal();
     }
   }
 
