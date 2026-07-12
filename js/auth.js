@@ -233,16 +233,21 @@ class AuthMixin {
 
     if (signUpData.user) {
       try {
-        await supabaseClient.from('users').insert({
+        const { error: insertErr } = await supabaseClient.from('users').insert({
           id: signUpData.user.id,
           email: email,
           tier: 'free'
         });
+        if (insertErr) throw insertErr;
+        
+        this.showToast(`Account created successfully!`, 'shield-check');
+        this.closeLoginModal();
       } catch (insertErr) {
-        if (DEBUG_MODE) console.warn("Could not insert user row:", insertErr);
+        console.error("Could not insert user row:", insertErr);
+        this.showToast(`Error saving user data: ${insertErr.message || JSON.stringify(insertErr)}`, "alert-circle");
+        this.elements.authOptions.classList.remove('hidden');
+        this.elements.authLoading.classList.add('hidden');
       }
-      this.showToast(`Account created successfully!`, 'shield-check');
-      this.closeLoginModal();
     }
   }
 
