@@ -958,6 +958,9 @@ class WatchOnRepeat {
         } catch(e){}
       }
       
+      // Remove the instance parameter so handleRouting doesn't recursively reload it
+      url.searchParams.delete('instance');
+      
       window.history.replaceState({}, '', url);
       this.handleRouting(); // Re-trigger with injected parameters
       
