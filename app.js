@@ -1767,25 +1767,11 @@ class WatchOnRepeat {
       this.renderMultiSegments();
     }
     
-    let banner = document.getElementById('shared-segments-banner');
+    const overrideBtn = document.getElementById('save-override-btn');
     if (this.state.isViewingSharedSegments) {
-      if (!banner && this.elements.timelineContainer) {
-        banner = document.createElement('div');
-        banner.id = 'shared-segments-banner';
-        banner.style.marginBottom = '12px';
-        banner.innerHTML = `
-          <div style="background: rgba(147, 51, 234, 0.1); padding: 12px; border-radius: 8px; border: 1px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="color: var(--primary-color); font-weight: 500; font-size: 14px;">Viewing Shared Loops</div>
-              <div style="color: var(--text-muted); font-size: 12px;">This is a temporary view.</div>
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="app.saveSharedSegments()">Save & Override</button>
-          </div>
-        `;
-        this.elements.timelineContainer.parentNode.insertBefore(banner, this.elements.timelineContainer);
-      }
-    } else if (banner) {
-      banner.remove();
+      if (overrideBtn) overrideBtn.classList.remove('hidden');
+    } else {
+      if (overrideBtn) overrideBtn.classList.add('hidden');
     }
 
     // Re-save to clean up any corrupted data in localStorage ONLY if we aren't viewing a shared read-only link

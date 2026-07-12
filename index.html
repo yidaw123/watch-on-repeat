@@ -374,6 +374,7 @@
                   <button class="btn btn-primary btn-sm" id="save-session-btn" onclick="app.saveInstance()"><i data-lucide="hard-drive"></i> Save Session</button>
                   <span onclick="app.showInfoModal('Save session saves all loop segments, playback settings, and notes.')" style="cursor:help;" title="Save session saves all loop segments, playback settings, and notes."><i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted);"></i></span>
                 </div>
+                <button class="btn btn-primary btn-sm hidden" id="save-override-btn" onclick="app.saveSharedSegments()" style="background: rgba(147, 51, 234, 0.2); border-color: var(--color-purple); color: #d8b4fe;"><i data-lucide="save"></i> Save & Override Shared Loop</button>
                 <button class="btn btn-primary btn-sm" id="toggle-share-btn" onclick="app.generateShareableClip()"><i data-lucide="link"></i> Share Clip</button>
               </div>
               
