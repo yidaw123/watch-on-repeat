@@ -183,29 +183,25 @@
         <!-- Video Player Column -->
         <section class="player-column">
 
-          
-          <!-- Empty State (No video loaded) -->
-          <div id="player-empty-state" class="player-card empty-state">
-          <div class="empty-icon">
-            <i data-lucide="tv-2"></i>
-          </div>
-          <h2>Ready to Loop?</h2>
-          <p>Paste a video URL above, click "Loop It", and enjoy infinite replays with automatic counters.</p>
-          
-          <div class="shortcut-tip">
-            <h3><i data-lucide="sparkles"></i> The URL Trick</h3>
-            <p>You can replace <code>youtube.com</code> in any YouTube URL with <code>repeatyoutube.com</code> in your browser search bar to instantly load and loop it here!</p>
-            <div class="hosts-helper">
-              <span class="badge">Local testing</span>
-              <code>repeatyoutube.com:8000/watch?v=VIDEO_ID</code>
-            </div>
-          </div>
-        </div>
-
         <!-- Video Player Display -->
-        <div id="player-loaded-state" class="player-card hidden">
+        <div id="player-loaded-state" class="player-card">
           <!-- The Iframe Wrapper -->
-          <div class="video-wrapper">
+          <div class="video-wrapper" style="position: relative; overflow: hidden;">
+            
+            <!-- Empty State (No video loaded) -->
+            <div id="player-empty-state" class="empty-state" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--surface); z-index: 10; padding: 20px; text-align: center;">
+              <div class="empty-icon">
+                <i data-lucide="tv-2"></i>
+              </div>
+              <h2>Ready to Loop?</h2>
+              <p style="margin-bottom: 15px;">Paste a video URL above, click "Loop It", and enjoy infinite replays with automatic counters.</p>
+              
+              <div class="shortcut-tip" style="margin-top: 0; transform: scale(0.9);">
+                <h3><i data-lucide="sparkles"></i> The URL Trick</h3>
+                <p>You can replace <code>youtube.com</code> in any YouTube URL with <code>repeatyoutube.com</code> in your browser search bar to instantly load and loop it here!</p>
+              </div>
+            </div>
+
             <div id="player-iframe-container">
               <!-- Player SDKs will mount their iframes here -->
             </div>

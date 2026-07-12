@@ -880,9 +880,10 @@ class WatchOnRepeat {
     
     document.title = "Watch On Repeat | Loop YouTube Videos & Practice Tool";
 
-    // Show the playerEmpty state and hide playerLoaded
+    // Show the playerEmpty state overlay
     if (this.elements.playerEmpty) this.elements.playerEmpty.classList.remove('hidden');
-    if (this.elements.playerLoaded) this.elements.playerLoaded.classList.add('hidden');
+    // Ensure playerLoaded is always visible now to show disabled controls
+    if (this.elements.playerLoaded) this.elements.playerLoaded.classList.remove('hidden');
     
     // Clear iframe container to keep it completely blank
     this.destroyPlayers();
