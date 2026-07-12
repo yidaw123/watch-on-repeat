@@ -4312,18 +4312,52 @@ class WatchOnRepeat {
       if (key === s.setStart) {
         e.preventDefault();
         this.getCurrentTime().then(t => {
-          if (this.elements.abStart) {
-            this.elements.abStart.value = this.formatTime(t);
-            if (this.updateTimelineUI) this.updateTimelineUI();
+          let handled = false;
+          if (this.state.isMultiSegment) {
+            const idx = this.state.abLoop.currentSegmentIndex || 0;
+            const el = document.getElementById(`multi-start-${idx}`);
+            if (el && el._cascadingTime && el._cascadingTime.onChange) {
+               el._cascadingTime.setValue(t);
+               el._cascadingTime.onChange(t, el);
+               handled = true;
+            }
+          }
+          if (!handled) {
+            if (this.elements.abStart && this.elements.abStart._cascadingTime && this.elements.abStart._cascadingTime.onChange) {
+               this.elements.abStart._cascadingTime.setValue(t);
+               this.elements.abStart._cascadingTime.onChange(t, this.elements.abStart);
+            } else if (this.elements.abStart) {
+               this.elements.abStart.value = this.formatTime(t);
+               this.state.abLoop.start = t;
+               this.saveLoopData();
+               if (this.updateTimelineUI) this.updateTimelineUI();
+            }
           }
           this.showToast("Timestamp Start marked at " + this.formatTime(t), "flag");
         });
       } else if (key === s.setEnd) {
         e.preventDefault();
         this.getCurrentTime().then(t => {
-          if (this.elements.abEnd) {
-            this.elements.abEnd.value = this.formatTime(t);
-            if (this.updateTimelineUI) this.updateTimelineUI();
+          let handled = false;
+          if (this.state.isMultiSegment) {
+            const idx = this.state.abLoop.currentSegmentIndex || 0;
+            const el = document.getElementById(`multi-end-${idx}`);
+            if (el && el._cascadingTime && el._cascadingTime.onChange) {
+               el._cascadingTime.setValue(t);
+               el._cascadingTime.onChange(t, el);
+               handled = true;
+            }
+          }
+          if (!handled) {
+            if (this.elements.abEnd && this.elements.abEnd._cascadingTime && this.elements.abEnd._cascadingTime.onChange) {
+               this.elements.abEnd._cascadingTime.setValue(t);
+               this.elements.abEnd._cascadingTime.onChange(t, this.elements.abEnd);
+            } else if (this.elements.abEnd) {
+               this.elements.abEnd.value = this.formatTime(t);
+               this.state.abLoop.end = t;
+               this.saveLoopData();
+               if (this.updateTimelineUI) this.updateTimelineUI();
+            }
           }
           this.showToast("Timestamp End marked at " + this.formatTime(t), "flag");
         });
