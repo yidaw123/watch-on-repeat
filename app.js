@@ -4359,7 +4359,8 @@ class WatchOnRepeat {
   // Reload shortcuts when tier changes or app starts
   reloadShortcuts() {
     this.state.shortcuts = { ...this.defaultShortcuts };
-    if (this.state.user && this.state.user.isPremium) {
+    const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+    if (isPremium) {
       const saved = this.getDb('shortcuts');
       if (saved && Object.keys(saved).length > 0) {
         this.state.shortcuts = { ...this.defaultShortcuts, ...saved };
@@ -4625,14 +4626,24 @@ class WatchOnRepeat {
     if (['control', 'shift', 'alt', 'meta'].includes(key)) return;
     
     const actionId = this.state.recordingActionId;
-    if (actionId && this.state.user && this.state.user.isPremium) {
+    if (actionId && this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'))) {
       let saved = this.getDb('shortcuts') || {};
+      
+      // Prevent duplicate hotkeys: unbind this key from any other action
+      for (const [existingActionId, existingKey] of Object.entries(this.state.shortcuts)) {
+        if (existingActionId !== actionId && existingKey === key) {
+           saved[existingActionId] = "";
+        }
+      }
+      
       saved[actionId] = key;
       this.saveDb('shortcuts', saved);
       
       this.reloadShortcuts();
       this.renderShortcutsList();
-      this.showToast(`Shortcut for updated to ${key.toUpperCase()}`, "keyboard");
+      
+      const actionName = actionId.replace(/([A-Z])/g, ' $1').trim();
+      this.showToast(`Shortcut for ${actionName} updated to ${key.toUpperCase()}`, "keyboard");
     }
     
     this.cancelShortcutRecord();
