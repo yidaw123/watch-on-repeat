@@ -583,7 +583,7 @@
             <div style="display: flex; flex-direction: column; gap: 8px;">
               <input type="password" id="settings-password-input" class="input-field" placeholder="New secure password" style="width: 100%;">
               <input type="password" id="settings-password-confirm" class="input-field" placeholder="Confirm new password" style="width: 100%;">
-              <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: -4px;">Password must be at least 6 characters long.</p>
+              <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: -4px;">Password must be at least 8 characters long.</p>
               <button class="btn btn-primary" style="align-self: flex-end;" onclick="app.updateAccountPassword()">Update Password</button>
             </div>
           </div>
@@ -983,7 +983,7 @@
                 <input type="password" id="signup-password" placeholder="Password" required style="width: 100%;">
                 <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('signup-password')"></i>
               </div>
-              <div style="font-size: 11px; color: #9ca3af; margin-top: -8px; margin-bottom: 12px; padding-left: 8px;">Minimum 7 characters, must contain letters and numbers.</div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: -8px; margin-bottom: 12px; padding-left: 8px;">Minimum 8 characters, must contain letters and numbers.</div>
               <div style="position: relative;">
                 <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required style="width: 100%;">
                 <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('signup-confirm-password')"></i>
@@ -1135,13 +1135,13 @@
       });
     }
   </script>
-  <script src="js/database.js?v=56"></script>
-  <script src="js/auth.js?v=56"></script>
-  <script src="js/notes.js?v=56"></script>
-  <script src="js/playlists.js?v=56"></script>
-  <script src="js/loops.js?v=56"></script>
-  <script src="js/audioRecorder.js?v=56"></script>
-  <script src="app.js?v=56"></script>
+  <script src="js/database.js?v=57"></script>
+  <script src="js/auth.js?v=57"></script>
+  <script src="js/notes.js?v=57"></script>
+  <script src="js/playlists.js?v=57"></script>
+  <script src="js/loops.js?v=57"></script>
+  <script src="js/audioRecorder.js?v=57"></script>
+  <script src="app.js?v=57"></script>
   <!-- Share Modal -->
   <div class="modal-overlay hidden" id="share-modal" onclick="app.closeShareModal()" style="z-index: 9999;">
     <div class="modal-card" style="max-width: 450px; padding: 24px; text-align: left;" onclick="event.stopPropagation()">

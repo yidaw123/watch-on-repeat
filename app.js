@@ -4425,8 +4425,8 @@ class WatchOnRepeat {
     const confirm = document.getElementById('settings-password-confirm').value;
     if (!password) return;
     
-    if (password.length < 6) {
-      this.showToast("Password must be at least 6 characters.", "alert-circle");
+    if (password.length < 8) {
+      this.showToast("Password must be at least 8 characters.", "alert-circle");
       return;
     }
     
