@@ -29,13 +29,14 @@ class LoopsMixin {
          if (point === 'start') {
            newStart = Math.max(0, newStart + amount);
            if (newStart > newEnd) newStart = newEnd;
+           startEl._cascadingTime.setValue(newStart);
+           if (startEl._cascadingTime.onChange) startEl._cascadingTime.onChange(newStart, startEl);
          } else {
            newEnd = Math.min(this.state.currentVideoDuration || 3600, newEnd + amount);
            if (newEnd < newStart) newEnd = newStart;
+           endEl._cascadingTime.setValue(newEnd);
+           if (endEl._cascadingTime.onChange) endEl._cascadingTime.onChange(newEnd, endEl);
          }
-         
-         startEl._cascadingTime.setValue(newStart);
-         endEl._cascadingTime.setValue(newEnd);
       }
       return;
     } else {
@@ -101,6 +102,8 @@ class LoopsMixin {
          
          startEl._cascadingTime.setValue(newStart);
          endEl._cascadingTime.setValue(newEnd);
+         if (startEl._cascadingTime.onChange) startEl._cascadingTime.onChange(newStart, startEl);
+         if (endEl._cascadingTime.onChange) endEl._cascadingTime.onChange(newEnd, endEl);
       }
       return;
     } else {
@@ -163,6 +166,7 @@ class LoopsMixin {
          if (newEnd < currentStart + 0.1) newEnd = currentStart + 0.1;
          
          endEl._cascadingTime.setValue(newEnd);
+         if (endEl._cascadingTime.onChange) endEl._cascadingTime.onChange(newEnd, endEl);
       }
       return;
     } else {
@@ -672,17 +676,9 @@ class LoopsMixin {
           <input type="text" id="multi-end-${index}" data-index="${index}" data-type="end" class="time-input multi-seg-input" value="HH:MM:SS.sss" style="width: 100%; text-align: center; color: white; background-color: rgba(255,255,255,0.1); border: 1px solid #333; border-radius: 4px; font-family: monospace; font-size: 13px; cursor: text; ${activeStyle}" ${inputAttr}>
         </div>
         ${isReadOnly ? '' : `
-          <button class="btn btn-secondary btn-sm save-segment-btn tooltip" data-tip="Save Segment" style="padding: 0 8px; height: 28px; min-height: 28px; margin-right: 4px;"><i data-lucide="save" style="width: 14px; height: 14px; color: #10B981;"></i></button>
           <button class="btn btn-secondary btn-sm delete-segment-btn tooltip" data-tip="Delete Segment" style="padding: 0 8px; height: 28px; min-height: 28px;"><i data-lucide="trash-2" style="width: 14px; height: 14px; color: #EF4444;"></i></button>
         `}
       `;
-      const saveBtn = row.querySelector('.save-segment-btn');
-      if (saveBtn) {
-        saveBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          this.saveMultiSegment(index);
-        });
-      }
       const deleteBtn = row.querySelector('.delete-segment-btn');
       if (deleteBtn) {
         deleteBtn.addEventListener('click', (e) => {
