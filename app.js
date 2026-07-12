@@ -4051,6 +4051,34 @@ class WatchOnRepeat {
     }
   }
 
+  changePlaybackSpeed(delta) {
+    let currentSpeed = 1.0;
+    
+    if (this.state.isMultiSegment) {
+      const idx = this.state.abLoop.currentSegmentIndex || 0;
+      if (this.state.abLoop.multiSegments[idx]) {
+        currentSpeed = this.state.abLoop.multiSegments[idx].speed || this.state.playbackRate || 1.0;
+        let newSpeed = Math.max(0.25, Math.min(2.0, currentSpeed + delta));
+        newSpeed = Math.round(newSpeed * 100) / 100;
+        
+        if (typeof this.setSegmentSpeed === 'function') {
+          this.setSegmentSpeed(newSpeed, idx);
+        } else {
+          this.state.abLoop.multiSegments[idx].speed = newSpeed;
+          this.setPlaybackSpeed(newSpeed);
+          this.saveLoopData();
+          if (this.renderMultiSegments) this.renderMultiSegments();
+        }
+        return;
+      }
+    }
+    
+    currentSpeed = this.state.playbackRate || 1.0;
+    let newSpeed = Math.max(0.25, Math.min(2.0, currentSpeed + delta));
+    newSpeed = Math.round(newSpeed * 100) / 100;
+    this.setPlaybackSpeed(newSpeed);
+  }
+
   setPlaybackSpeed(rate, hideToast = false, fromAutoTempo = false) {
     rate = parseFloat(rate);
     this.state.playbackRate = rate;
@@ -4276,13 +4304,15 @@ class WatchOnRepeat {
     this.defaultShortcuts = {
       'prevLoop': 'a',
       'nextLoop': 'o',
-      'toggleLoop': 'l',
-      'focusSpeed': '/',
       'openNotes': 'n',
       'shiftLeft': 'arrowleft',
       'shiftRight': 'arrowright',
       'halfScale': '[',
-      'doubleScale': ']'
+      'doubleScale': ']',
+      'increaseSpeed': 'arrowup',
+      'decreaseSpeed': 'arrowdown'
+    ,
+      'restartLoop': 'r'
     };
     
     this.state.shortcuts = { ...this.defaultShortcuts };
@@ -4315,10 +4345,24 @@ class WatchOnRepeat {
       } else if (isPremium && key === s.nextLoop) {
         e.preventDefault();
         if (typeof this.jumpToLoopSegment === 'function') this.jumpToLoopSegment(1);
-      } else if (key === s.toggleLoop) {
+      } else if (key === s.increaseSpeed) {
         e.preventDefault();
-        // Removed explicit toggle
-
+        this.changePlaybackSpeed(0.05);
+      } else if (key === s.decreaseSpeed) {
+        e.preventDefault();
+        this.changePlaybackSpeed(-0.05);
+      } else if (key === s.restartLoop) {
+        e.preventDefault();
+        if (this.state.isMultiSegment) {
+          const idx = this.state.abLoop.currentSegmentIndex || 0;
+          if (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments[idx] && this.state.abLoop.multiSegments[idx].start !== null) {
+            this.seekToTime(this.state.abLoop.multiSegments[idx].start);
+          }
+        } else if (this.state.abLoop.start !== null) {
+          this.seekToTime(this.state.abLoop.start);
+        } else {
+          this.seekToTime(0);
+        }
       } else if (key === s.focusSpeed) {
         e.preventDefault();
         if (this.elements.playbackSpeed) this.elements.playbackSpeed.focus();
@@ -4549,15 +4593,17 @@ class WatchOnRepeat {
     
     const s = this.state.shortcuts;
     const actions = [
-      { id: 'setStart', name: 'Mark Loop Start' },
-      { id: 'setEnd', name: 'Mark Loop End' },
-      { id: 'toggleLoop', name: 'Toggle Timestamp Loop' },
-      { id: 'focusSpeed', name: 'Focus Speed Control' },
+      { id: 'prevLoop', name: 'Previous Loop Segment', premium: true },
+      { id: 'nextLoop', name: 'Next Loop Segment', premium: true },
       { id: 'openNotes', name: 'Open Notes Tab' },
       { id: 'shiftLeft', name: 'Shift Loop Left', premium: true },
       { id: 'shiftRight', name: 'Shift Loop Right', premium: true },
       { id: 'halfScale', name: 'Halve Duration (1/2x)', premium: true },
-      { id: 'doubleScale', name: 'Double Duration (2x)', premium: true }
+      { id: 'doubleScale', name: 'Double Duration (2x)', premium: true },
+      { id: 'increaseSpeed', name: 'Increase Playback Speed', premium: false },
+      { id: 'decreaseSpeed', name: 'Decrease Playback Speed', premium: false }
+    ,
+      { id: 'restartLoop', name: 'Restart Current Loop', premium: false }
     ];
     
     actions.forEach(action => {
