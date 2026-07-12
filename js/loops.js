@@ -10,7 +10,6 @@ class LoopsMixin {
   }
 
   fineTuneLoop(point, amount, segIndex = null) {
-    if (!this.enforcePremiumFeature()) return;
     
     let target = this.state.abLoop;
     let isMulti = false;
@@ -73,7 +72,6 @@ class LoopsMixin {
   }
 
   shiftLoop(direction, segIndex = null) {
-    if (!this.enforcePremiumFeature()) return;
     
     let target = this.state.abLoop;
     let isMulti = false;
@@ -143,7 +141,6 @@ class LoopsMixin {
   }
 
   scaleLoop(multiplier, segIndex = null) {
-    if (!this.enforcePremiumFeature()) return;
     
     let target = this.state.abLoop;
     let isMulti = false;

@@ -256,7 +256,7 @@
               </div>
 
               <div id="main-pro-controls" class="advanced-loop-controls" style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 12px; align-items: center; transition: opacity 0.3s ease;">
-                <span class="text-xs font-bold text-gray-400" style="margin-right: 4px; display: flex; align-items: center; gap: 4px;">PRO CONTROLS <span onclick="app.openProControlsModal()" style="cursor:help;"><i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);"></i></span></span>
+                <span class="text-xs font-bold text-gray-400" style="margin-right: 4px; display: flex; align-items: center; gap: 4px;">GLOBAL LOOP CONTROLS <span onclick="app.openGlobalControlsModal()" style="cursor:help;"><i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);"></i></span></span>
                 
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
                   <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Start Time Fine Tune</span>
@@ -350,7 +350,7 @@
                   <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                     <input type="checkbox" id="multi-segment-checkbox" onchange="app.toggleMultiSegment(event)">
                     <span class="text-sm font-bold text-white" style="display:flex; align-items:center;">
-                      <i data-lucide="layers" style="width:14px; height:14px; display:inline-block; margin-right:4px;"></i> Advanced Loop Segments
+                      <i data-lucide="layers" style="width:14px; height:14px; display:inline-block; margin-right:4px;"></i> Premium/Pro Loop Controls
                     </span>
                   </label>
                   <span title="When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments." tabindex="0" onclick="app.showInfoModal('When active, the base timestamp loop and controls are frozen to prevent conflicts, giving you exclusive control over individual segments.')" style="margin-left:6px;margin-right:6px;outline:none;cursor:help;"><i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);cursor:help;"></i></span>
@@ -1176,10 +1176,10 @@
       </div>
     </div>
   </div>
-  <!-- Pro Controls Guide Modal -->
-  <div class="modal-overlay hidden" id="pro-controls-modal" onclick="app.closeProControlsModal()" style="z-index: 9999;">
+  <!-- Global Controls Guide Modal -->
+  <div class="modal-overlay hidden" id="global-controls-modal" onclick="app.closeGlobalControlsModal()" style="z-index: 9999;">
     <div class="modal-card" style="max-width: 500px; padding: 24px; text-align: left;" onclick="event.stopPropagation()">
-      <button class="modal-close-btn" onclick="app.closeProControlsModal()" style="position: absolute; top: 16px; right: 16px;">
+      <button class="modal-close-btn" onclick="app.closeGlobalControlsModal()" style="position: absolute; top: 16px; right: 16px;">
         <i data-lucide="x"></i>
       </button>
       <div class="modal-header border-b pb-4 mb-4 border-gray-800">
@@ -1204,7 +1204,7 @@
         </div>
       </div>
       <div class="modal-footer" style="margin-top: 24px;">
-        <button class="btn btn-primary w-full" onclick="app.closeProControlsModal()">Got it!</button>
+        <button class="btn btn-primary w-full" onclick="app.closeGlobalControlsModal()">Got it!</button>
       </div>
     </div>
   </div>
