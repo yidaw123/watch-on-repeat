@@ -868,7 +868,7 @@ class WatchOnRepeat {
     if (!isPremium && hasProFeatures) {
       this.state.isReadOnlyShared = true;
       setTimeout(() => {
-        this.showToast("Viewing a Shared Pro Link (Read-Only Mode). Upgrade to unlock editing!", "lock");
+        this.showToast("Viewing a Shared Pro Link (Read-Only Mode).", "lock", true, '<button class="btn btn-error btn-sm" onclick="app.openUpgradeModal()" style="padding: 2px 8px; font-size: 12px; height: auto;">Upgrade</button>');
       }, 1500);
     }
   }
@@ -3171,9 +3171,36 @@ class WatchOnRepeat {
     return container;
   }
 
-  showToast(message, iconName = 'info') {
+  closeToast() {
+    this.elements.toast.classList.remove('show');
+    setTimeout(() => {
+      if (!this.elements.toast.classList.contains('show')) {
+        this.elements.toast.classList.add('hidden');
+      }
+    }, 300);
+  }
+
+  showToast(message, iconName = 'info', persistent = false, actionHtml = null) {
     this.elements.toastIcon.innerHTML = `<i data-lucide="${iconName}"></i>`;
     this.elements.toastMessage.textContent = message;
+    
+    const actionContainer = document.getElementById('toast-action');
+    const closeBtn = document.getElementById('toast-close');
+    
+    if (actionHtml && actionContainer) {
+      actionContainer.innerHTML = actionHtml;
+      actionContainer.style.display = 'block';
+    } else if (actionContainer) {
+      actionContainer.style.display = 'none';
+      actionContainer.innerHTML = '';
+    }
+    
+    if (persistent && closeBtn) {
+      closeBtn.style.display = 'block';
+    } else if (closeBtn) {
+      closeBtn.style.display = 'none';
+    }
+    
     this.elements.toast.classList.remove('hidden');
     
     // Force browser reflow to ensure the CSS transition triggers
@@ -3184,14 +3211,11 @@ class WatchOnRepeat {
     if (window.lucide) window.lucide.createIcons();
     
     if (this.toastTimeout) clearTimeout(this.toastTimeout);
-    this.toastTimeout = setTimeout(() => {
-      this.elements.toast.classList.remove('show');
-      setTimeout(() => {
-        if (!this.elements.toast.classList.contains('show')) {
-          this.elements.toast.classList.add('hidden');
-        }
-      }, 300);
-    }, 3000);
+    if (!persistent) {
+      this.toastTimeout = setTimeout(() => {
+        this.closeToast();
+      }, 3000);
+    }
   }
 
   showInfoModal(message) {

@@ -1035,7 +1035,11 @@
     <!-- Toast Notification -->
     <div id="toast" class="toast hidden">
       <i data-lucide="info" id="toast-icon"></i>
-      <span id="toast-message">Notification message here</span>
+      <span id="toast-message" style="flex: 1;">Notification message here</span>
+      <div id="toast-action" style="margin-left: 8px; display: none;"></div>
+      <button id="toast-close" onclick="app.closeToast()" style="background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; padding: 0 4px; display: none;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+        <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+      </button>
     </div>
   </div>
 
