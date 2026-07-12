@@ -107,40 +107,86 @@
         <h2>What WatchOnRepeat Offers</h2>
         <p>We built this platform to be a true upgrade for anyone who relies on video repetition for learning or practice.</p>
         
-        <table class="comparison-table">
-          <thead>
-            <tr>
-              <th>Feature</th>
-              <th>Included in WatchOnRepeat?</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Infinite Video Looping</td>
-              <td><i data-lucide="check" class="check-icon"></i> Yes</td>
-            </tr>
-            <tr>
-              <td>Precision A/B Segment Looping</td>
-              <td><i data-lucide="check" class="check-icon"></i> Yes</td>
-            </tr>
-            <tr>
-              <td>Timestamped Notes &amp; Study Tools</td>
-              <td><i data-lucide="check" class="check-icon"></i> Yes</td>
-            </tr>
-            <tr>
-              <td>Twitch &amp; Vimeo Support</td>
-              <td><i data-lucide="check" class="check-icon"></i> Yes</td>
-            </tr>
-            <tr>
-              <td>Cloud Sync &amp; Saved Playlists</td>
-              <td><i data-lucide="check" class="check-icon"></i> Yes</td>
-            </tr>
-            <tr>
-              <td>Distraction-Free Workspace (Premium)</td>
-              <td><i data-lucide="check" class="check-icon"></i> Yes (Removes site ads)</td>
-            </tr>
-          </tbody>
-        </table>
+        <div style="overflow-x:auto;">
+          <table class="comparison-table" style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 1rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color);">
+                <th style="padding: 12px;">Feature</th>
+                <th style="padding: 12px; text-align: center;">Free</th>
+                <th style="padding: 12px; text-align: center; color: var(--premium-color, #fbbf24);">Premium</th>
+                <th style="padding: 12px; text-align: center; color: var(--pro-color, #8b5cf6);">Pro</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Infinite Video Looping</td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Precision A/B Segment Looping</td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Timestamped Notes &amp; Study Tools</td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Twitch &amp; Vimeo Support</td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Global Playback Speed Control</td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Cloud Sync &amp; Saved Playlists</td>
+                <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">Local Only</td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Advanced Multi-Segment Looping</td>
+                <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">1 Segment</td>
+                <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--premium-color, #fbbf24);">Up to 7</td>
+                <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--pro-color, #8b5cf6);">Up to 10</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Distraction-Free Workspace (Ad-Free)</td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="minus" style="width:16px; opacity:0.3;"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Customizable Hotkeys</td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="minus" style="width:16px; opacity:0.3;"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Gradual Tempo (Auto Speed-Up)</td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="minus" style="width:16px; opacity:0.3;"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">Advanced Hotkeys (Shift/Halve/Double)</td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="minus" style="width:16px; opacity:0.3;"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         
         <div class="faq-section">
           <h2>Frequently Asked Questions</h2>
