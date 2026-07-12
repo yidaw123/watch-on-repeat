@@ -664,8 +664,8 @@ class LoopsMixin {
           <input type="text" id="multi-end-${index}" data-index="${index}" data-type="end" class="time-input multi-seg-input" value="HH:MM:SS.sss" style="width: 100%; text-align: center; color: white; background-color: rgba(255,255,255,0.1); border: 1px solid #333; border-radius: 4px; font-family: monospace; font-size: 13px; cursor: text; ${activeStyle}" ${inputAttr}>
         </div>
         ${isReadOnly ? '' : `
-          <button class="icon-btn text-green-500 save-segment-btn" data-tip="Save Segment" style="padding: 4px; margin-right: 2px;"><i data-lucide="save" style="width: 14px; height: 14px;"></i></button>
-          <button class="icon-btn delete-segment-btn" style="padding: 4px; color: white !important;"><i data-lucide="trash-2" style="width: 14px; height: 14px; color: white;"></i></button>
+          <button class="btn btn-secondary btn-sm save-segment-btn tooltip" data-tip="Save Segment" style="padding: 0 8px; height: 28px; min-height: 28px; margin-right: 4px;"><i data-lucide="save" style="width: 14px; height: 14px; color: #10B981;"></i></button>
+          <button class="btn btn-secondary btn-sm delete-segment-btn tooltip" data-tip="Delete Segment" style="padding: 0 8px; height: 28px; min-height: 28px;"><i data-lucide="trash-2" style="width: 14px; height: 14px; color: #EF4444;"></i></button>
         `}
       `;
       const saveBtn = row.querySelector('.save-segment-btn');
