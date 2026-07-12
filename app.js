@@ -1733,6 +1733,16 @@ class WatchOnRepeat {
       const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
       this.state.abLoop.multiSegments = isPremium ? (data.multiSegments || []) : [];
       this.state.isMultiSegment = data.isMultiSegment || false;
+      
+      if (this.state.isMultiSegment && this.state.abLoop.multiSegments.length > 0) {
+        let initialSegIndex = this.state.abLoop.currentSegmentIndex || 0;
+        if (this.state.abLoop.multiSegments[initialSegIndex]) {
+          const initialSpeed = this.state.abLoop.multiSegments[initialSegIndex].speed || 1.0;
+          if (this.state.playbackRate !== initialSpeed) {
+            this.setPlaybackSpeed(initialSpeed, true);
+          }
+        }
+      }
     }
 
     // Heal any corrupted segments

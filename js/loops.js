@@ -499,8 +499,16 @@ class LoopsMixin {
     if (this.showToast) this.showToast("All segments deleted.", "trash-2");
   }
 
-  setSegmentSpeed(index, speed) {
-    // Left empty. Speed is now saved via saveMultiSegment
+  setSegmentSpeed(speed, index) {
+    if (!this.state.abLoop.multiSegments[index]) return;
+    const rate = parseFloat(speed) || 1.0;
+    this.state.abLoop.multiSegments[index].speed = rate;
+    
+    // If this is the active segment, apply immediately
+    if (this.state.abLoop.currentSegmentIndex === index) {
+       this.setPlaybackSpeed(rate, true); 
+    }
+    this.saveLoopData();
   }
 
   saveMultiSegment(index) {
@@ -815,18 +823,6 @@ class LoopsMixin {
         if (endEl) {
           const ciEnd = new CascadingTimeInput(endEl, true, (val, el) => handleChange(val, 'end', el));
           ciEnd.setValue(seg.end);
-        }
-        
-        const speedEl = document.getElementById(`multi-speed-${idx}`);
-        if (speedEl) {
-          speedEl.addEventListener('change', (e) => {
-            const speed = parseFloat(e.target.value);
-            this.state.abLoop.multiSegments[idx].speed = speed;
-            if (this.state.abLoop.currentSegmentIndex === idx) {
-               this.setPlaybackSpeed(speed, true);
-            }
-            this.saveLoopData();
-          });
         }
       });
     }
