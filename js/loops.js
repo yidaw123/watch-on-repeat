@@ -244,7 +244,7 @@ class LoopsMixin {
     } finally {
       this.state.abLoop.isChecking = false;
       if (this.state.abLoop.active) {
-        this.state.abLoop.timer = setTimeout(() => this.checkABLoop(), 100);
+        this.state.abLoop.timer = setTimeout(() => this.checkABLoop(), 15);
       }
     }
   }
@@ -325,23 +325,23 @@ class LoopsMixin {
     let nextIdx = segments.findIndex(s => s.start !== null && s.start >= t);
     if (nextIdx !== -1) {
       this.state.abLoop.currentSegmentIndex = nextIdx;
+      this.seekToTime(segments[nextIdx].start);
       const newSegSpeed = segments[nextIdx].speed || 1.0;
       if (this.state.playbackRate !== newSegSpeed) {
         this.setPlaybackSpeed(newSegSpeed, true);
       }
-      this.seekToTime(segments[nextIdx].start);
       if (this.updateTimelineUI) this.updateTimelineUI();
     } else {
       // Seeked past the last segment. Wrap around to the first valid segment.
       let firstIdx = segments.findIndex(s => s.start !== null && s.end !== null);
       if (firstIdx === -1) firstIdx = 0;
       this.state.abLoop.currentSegmentIndex = firstIdx;
+      this.seekToTime(segments[firstIdx].start);
       
       const newSegSpeed = segments[firstIdx].speed || 1.0;
       if (this.state.playbackRate !== newSegSpeed) {
         this.setPlaybackSpeed(newSegSpeed, true);
       }
-      this.seekToTime(segments[firstIdx].start);
       if (this.updateTimelineUI) this.updateTimelineUI();
     }
   }
@@ -369,12 +369,13 @@ class LoopsMixin {
     
     this.state.abLoop.currentSegmentIndex = nextIndex;
     
+    this.seekToTime(segments[nextIndex].start);
+    
     const newSegSpeed = segments[nextIndex].speed || 1.0;
     if (this.state.playbackRate !== newSegSpeed) {
       this.setPlaybackSpeed(newSegSpeed, true);
     }
     
-    this.seekToTime(segments[nextIndex].start);
     if (this.updateTimelineUI) this.updateTimelineUI();
   }
 
