@@ -4302,11 +4302,11 @@ class WatchOnRepeat {
 
   initHotkeys() {
     this.defaultShortcuts = {
-      'prevLoop': 'a',
-      'nextLoop': 'o',
+      'prevLoop': 'arrowleft',
+      'nextLoop': 'arrowright',
       'openNotes': 'n',
-      'shiftLeft': 'arrowleft',
-      'shiftRight': 'arrowright',
+      'shiftLeft': 'a',
+      'shiftRight': 'd',
       'halfScale': '[',
       'doubleScale': ']',
       'increaseSpeed': 'arrowup',
