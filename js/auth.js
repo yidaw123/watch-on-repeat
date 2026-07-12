@@ -1,7 +1,7 @@
 class AuthMixin {
   validatePassword(password) {
-    if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-      this.showToast("Password must be at least 8 characters and contain both letters and numbers.", "alert-circle");
+    if (password.length < 6 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      this.showToast("Password must be at least 6 characters and contain both letters and numbers.", "alert-circle");
       return false;
     }
     return true;
