@@ -79,7 +79,7 @@ class AuthMixin {
       const newIcon = document.createElement('i');
       newIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
       newIcon.className = 'password-toggle-icon';
-      newIcon.onclick = () => this.togglePasswordVisibility(inputId);
+      newIcon.setAttribute('onclick', `app.togglePasswordVisibility('${inputId}')`);
       wrapper.replaceChild(newIcon, oldIcon);
       if (window.lucide) {
         lucide.createIcons();
