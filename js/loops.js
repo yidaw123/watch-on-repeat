@@ -379,6 +379,45 @@ class LoopsMixin {
     if (this.updateTimelineUI) this.updateTimelineUI();
   }
 
+  jumpToLoopSegment(direction) {
+    if (!this.state.isMultiSegment || !this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) return;
+    
+    const segments = this.state.abLoop.multiSegments;
+    let currentSegIndex = this.state.abLoop.currentSegmentIndex || 0;
+    
+    // Find the next/prev valid segment
+    let nextIndex = currentSegIndex + direction;
+    while (nextIndex >= 0 && nextIndex < segments.length && (segments[nextIndex].start === null || segments[nextIndex].end === null)) {
+      nextIndex += direction;
+    }
+    
+    // Wrap around
+    if (nextIndex >= segments.length) {
+      nextIndex = segments.findIndex(s => s.start !== null && s.end !== null);
+    } else if (nextIndex < 0) {
+      // findLastIndex not widely supported in older browsers, use a loop
+      for (let i = segments.length - 1; i >= 0; i--) {
+        if (segments[i].start !== null && segments[i].end !== null) {
+          nextIndex = i;
+          break;
+        }
+      }
+    }
+    
+    if (nextIndex === -1 || nextIndex === currentSegIndex) return; // No other valid segments to jump to
+    
+    this.state.abLoop.currentSegmentIndex = nextIndex;
+    
+    this.seekToTime(segments[nextIndex].start);
+    
+    const newSegSpeed = segments[nextIndex].speed || 1.0;
+    if (this.state.playbackRate !== newSegSpeed) {
+      this.setPlaybackSpeed(newSegSpeed, true);
+    }
+    
+    if (this.updateTimelineUI) this.updateTimelineUI();
+  }
+
   toggleMultiSegment(e) {
     const list = document.getElementById('multi-segment-list');
     const addBtn = document.getElementById('add-segment-btn');

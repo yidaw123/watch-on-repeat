@@ -4279,8 +4279,8 @@ class WatchOnRepeat {
       'toggleLoop': 'l',
       'focusSpeed': '/',
       'openNotes': 'n',
-      'shiftLeft': 'arrowleft',
-      'shiftRight': 'arrowright',
+      'prevLoop': 'arrowleft',
+      'nextLoop': 'arrowright',
       'halfScale': '[',
       'doubleScale': ']'
     };
@@ -4411,12 +4411,12 @@ class WatchOnRepeat {
         if (this.elements.noteInput) this.elements.noteInput.focus();
       } 
       // Premium shortcuts
-      else if (isPremium && key === s.shiftLeft) {
+      else if (isPremium && key === s.prevLoop) {
         e.preventDefault();
-        this.shiftLoop(-1);
-      } else if (isPremium && key === s.shiftRight) {
+        if (typeof this.jumpToLoopSegment === 'function') this.jumpToLoopSegment(-1);
+      } else if (isPremium && key === s.nextLoop) {
         e.preventDefault();
-        this.shiftLoop(1);
+        if (typeof this.jumpToLoopSegment === 'function') this.jumpToLoopSegment(1);
       } else if (isPremium && key === s.halfScale) {
         e.preventDefault();
         this.scaleLoop(0.5);
@@ -4637,8 +4637,8 @@ class WatchOnRepeat {
       { id: 'toggleLoop', name: 'Toggle Timestamp Loop' },
       { id: 'focusSpeed', name: 'Focus Speed Control' },
       { id: 'openNotes', name: 'Open Notes Tab' },
-      { id: 'shiftLeft', name: 'Shift Loop Left', premium: true },
-      { id: 'shiftRight', name: 'Shift Loop Right', premium: true },
+      { id: 'prevLoop', name: 'Previous Loop Segment', premium: true },
+      { id: 'nextLoop', name: 'Next Loop Segment', premium: true },
       { id: 'halfScale', name: 'Halve Duration (1/2x)', premium: true },
       { id: 'doubleScale', name: 'Double Duration (2x)', premium: true }
     ];
