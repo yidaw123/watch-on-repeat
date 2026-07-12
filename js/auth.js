@@ -1,7 +1,7 @@
 class AuthMixin {
   validatePassword(password) {
-    if (password.length < 7 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-      this.showToast("Password must be at least 7 characters and contain both letters and numbers.", "alert-circle");
+    if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      this.showToast("Password must be at least 8 characters and contain both letters and numbers.", "alert-circle");
       return false;
     }
     return true;
@@ -218,7 +218,10 @@ class AuthMixin {
       if (error) throw error;
       signUpData = data;
     } catch (err) {
-      this.showToast(err.message, "alert-circle");
+      console.error("Signup Error Object:", err);
+      let errorMsg = err.message;
+      if (!errorMsg || errorMsg === "{}") errorMsg = JSON.stringify(err);
+      this.showToast("Signup Failed: " + errorMsg, "alert-circle");
       this.elements.authOptions.classList.remove('hidden');
       this.elements.authLoading.classList.add('hidden');
       return;
