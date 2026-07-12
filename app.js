@@ -4312,53 +4312,90 @@ class WatchOnRepeat {
       if (key === s.setStart) {
         e.preventDefault();
         this.getCurrentTime().then(t => {
-          let handled = false;
+          let duration = this.state.currentVideoDuration || 3600;
           if (this.state.isMultiSegment) {
             const idx = this.state.abLoop.currentSegmentIndex || 0;
-            const el = document.getElementById(`multi-start-${idx}`);
-            if (el && el._cascadingTime && el._cascadingTime.onChange) {
-               el._cascadingTime.setValue(t);
-               el._cascadingTime.onChange(t, el);
-               handled = true;
+            const seg = this.state.abLoop.multiSegments[idx];
+            if (seg) {
+              seg.start = t;
+              if (seg.end !== null && t >= seg.end) {
+                // Find next segment's start to bound the pushed end
+                let nextStart = duration;
+                for (let i = idx + 1; i < this.state.abLoop.multiSegments.length; i++) {
+                  if (this.state.abLoop.multiSegments[i].start !== null) {
+                    nextStart = this.state.abLoop.multiSegments[i].start;
+                    break;
+                  }
+                }
+                seg.end = nextStart;
+              }
+              const startEl = document.getElementById(`multi-start-${idx}`);
+              if (startEl && startEl._cascadingTime) startEl._cascadingTime.setValue(seg.start);
+              const endEl = document.getElementById(`multi-end-${idx}`);
+              if (endEl && endEl._cascadingTime) endEl._cascadingTime.setValue(seg.end);
             }
-          }
-          if (!handled) {
-            if (this.elements.abStart && this.elements.abStart._cascadingTime && this.elements.abStart._cascadingTime.onChange) {
-               this.elements.abStart._cascadingTime.setValue(t);
-               this.elements.abStart._cascadingTime.onChange(t, this.elements.abStart);
+          } else {
+            this.state.abLoop.start = t;
+            if (this.state.abLoop.end !== null && t >= (this.state.abLoop.end || 0)) {
+              this.state.abLoop.end = duration;
+            }
+            if (this.elements.abStart && this.elements.abStart._cascadingTime) {
+               this.elements.abStart._cascadingTime.setValue(this.state.abLoop.start);
             } else if (this.elements.abStart) {
-               this.elements.abStart.value = this.formatTime(t);
-               this.state.abLoop.start = t;
-               this.saveLoopData();
-               if (this.updateTimelineUI) this.updateTimelineUI();
+               this.elements.abStart.value = this.formatTime(this.state.abLoop.start);
+            }
+            if (this.elements.abEnd && this.elements.abEnd._cascadingTime) {
+               this.elements.abEnd._cascadingTime.setValue(this.state.abLoop.end);
+            } else if (this.elements.abEnd) {
+               this.elements.abEnd.value = this.formatTime(this.state.abLoop.end);
             }
           }
+          this.saveLoopData();
+          if (this.updateTimelineUI) this.updateTimelineUI();
           this.showToast("Timestamp Start marked at " + this.formatTime(t), "flag");
         });
       } else if (key === s.setEnd) {
         e.preventDefault();
         this.getCurrentTime().then(t => {
-          let handled = false;
           if (this.state.isMultiSegment) {
             const idx = this.state.abLoop.currentSegmentIndex || 0;
-            const el = document.getElementById(`multi-end-${idx}`);
-            if (el && el._cascadingTime && el._cascadingTime.onChange) {
-               el._cascadingTime.setValue(t);
-               el._cascadingTime.onChange(t, el);
-               handled = true;
+            const seg = this.state.abLoop.multiSegments[idx];
+            if (seg) {
+              seg.end = t;
+              if (seg.start !== null && t <= seg.start) {
+                // Find previous segment's end to bound the pushed start
+                let prevEnd = 0;
+                for (let i = idx - 1; i >= 0; i--) {
+                  if (this.state.abLoop.multiSegments[i].end !== null) {
+                    prevEnd = this.state.abLoop.multiSegments[i].end;
+                    break;
+                  }
+                }
+                seg.start = prevEnd;
+              }
+              const startEl = document.getElementById(`multi-start-${idx}`);
+              if (startEl && startEl._cascadingTime) startEl._cascadingTime.setValue(seg.start);
+              const endEl = document.getElementById(`multi-end-${idx}`);
+              if (endEl && endEl._cascadingTime) endEl._cascadingTime.setValue(seg.end);
             }
-          }
-          if (!handled) {
-            if (this.elements.abEnd && this.elements.abEnd._cascadingTime && this.elements.abEnd._cascadingTime.onChange) {
-               this.elements.abEnd._cascadingTime.setValue(t);
-               this.elements.abEnd._cascadingTime.onChange(t, this.elements.abEnd);
+          } else {
+            this.state.abLoop.end = t;
+            if (this.state.abLoop.start !== null && t <= (this.state.abLoop.start || 0)) {
+              this.state.abLoop.start = 0;
+            }
+            if (this.elements.abStart && this.elements.abStart._cascadingTime) {
+               this.elements.abStart._cascadingTime.setValue(this.state.abLoop.start);
+            } else if (this.elements.abStart) {
+               this.elements.abStart.value = this.formatTime(this.state.abLoop.start);
+            }
+            if (this.elements.abEnd && this.elements.abEnd._cascadingTime) {
+               this.elements.abEnd._cascadingTime.setValue(this.state.abLoop.end);
             } else if (this.elements.abEnd) {
-               this.elements.abEnd.value = this.formatTime(t);
-               this.state.abLoop.end = t;
-               this.saveLoopData();
-               if (this.updateTimelineUI) this.updateTimelineUI();
+               this.elements.abEnd.value = this.formatTime(this.state.abLoop.end);
             }
           }
+          this.saveLoopData();
+          if (this.updateTimelineUI) this.updateTimelineUI();
           this.showToast("Timestamp End marked at " + this.formatTime(t), "flag");
         });
       } else if (key === s.toggleLoop) {
