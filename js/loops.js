@@ -385,17 +385,14 @@ class LoopsMixin {
     const segments = this.state.abLoop.multiSegments;
     let currentSegIndex = this.state.abLoop.currentSegmentIndex || 0;
     
-    // Find the next/prev valid segment
     let nextIndex = currentSegIndex + direction;
     while (nextIndex >= 0 && nextIndex < segments.length && (segments[nextIndex].start === null || segments[nextIndex].end === null)) {
       nextIndex += direction;
     }
     
-    // Wrap around
     if (nextIndex >= segments.length) {
       nextIndex = segments.findIndex(s => s.start !== null && s.end !== null);
     } else if (nextIndex < 0) {
-      // findLastIndex not widely supported in older browsers, use a loop
       for (let i = segments.length - 1; i >= 0; i--) {
         if (segments[i].start !== null && segments[i].end !== null) {
           nextIndex = i;
@@ -404,7 +401,7 @@ class LoopsMixin {
       }
     }
     
-    if (nextIndex === -1 || nextIndex === currentSegIndex) return; // No other valid segments to jump to
+    if (nextIndex === -1 || nextIndex === currentSegIndex) return;
     
     this.state.abLoop.currentSegmentIndex = nextIndex;
     
