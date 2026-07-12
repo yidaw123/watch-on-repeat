@@ -198,10 +198,6 @@ class LoopsMixin {
   }
 
   toggleAutoTempo(e) {
-    if (!this.enforcePremiumFeature("Gradual Tempo Increase is a Premium feature!")) {
-      e.target.checked = false;
-      return;
-    }
     this.state.isAutoTempoEnabled = e.target.checked;
     
     const speedSelect = document.getElementById('playback-speed');
