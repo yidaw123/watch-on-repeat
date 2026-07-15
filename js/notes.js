@@ -84,7 +84,8 @@ class NotesMixin {
     
     this.saveDb('notes', notes);
     this.syncNotesToCloud(vId, notes[vId]);
-    this.elements.noteInput.value = ''; // Clear input for the next note
+    this.elements.noteInput.value = '';
+    if (typeof this.updateNoteCharCount === 'function') this.updateNoteCharCount(this.elements.noteInput); // Clear input for the next note
     this.renderNotes();
     this.showToast(`Note added at ${this.formatTime(Math.floor(time))}!`, "edit-3");
 
