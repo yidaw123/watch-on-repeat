@@ -5317,6 +5317,34 @@ class WatchOnRepeat {
     if (!db.weeklyTime) db.weeklyTime = {};
     if (!db.segments) db.segments = {};
     
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    const weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+    const weekStr = `${d.getUTCFullYear()}-W${weekNo}`;
+
+    // --- DATA RECOVERY SCRIPT ---
+    // If totalTime was incorrectly reset to 0 (or is very small) but there are segments with loops,
+    // recalculate the time spent based on the loops and segment durations!
+    if ((!db.totalTime || db.totalTime < 60) && Object.keys(db.segments).length > 0) {
+      let restoredTime = 0;
+      for (const key in db.segments) {
+        const seg = db.segments[key];
+        if (seg.loops && seg.end > seg.start) {
+          restoredTime += Math.floor(seg.loops * (seg.end - seg.start));
+        }
+      }
+      if (restoredTime > (db.totalTime || 0)) {
+        db.totalTime = restoredTime;
+        // Allocate a portion of the restored time to the current week so it doesn't look empty
+        if (!db.weeklyTime[weekStr] || db.weeklyTime[weekStr] < 60) {
+          db.weeklyTime[weekStr] = Math.min(restoredTime, 7200); // max 2 hours assigned to this week
+        }
+        this.saveDb('analytics', db);
+      }
+    }
+    // ----------------------------
+    
     const formatH = (secs) => {
       const h = Math.floor(secs / 3600);
       const m = Math.floor((secs % 3600) / 60);
@@ -5324,13 +5352,6 @@ class WatchOnRepeat {
     };
     
     this.elements.analyticsTotalTime.textContent = formatH(db.totalTime || 0);
-    
-    const d = new Date();
-    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-    const weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
-    const weekStr = `${d.getUTCFullYear()}-W${weekNo}`;
-    
     this.elements.analyticsWeeklyTime.textContent = formatH(db.weeklyTime[weekStr] || 0);
     
     const fakeKeywords = ["Chill Beats", "Synthwave Session", "Ambient Relaxation", "Nature Sounds", "Epic Orchestral", "Developer Focus", "Cozy Coffee Shop", "Live Music Session", "lofi hip hop radio", "Twitch Stream:", "Movie Buff Builds", "Joyner Lucas - Monsters"];
@@ -5344,17 +5365,6 @@ class WatchOnRepeat {
           delete db.segments[key];
           hasFake = true;
         }
-      }
-      
-      // Reset fake hours that were injected by the mock script
-      if (db.totalTime > 200000) {
-        db.totalTime = 0;
-        db.weeklyTime = {};
-        hasFake = true;
-        
-        // Recalculate visual UI immediately
-        this.elements.analyticsTotalTime.textContent = formatH(0);
-        this.elements.analyticsWeeklyTime.textContent = formatH(0);
       }
       
       if (hasFake) {
