@@ -321,6 +321,19 @@ class PlaylistsMixin {
     const playlists = this.getDb('playlists');
     const filtered = playlists.filter(p => !(p.id === id && p.userId === this.state.user.id));
     this.saveDb('playlists', filtered);
+    
+    // Explicitly delete from Supabase so it's not orphaned
+    if (window.supabaseClient && this.state.user) {
+      window.supabaseClient.from('playlists').delete()
+        .eq('id', id)
+        .eq('user_id', this.state.user.id)
+        .then(({ error }) => {
+          if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
+            console.error("Failed to wipe playlist from cloud:", error);
+          }
+        });
+    }
+
     this.renderPlaylistsTab();
     this.showToast("Playlist deleted", "trash-2");
   }

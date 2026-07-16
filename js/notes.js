@@ -106,6 +106,16 @@ class NotesMixin {
         db[vId].splice(index, 1);
         this.saveDb('notes', db);
         this.syncNotesToCloud(vId, db[vId]);
+        
+        if (window.supabaseClient && this.state.user) {
+          window.supabaseClient.from('notes').delete()
+            .eq('id', noteId)
+            .eq('user_id', this.state.user.id)
+            .then(({ error }) => {
+              if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Failed to delete note from cloud:", error);
+            });
+        }
+        
         this.renderNotes();
         this.showToast("Note deleted", "trash-2");
       }
@@ -118,9 +128,22 @@ class NotesMixin {
     if (db[vId] && db[vId].length > 0) {
       const confirmResult = await this.showConfirmDialog("Delete All Notes", "Are you sure you want to delete all notes for this video?");
       if (!confirmResult) return;
+      
+      const notesToDelete = [...db[vId]];
       db[vId] = [];
       this.saveDb('notes', db);
       this.syncNotesToCloud(vId, db[vId]);
+      
+      if (window.supabaseClient && this.state.user) {
+        const noteIds = notesToDelete.map(n => n.id);
+        window.supabaseClient.from('notes').delete()
+          .in('id', noteIds)
+          .eq('user_id', this.state.user.id)
+          .then(({ error }) => {
+            if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Failed to delete all notes from cloud:", error);
+          });
+      }
+      
       this.renderNotes();
       if (this.showToast) this.showToast("All notes deleted", "trash-2");
     }

@@ -710,6 +710,41 @@ class WatchOnRepeat {
   }
 
   // ==========================================
+  // EVENT TRACKING & MODALS
+  // ==========================================
+
+  async logEvent(eventName, eventData = {}) {
+    if (!window.supabaseClient || !this.state.user) return;
+    try {
+      await window.supabaseClient.from('events').insert({
+        user_id: this.state.user.id,
+        event_type: eventName,
+        event_data: eventData
+      });
+    } catch (e) {
+      if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.warn("Failed to log event:", e);
+    }
+  }
+
+  openUpgradeModal(message = "Upgrade to unlock Premium features!") {
+    if (this.elements.upgradeMessage) {
+      this.elements.upgradeMessage.textContent = message;
+    }
+    if (this.elements.upgradeModal) {
+      this.elements.upgradeModal.classList.remove('hidden');
+    }
+    
+    // Log the event silently in the background
+    this.logEvent('upgrade_clicked', { message: message });
+  }
+
+  closeUpgradeModal() {
+    if (this.elements.upgradeModal) {
+      this.elements.upgradeModal.classList.add('hidden');
+    }
+  }
+
+  // ==========================================
   // ROUTING & NAVIGATION
   // ==========================================
 
@@ -5054,6 +5089,19 @@ class WatchOnRepeat {
     if (localInstances[sessionId]) {
       delete localInstances[sessionId];
       localStorage.setItem('wor_instances', JSON.stringify(localInstances));
+      
+      // Explicitly delete from Supabase so it's not orphaned
+      if (window.supabaseClient && this.state.user) {
+        window.supabaseClient.from('video_instances').delete()
+          .eq('id', sessionId)
+          .eq('user_id', this.state.user.id)
+          .then(({ error }) => {
+            if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
+              console.error("Failed to delete session from cloud:", error);
+            }
+          });
+      }
+      
       this.showToast("Session deleted", "trash-2");
       this.renderSavedSessionsTab();
     }
