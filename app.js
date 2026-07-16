@@ -2176,7 +2176,7 @@ class WatchOnRepeat {
     };
 
     const tryInit = () => {
-      if (this.state.currentPlatform !== 'dailymotion' || this.state.currentVideo !== id) return;
+      if (this.state.currentPlatform !== 'dailymotion' || (this.state.currentVideo && this.state.currentVideo.id !== id)) return;
       
       if (typeof DM === 'undefined') {
         retryCount++;
