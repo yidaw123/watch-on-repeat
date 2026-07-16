@@ -4358,6 +4358,9 @@ class WatchOnRepeat {
         return;
       }
       
+      // Do not intercept browser shortcuts like Ctrl+R or Ctrl+Shift+R
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      
       const key = e.key.toLowerCase();
       const s = this.state.shortcuts;
       const isPremium = this.state.user && this.state.user.isPremium;
