@@ -2140,95 +2140,76 @@ class WatchOnRepeat {
   // --- Dailymotion Player Controller ---
   initDailymotionPlayer(id) {
     this.destroyPlayers();
-    this.elements.playerContainer.innerHTML = '';
-    const iframe = document.createElement('iframe');
-    iframe.id = "dm-player-target";
-    // We use api=postMessage to enable the postMessage API
-    iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1&api=postMessage`;
-    iframe.width = "100%";
-    iframe.height = "100%";
-    iframe.allow = "autoplay; fullscreen";
-    this.elements.playerContainer.appendChild(iframe);
+    this.elements.playerContainer.innerHTML = '<div id="dm-player-target"></div>';
 
-    // Clean up previous event listener if exists
-    if (this.state.players.dailymotion && this.state.players.dailymotion.cleanup) {
-      this.state.players.dailymotion.cleanup();
+    if (typeof DM === 'undefined') {
+      console.error("Dailymotion SDK not loaded");
+      return;
     }
 
-    this.state.players.dailymotion = {
-      iframe: iframe,
-      currentTime: 0,
-      seek: function(seconds) {
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage(JSON.stringify({command: 'seek', parameters: [seconds]}), '*');
-        }
-      },
-      play: function() {
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage(JSON.stringify({command: 'play', parameters: []}), '*');
-        }
-      },
-      pause: function() {
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage(JSON.stringify({command: 'pause', parameters: []}), '*');
-        }
-      },
-      setPlaybackRate: function(rate) {
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage(JSON.stringify({command: 'quality', parameters: [rate]}), '*');
-          // Some older APIs use quality or playback_rate or setPlaybackSpeed. We'll send the correct standard one.
-          iframe.contentWindow.postMessage(JSON.stringify({command: 'setPlaybackSpeed', parameters: [rate]}), '*');
-        }
+    const dmPlayer = DM.player(document.getElementById('dm-player-target'), {
+      video: id,
+      width: "100%",
+      height: "100%",
+      params: {
+        autoplay: true,
+        mute: false,
+        controls: true
+      }
+    });
+
+    // Alias setPlaybackRate to setPlaybackSpeed for our app logic
+    dmPlayer.setPlaybackRate = function(rate) {
+      if (typeof dmPlayer.setPlaybackSpeed === 'function') {
+        dmPlayer.setPlaybackSpeed(rate);
       }
     };
 
-    const messageHandler = (event) => {
-      // Dailymotion postMessage events
-      if (event.origin !== 'https://www.dailymotion.com') return;
-      
-      let data = {};
-      try {
-        if (typeof event.data === 'string') {
-          if (event.data.trim().startsWith('{')) {
-            data = JSON.parse(event.data);
-          } else {
-            const params = new URLSearchParams(event.data);
-            data = {
-              event: params.get('event'),
-              time: parseFloat(params.get('time')),
-              duration: parseFloat(params.get('duration'))
-            };
-          }
-        } else {
-          data = event.data || {};
-        }
-      } catch(e) {}
-      
-      if (data && data.event === 'timeupdate') {
-         this.state.players.dailymotion.currentTime = data.time || 0;
-      } else if (data && data.event === 'durationchange') {
-         this.setVideoDuration(data.duration || 0);
-      } else if (data && data.event === 'video_end') {
-         this.elements.loopStateText.textContent = "Restarting...";
-         if (this.incrementLoops()) return;
-         this.seekToTime(this.state.abLoop.start || 0);
-         this.state.players.dailymotion.play();
-      } else if (data && data.event === 'playing') {
-         this.elements.loopStateText.textContent = "Looping";
-         this.elements.loopStateText.className = "stat-value text-green";
-      } else if (data && data.event === 'pause') {
-         this.elements.loopStateText.textContent = "Paused";
-         this.elements.loopStateText.className = "stat-value text-muted";
-      }
+    this.state.players.dailymotion = dmPlayer;
+
+    dmPlayer.addEventListener('apiready', () => {
+      // Set initial speed
+      const initialSpeed = this.state.sharedSegmentsToLoad && this.state.sharedSegmentsToLoad.length > 0 
+          ? (this.state.sharedSegmentsToLoad[0].speed || 1.0) 
+          : (this.state.playbackRate || 1.0);
+      try { dmPlayer.setPlaybackRate(initialSpeed); } catch(e){}
+    });
+
+    dmPlayer.addEventListener('timeupdate', () => {
+      this.state.players.dailymotion.currentTime = dmPlayer.currentTime || 0;
+      this.onPlayerTimeUpdate(dmPlayer.currentTime || 0);
+    });
+
+    dmPlayer.addEventListener('durationchange', () => {
+      this.setVideoDuration(dmPlayer.duration || 0);
+    });
+
+    dmPlayer.addEventListener('play', () => {
+      this.state.isPlaying = true;
+      this.elements.loopStateText.textContent = "Looping";
+      this.elements.loopStateText.className = "stat-value text-green";
+      this.updatePlayPauseUI();
+    });
+
+    dmPlayer.addEventListener('pause', () => {
+      this.state.isPlaying = false;
+      this.elements.loopStateText.textContent = "Paused";
+      this.elements.loopStateText.className = "stat-value text-muted";
+      this.updatePlayPauseUI();
+    });
+
+    dmPlayer.addEventListener('video_end', () => {
+      this.elements.loopStateText.textContent = "Restarting...";
+      if (this.incrementLoops()) return;
+      dmPlayer.seek(this.state.abLoop.start || 0);
+      dmPlayer.play();
+    });
+
+    dmPlayer.cleanup = () => {
+      // Handled by destroyPlayers innerHTML clearing
     };
 
-    window.addEventListener('message', messageHandler);
-    this.state.players.dailymotion.cleanup = () => {
-       window.removeEventListener('message', messageHandler);
-    };
-
-    // Fetch the correct video duration immediately from Dailymotion API
-    // so the timeline bar and loop boundaries are correctly sized.
+    // Keep the fetch just in case Dailymotion API takes too long to fire durationchange
     fetch(`https://api.dailymotion.com/video/${id}?fields=duration`)
       .then(res => res.json())
       .then(data => {
