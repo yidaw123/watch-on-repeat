@@ -548,18 +548,6 @@ class WatchOnRepeat {
     this.renderDiscoverTab();
     this.updateUserUI();
     this.updateStatsUI();
-    
-    // Check Privacy Consent
-    if (!localStorage.getItem('wor_privacy_consent')) {
-      const banner = document.getElementById('privacy-consent-banner');
-      if (banner) banner.classList.remove('hidden');
-    }
-  }
-
-  acceptPrivacyConsent() {
-    localStorage.setItem('wor_privacy_consent', 'accepted');
-    const banner = document.getElementById('privacy-consent-banner');
-    if (banner) banner.classList.add('hidden');
   }
 
   cacheElements() {
