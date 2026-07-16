@@ -122,6 +122,47 @@ class NotesMixin {
     }
   }
 
+  async editNote(id) {
+    if (this.state.isReadOnlyShared) return;
+    
+    const db = this.getDb('notes');
+    let targetVid = null;
+    let targetNoteIndex = -1;
+    
+    for (const vId in db) {
+      if (vId === '__titles') continue;
+      const idx = db[vId].findIndex(n => n.id === id);
+      if (idx !== -1) {
+        targetVid = vId;
+        targetNoteIndex = idx;
+        break;
+      }
+    }
+    
+    if (!targetVid) return;
+    
+    const note = db[targetVid][targetNoteIndex];
+    
+    const newText = await app.showCustomPrompt({
+      title: 'Edit Note',
+      message: 'Update your note:',
+      defaultValue: note.text,
+      isTextArea: true,
+      okText: 'Save'
+    });
+    
+    if (newText !== null && newText.trim() !== '') {
+      note.text = newText.trim();
+      note.editedAt = Date.now();
+      
+      this.saveDb('notes', db);
+      this.syncNotesToCloud(targetVid, db[targetVid]);
+      
+      this.renderNotes();
+      this.showToast("Note updated", "check-circle");
+    }
+  }
+
   async deleteAllNotes() {
     const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
@@ -228,9 +269,12 @@ class NotesMixin {
       div.innerHTML = `
         <div class="note-header">
           <span class="note-timestamp" onclick="app.seekToTime(${note.time})">[${timeStr}]</span>
-          ${isReadOnly ? '' : `<button class="btn-icon-delete" aria-label="Delete note" title="Delete Note" onclick="app.deleteNote('${this.escapeHtml(note.id)}')"><i data-lucide="trash-2"></i></button>`}
+          ${isReadOnly ? '' : `<div style="display: flex; gap: 4px;">
+            <button class="btn-icon-delete" style="color: var(--text-muted);" aria-label="Edit note" title="Edit Note" onclick="app.editNote('${this.escapeHtml(note.id)}')"><i data-lucide="edit-3"></i></button>
+            <button class="btn-icon-delete" aria-label="Delete note" title="Delete Note" onclick="app.deleteNote('${this.escapeHtml(note.id)}')"><i data-lucide="trash-2"></i></button>
+          </div>`}
         </div>
-        <div class="note-content">${this.escapeHtml(note.text)}</div>
+        <div class="note-content">${this.escapeHtml(note.text)}${note.editedAt ? ' <span style="font-size: 0.8em; color: var(--text-muted); font-style: italic;">(edited)</span>' : ''}</div>
       `;
       this.elements.notesList.appendChild(div);
     });

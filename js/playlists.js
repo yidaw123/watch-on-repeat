@@ -97,7 +97,10 @@ class PlaylistsMixin {
               </label>
             </div>
           </div>
-          <h2 style="margin-bottom:16px;">${this.escapeHtml(p.name)}</h2>
+          <h2 style="margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            ${this.escapeHtml(p.name)}
+            <button class="btn-icon-delete" style="color: var(--text-muted);" title="Rename Playlist" onclick="app.renamePlaylist('${this.escapeHtml(p.id)}')"><i data-lucide="edit-3"></i></button>
+          </h2>
         </div>
         <div id="playlist-videos-container" style="display: flex; flex-direction: column;"></div>
       `;
@@ -251,7 +254,10 @@ class PlaylistsMixin {
                 <input type="checkbox" ${p.isPublic ? 'checked' : ''} onchange="app.togglePlaylistPublic('${this.escapeHtml(p.id)}', this.checked)"> Public
               </label>
             </div>
-            <button class="btn-icon-delete" onclick="app.deletePlaylist('${this.escapeHtml(p.id)}')" title="Delete Playlist"><i data-lucide="trash-2"></i></button>
+            <div style="display: flex; gap: 4px;">
+              <button class="btn-icon-delete" style="color: var(--text-muted);" onclick="app.renamePlaylist('${this.escapeHtml(p.id)}')" title="Rename Playlist"><i data-lucide="edit-3"></i></button>
+              <button class="btn-icon-delete" onclick="app.deletePlaylist('${this.escapeHtml(p.id)}')" title="Delete Playlist"><i data-lucide="trash-2"></i></button>
+            </div>
           </div>
         </div>
       `;
@@ -308,6 +314,37 @@ class PlaylistsMixin {
     const v = p.videos[0];
     this.showToast(`Starting Playlist: ${this.escapeHtml(p.name)}`, 'play');
     this.loadVideo(v.videoId || v.id, v.platform);
+  }
+
+  async renamePlaylist(id) {
+    const playlists = this.getDb('playlists');
+    const p = playlists.find(pl => pl.id === id && pl.userId === this.state.user.id);
+    if (!p) return;
+    
+    const newName = await window.app.showCustomPrompt({
+      title: 'Rename Playlist',
+      message: 'Enter a new name for the playlist:',
+      defaultValue: p.name,
+      okText: 'Rename'
+    });
+    
+    if (newName !== null && newName.trim() !== '') {
+      p.name = newName.trim();
+      p.updatedAt = new Date().toISOString();
+      this.saveDb('playlists', playlists);
+      
+      if (window.supabaseClient && this.state.user) {
+        window.supabaseClient.from('playlists').update({ name: p.name })
+          .eq('id', id)
+          .eq('user_id', this.state.user.id)
+          .then(({ error }) => {
+            if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Failed to rename playlist in cloud:", error);
+          });
+      }
+      
+      this.renderPlaylistsTab();
+      this.showToast("Playlist renamed", "check-circle");
+    }
   }
 
   async deletePlaylist(id) {

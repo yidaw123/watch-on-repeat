@@ -1065,6 +1065,29 @@
     </div>
   </div>
 
+  <!-- Custom Prompt Modal -->
+  <div id="new-prompt-modal" class="modal-overlay hidden" style="z-index: 10000;">
+    <div class="modal-card confirm-modal-card">
+      <div class="confirm-modal-icon">
+        <i data-lucide="edit-3" style="color: var(--primary-color);"></i>
+      </div>
+      <div class="confirm-modal-content">
+        <h2 id="new-prompt-title">Edit</h2>
+        <p id="new-prompt-message" class="text-secondary">Enter a new value:</p>
+        
+        <div style="margin-top: 1rem;">
+          <input type="text" id="new-prompt-input" class="auth-input" placeholder="Type here..." autocomplete="off">
+          <textarea id="new-prompt-textarea" class="auth-input hidden" rows="5" placeholder="Type here..." style="resize: vertical;"></textarea>
+        </div>
+      </div>
+      <div class="confirm-modal-actions">
+        <button id="new-prompt-cancel" class="btn btn-outline" style="flex: 1;">Cancel</button>
+        <button id="new-prompt-ok" class="btn btn-primary" style="flex: 1;">Save</button>
+      </div>
+    </div>
+  </div>
+
+
   <!-- Info Modal -->
   <div class="modal-overlay hidden" id="info-modal" onclick="app.closeInfoModal()" style="z-index: 9999;">
     <div class="modal-card" style="max-width: 400px; padding: 24px; text-align: center;" onclick="event.stopPropagation()">

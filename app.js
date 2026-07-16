@@ -3345,6 +3345,80 @@ class WatchOnRepeat {
     });
   }
 
+  showCustomPrompt(options) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('new-prompt-modal');
+      const titleEl = document.getElementById('new-prompt-title');
+      const msgEl = document.getElementById('new-prompt-message');
+      const inputEl = document.getElementById('new-prompt-input');
+      const textareaEl = document.getElementById('new-prompt-textarea');
+      const cancelBtn = document.getElementById('new-prompt-cancel');
+      const okBtn = document.getElementById('new-prompt-ok');
+
+      if (!modal) {
+        const val = prompt(options.message, options.defaultValue || '');
+        return resolve(val);
+      }
+
+      titleEl.textContent = options.title || 'Edit';
+      msgEl.textContent = options.message || 'Enter a new value:';
+      okBtn.textContent = options.okText || 'Save';
+      
+      const activeInput = options.isTextArea ? textareaEl : inputEl;
+      const inactiveInput = options.isTextArea ? inputEl : textareaEl;
+      
+      activeInput.classList.remove('hidden');
+      inactiveInput.classList.add('hidden');
+      
+      activeInput.value = options.defaultValue || '';
+      if (options.placeholder) activeInput.placeholder = options.placeholder;
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        activeInput.focus();
+        activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length);
+      }, 50);
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        cancelBtn.removeEventListener('click', onCancel);
+        okBtn.removeEventListener('click', onOk);
+        modal.removeEventListener('click', onBackdropClick);
+        document.removeEventListener('keydown', onEscape);
+      };
+
+      const onCancel = (e) => {
+        if (e) e.stopPropagation();
+        cleanup();
+        resolve(null);
+      };
+
+      const onOk = (e) => {
+        if (e) e.stopPropagation();
+        cleanup();
+        resolve(activeInput.value);
+      };
+
+      const onBackdropClick = (e) => {
+        if (e.target === modal) {
+          onCancel(e);
+        }
+      };
+
+      const onEscape = (e) => {
+        if (e.key === 'Escape') onCancel(e);
+        if (e.key === 'Enter' && !options.isTextArea) {
+          e.preventDefault();
+          onOk(e);
+        }
+      };
+
+      cancelBtn.addEventListener('click', onCancel);
+      okBtn.addEventListener('click', onOk);
+      modal.addEventListener('click', onBackdropClick);
+      document.addEventListener('keydown', onEscape);
+    });
+  }
 
 
   setButtonLoading(btnEl, isLoading, originalHTML = '') {
@@ -4898,7 +4972,10 @@ class WatchOnRepeat {
               <span style="font-weight: 500; font-size: 13px;">${this.escapeHtml(seg.name || 'Unnamed Loop')}</span>
               <span style="font-size: 12px; color: #888; font-family: monospace;">${this.formatTime(seg.start)} - ${this.formatTime(seg.end)}</span>
             </div>
-            <button type="button" class="btn-icon-delete" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${seg.id}', true)" title="Delete this loop"><i data-lucide="trash-2"></i></button>
+            <div style="display: flex; gap: 4px;">
+              <button type="button" class="btn-icon-delete" style="color: var(--text-muted);" onclick="event.preventDefault(); event.stopPropagation(); app.renameSavedLoop('${seg.id}')" title="Rename this loop"><i data-lucide="edit-3"></i></button>
+              <button type="button" class="btn-icon-delete" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${seg.id}', true)" title="Delete this loop"><i data-lucide="trash-2"></i></button>
+            </div>
           </div>
         `;
       });
@@ -4963,6 +5040,26 @@ class WatchOnRepeat {
     
     const ids = Array.from(checkedItems).map(cb => cb.value).join(',');
     this.deleteSavedLoops(ids, true);
+  }
+
+  async renameSavedLoop(id) {
+    const db = this.getDb('analytics');
+    if (!db.segments || !db.segments[id]) return;
+    
+    const seg = db.segments[id];
+    const newName = await this.showCustomPrompt({
+      title: 'Rename Saved Loop',
+      message: 'Enter a new name for the loop segment:',
+      defaultValue: seg.name || 'Unnamed Loop',
+      okText: 'Rename'
+    });
+    
+    if (newName !== null && newName.trim() !== '') {
+      seg.name = newName.trim();
+      this.saveDb('analytics', db);
+      this.renderSavedLoopsTab();
+      this.showToast("Saved loop renamed", "check-circle");
+    }
   }
 
   async deleteSavedLoops(idsString, skipConfirm = false) {
@@ -5049,7 +5146,8 @@ class WatchOnRepeat {
                 </div>
               </div>
             </div>
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button class="btn-icon-delete" style="color: var(--text-muted);" onclick="app.renameSavedSession('${sess.id}')" title="Rename Session"><i data-lucide="edit-3"></i></button>
               <button class="btn btn-secondary btn-sm" onclick="app.shareSavedSession('${sess.id}')" title="Share Session"><i data-lucide="link"></i></button>
               <button class="btn-icon-delete" onclick="app.deleteSavedSession('${sess.id}')" title="Delete Session"><i data-lucide="trash-2"></i></button>
             </div>
@@ -5064,6 +5162,39 @@ class WatchOnRepeat {
       }
       
       if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  async renameSavedSession(sessionId) {
+    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    if (!localInstances[sessionId]) return;
+    
+    const sess = localInstances[sessionId];
+    const newName = await this.showCustomPrompt({
+      title: 'Rename Session',
+      message: 'Enter a new name for the saved session:',
+      defaultValue: sess.title,
+      okText: 'Rename'
+    });
+    
+    if (newName !== null && newName.trim() !== '') {
+      sess.title = newName.trim();
+      sess.updatedAt = new Date().toISOString();
+      localStorage.setItem('wor_instances', JSON.stringify(localInstances));
+      
+      if (window.supabaseClient && this.state.user) {
+        window.supabaseClient.from('video_instances').update({ title: sess.title })
+          .eq('id', sessionId)
+          .eq('user_id', this.state.user.id)
+          .then(({ error }) => {
+            if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
+              console.error("Failed to rename session in cloud:", error);
+            }
+          });
+      }
+      
+      this.showToast("Session renamed", "check-circle");
+      this.renderSavedSessionsTab();
     }
   }
 
