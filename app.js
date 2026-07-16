@@ -1557,9 +1557,23 @@ class WatchOnRepeat {
     // Apply speed if passed via URL
     setTimeout(() => {
       if (this.state.playbackRate !== 1) {
-        this.setPlaybackSpeed(this.state.playbackRate);
+        this.setPlaybackSpeed(this.state.playbackRate, true); // Pass hideToast = true during initialization
       }
     }, 1500);
+
+    if (this.elements.playbackSpeed) {
+      if (platform === 'twitch') {
+        this.elements.playbackSpeed.disabled = true;
+        this.elements.playbackSpeed.title = "Twitch does not support external speed controls";
+        if (this.state.playbackRate !== 1) {
+          this.state.playbackRate = 1;
+          this.elements.playbackSpeed.value = 1;
+        }
+      } else {
+        this.elements.playbackSpeed.disabled = false;
+        this.elements.playbackSpeed.title = "";
+      }
+    }
 
     try {
       // Setup Timeline UI
@@ -4214,6 +4228,10 @@ class WatchOnRepeat {
       if (p === 'youtube' && this.state.players.youtube) this.state.players.youtube.setPlaybackRate(rate);
       if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.setPlaybackRate(rate);
       if (p === 'dailymotion' && this.state.players.dailymotion) if (DEBUG_MODE) console.warn("Dailymotion API may not support rate changes directly.");
+      if (p === 'twitch') {
+        this.showToast("Twitch doesn't support external playback speed controls.", "alert-circle");
+        return; // Prevent showing the success toast
+      }
       if (p === 'html5' && this.state.players.html5) this.state.players.html5.playbackRate = rate;
       if (p === 'local' && this.state.players.local) this.state.players.local.setPlaybackRate(rate);
       if (!hideToast) this.showToast(`Speed set to ${rate}x`);
