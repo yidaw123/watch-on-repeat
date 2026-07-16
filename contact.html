@@ -151,10 +151,7 @@
         
         await new Promise(r => setTimeout(r, 600));
         
-        form.reset();
-        countDisplay.textContent = '0';
-        successMsg.style.display = 'block';
-        submitBtn.style.display = 'none';
+        window.location.href = 'contact-success.html';
         
       } catch (err) {
         console.error(err);

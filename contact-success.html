@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Message Sent - WatchOnRepeat</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    .contact-container { max-width: 600px; margin: 60px auto; padding: 40px; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0,0,0,0.2); backdrop-filter: blur(12px); width: 90%; text-align: center; }
+    .contact-header { margin-bottom: 32px; }
+    .contact-header h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; margin-bottom: 12px; }
+    .contact-header p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.5; margin-bottom: 24px; }
+    .btn-return { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; text-decoration: none; font-weight: 500; transition: background 0.2s, border-color 0.2s; }
+    .btn-return:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+  </style>
+</head>
+<body>
+  <div class="glow-bg">
+    <div class="blob blob-purple"></div>
+    <div class="blob blob-blue"></div>
+  </div>
+
+  <header class="navbar">
+    <a href="/" class="brand">
+      <img src="logo.svg" alt="WatchOnRepeat Logo" class="brand-icon" style="background: none; object-fit: cover; border-radius: var(--radius-md);">
+      <span class="brand-name">Watch<span>On</span>Repeat</span>
+    </a>
+  </header>
+
+  <div class="contact-container">
+    <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+      <div style="background: rgba(34, 197, 94, 0.1); color: #4ade80; padding: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px;">
+        <i data-lucide="check" style="width: 32px; height: 32px;"></i>
+      </div>
+    </div>
+    <div class="contact-header">
+      <h1>Message Sent!</h1>
+      <p>Thanks for your note, we will try to get back to you soon as we can!</p>
+    </div>
+    <a href="contact.html" class="btn-return">
+      <i data-lucide="arrow-left"></i> Return to Contact Us
+    </a>
+  </div>
+
+  <footer class="site-footer" style="margin-top: auto;">
+    <div class="footer-links" style="font-size: 0.85em; opacity: 0.9; margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+      <a href="listenonrepeat-alternative.html" style="background: var(--gradient-primary, linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)); color: white; padding: 5px 14px; border-radius: 9999px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); transition: transform 0.2s;"><i data-lucide="crown" style="width: 14px; height: 14px;"></i> Upgrade</a>
+      <a href="https://buymeacoffee.com/watchonrepeat" target="_blank" style="background: rgba(255,255,255,0.05); color: #e2e8f0; padding: 5px 14px; border-radius: 9999px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,0.1); transition: background 0.2s;"><i data-lucide="heart" style="width: 14px; height: 14px; color: #fb7185;"></i> Donate</a>
+      <span style="opacity: 0.3; margin: 0 -0.5rem;">|</span>
+      <a href="about.html" style="color: #94a3b8; text-decoration: none;">About Us</a>
+      <a href="privacy.html" target="_blank" style="color: #94a3b8; text-decoration: none;">Privacy</a>
+      <a href="terms.html" target="_blank" style="color: #94a3b8; text-decoration: none;">Terms</a>
+      <a href="contact.html" style="color: #94a3b8; text-decoration: none;">Contact Us</a>
+      <a href="mailto:ads@watchonrepeat.com" style="color: #60a5fa; text-decoration: none; font-weight: 500;">Advertise with Us</a>
+    </div>
+    <div class="footer-copy">
+      &copy; 2026 WatchOnRepeat. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
