@@ -2143,8 +2143,8 @@ class WatchOnRepeat {
     this.elements.playerContainer.innerHTML = '';
     const iframe = document.createElement('iframe');
     iframe.id = "dm-player-target";
-    // We use api=1 to enable the postMessage API
-    iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1&api=1`;
+    // We use api=postMessage to enable the postMessage API
+    iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1&api=postMessage`;
     iframe.width = "100%";
     iframe.height = "100%";
     iframe.allow = "autoplay; fullscreen";
@@ -2160,25 +2160,23 @@ class WatchOnRepeat {
       currentTime: 0,
       seek: function(seconds) {
         if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage(JSON.stringify({command: 'seek', time: seconds}), '*');
-          iframe.contentWindow.postMessage(`command=seek&parameters[]=${seconds}`, '*');
-          iframe.contentWindow.postMessage(`seek=${seconds}`, '*');
+          iframe.contentWindow.postMessage(JSON.stringify({command: 'seek', parameters: [seconds]}), '*');
         }
       },
       play: function() {
         if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage(JSON.stringify({command: 'play'}), '*');
-          iframe.contentWindow.postMessage('command=play', '*');
+          iframe.contentWindow.postMessage(JSON.stringify({command: 'play', parameters: []}), '*');
         }
       },
       pause: function() {
         if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage(JSON.stringify({command: 'pause'}), '*');
-          iframe.contentWindow.postMessage('command=pause', '*');
+          iframe.contentWindow.postMessage(JSON.stringify({command: 'pause', parameters: []}), '*');
         }
       },
       setPlaybackRate: function(rate) {
         if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(JSON.stringify({command: 'quality', parameters: [rate]}), '*');
+          // Some older APIs use quality or playback_rate or setPlaybackSpeed. We'll send the correct standard one.
           iframe.contentWindow.postMessage(JSON.stringify({command: 'setPlaybackSpeed', parameters: [rate]}), '*');
         }
       }
