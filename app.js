@@ -1588,7 +1588,6 @@ class WatchOnRepeat {
 
   updatePlatformBadge(platform) {
     this.elements.platformBadge.className = `platform-indicator ${platform}`;
-    this.elements.platformText.textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
     
     let iconName = 'video';
     if (platform === 'youtube') iconName = 'youtube';
