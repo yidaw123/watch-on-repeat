@@ -2176,6 +2176,11 @@ class WatchOnRepeat {
           iframe.contentWindow.postMessage(JSON.stringify({command: 'pause'}), '*');
           iframe.contentWindow.postMessage('command=pause', '*');
         }
+      },
+      setPlaybackRate: function(rate) {
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(JSON.stringify({command: 'setPlaybackSpeed', parameters: [rate]}), '*');
+        }
       }
     };
 
@@ -4227,7 +4232,7 @@ class WatchOnRepeat {
     try {
       if (p === 'youtube' && this.state.players.youtube) this.state.players.youtube.setPlaybackRate(rate);
       if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.setPlaybackRate(rate);
-      if (p === 'dailymotion' && this.state.players.dailymotion) if (DEBUG_MODE) console.warn("Dailymotion API may not support rate changes directly.");
+      if (p === 'dailymotion' && this.state.players.dailymotion) this.state.players.dailymotion.setPlaybackRate(rate);
       if (p === 'twitch') {
         this.showToast("Twitch doesn't support external playback speed controls.", "alert-circle");
         return; // Prevent showing the success toast
