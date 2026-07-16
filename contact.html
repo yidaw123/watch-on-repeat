@@ -104,10 +104,10 @@
     
     const SUPABASE_URL = 'https://golkbcdlxpojjwqtyuzn.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_e1gQuU0n8FofmTkitqTEQQ_pi1g8fqD';
-    let supabase = null;
+    let supabaseClient = null;
     try {
       if (window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
     } catch(e) {}
 
@@ -136,8 +136,8 @@
       lucide.createIcons();
 
       try {
-        if (supabase) {
-          const { error } = await supabase.from('support_tickets').insert({
+        if (supabaseClient) {
+          const { error } = await supabaseClient.from('support_tickets').insert({
             user_id: null,
             name,
             email,
