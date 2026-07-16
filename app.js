@@ -913,6 +913,7 @@ class WatchOnRepeat {
     this.elements.playerContainer.innerHTML = '';
     
     // Reset title and stats for empty state
+    if (this.elements.platformBadge) this.elements.platformBadge.innerHTML = '';
     if (this.elements.videoTitle) this.elements.videoTitle.textContent = "Ready to Loop";
     const loopDisplay = document.getElementById('personal-loop-count');
     const sessionDisplay = document.getElementById('loop-timer');
