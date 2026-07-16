@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Logo</title></head>
+<body style="background: #0f1419; color: white; font-family: sans-serif; text-align: center; padding-top: 50px;">
+  <h2>Generating your exact logo as a PNG...</h2>
+  <canvas id="canvas" width="512" height="512" style="display:none;"></canvas>
+  <script>
+    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="50%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#fe0979" />
+    </linearGradient>
+    <linearGradient id="coreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#fdf4ff" />
+    </linearGradient>
+    <filter id="heavyGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/></feMerge>
+    </filter>
+    <filter id="mediumGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(0, 20)">
+    <path d="M 50 30 C 35 10, 15 15, 15 30 C 15 45, 35 50, 50 30 C 65 10, 85 15, 85 30 C 85 45, 65 50, 50 30 Z" fill="none" stroke="url(#neonGrad)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" filter="url(#heavyGlow)" opacity="0.8"/>
+    <path d="M 50 30 C 35 10, 15 15, 15 30 C 15 45, 35 50, 50 30 C 65 10, 85 15, 85 30 C 85 45, 65 50, 50 30 Z" fill="none" stroke="url(#neonGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#mediumGlow)"/>
+    <path d="M 50 30 C 35 10, 15 15, 15 30 C 15 45, 35 50, 50 30 C 65 10, 85 15, 85 30 C 85 45, 65 50, 50 30 Z" fill="none" stroke="url(#coreGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 63 24 L 63 36 L 73 30 Z" fill="url(#neonGrad)" filter="url(#heavyGlow)"/>
+    <path d="M 63 24 L 63 36 L 73 30 Z" fill="#ffffff" filter="url(#mediumGlow)"/>
+  </g>
+</svg>`;
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Fill dark background like your site
+    ctx.fillStyle = '#0f1419';
+    ctx.fillRect(0, 0, 512, 512);
+
+    const img = new Image();
+    const svgBlob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(svgBlob);
+    
+    img.onload = function() {
+      // Draw centered with a nice margin
+      ctx.drawImage(img, 56, 56, 400, 400);
+      URL.revokeObjectURL(url);
+      
+      const pngUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = pngUrl;
+      a.download = 'exact_brand_icon.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.innerHTML = '<h2>✅ Downloaded!</h2><p>Check your browser downloads folder for <b>exact_brand_icon.png</b></p><br><img src="' + pngUrl + '" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); width: 200px; height: 200px;" />';
+    };
+    img.src = url;
+  </script>
+</body>
+</html>
