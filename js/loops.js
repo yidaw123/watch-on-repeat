@@ -606,6 +606,10 @@ class LoopsMixin {
         this.elements.abEnd.style.cursor = 'not-allowed';
         this.elements.abEnd.style.pointerEvents = 'none';
       }
+      if (this.elements && this.elements.timelineContainer) {
+        this.elements.timelineContainer.style.pointerEvents = 'none';
+        this.elements.timelineContainer.style.opacity = '0.4';
+      }
       const proControls = document.getElementById('main-pro-controls');
       if (proControls) {
         proControls.style.opacity = '0.4';
@@ -662,6 +666,10 @@ class LoopsMixin {
           this.elements.abEnd.style.opacity = isReadOnly ? '0.5' : '1';
           this.elements.abEnd.style.cursor = isReadOnly ? 'not-allowed' : 'text';
           this.elements.abEnd.onclick = isReadOnly ? () => app.openUpgradeModal('Upgrade to edit timestamps on shared links!') : null;
+        }
+        if (this.elements && this.elements.timelineContainer) {
+          this.elements.timelineContainer.style.pointerEvents = isReadOnly ? 'none' : 'auto';
+          this.elements.timelineContainer.style.opacity = isReadOnly ? '0.5' : '1';
         }
       }
     }
