@@ -2147,7 +2147,7 @@ class WatchOnRepeat {
       currentTime: 0,
       seek: function(seconds) {
         if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage(JSON.stringify({command: 'seek', parameters: [seconds]}), '*');
+          iframe.contentWindow.postMessage(JSON.stringify({command: 'seek', time: seconds}), '*');
           iframe.contentWindow.postMessage(`command=seek&parameters[]=${seconds}`, '*');
           iframe.contentWindow.postMessage(`seek=${seconds}`, '*');
         }
