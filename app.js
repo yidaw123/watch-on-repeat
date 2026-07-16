@@ -2140,7 +2140,9 @@ class WatchOnRepeat {
   // --- Dailymotion Player Controller ---
   initDailymotionPlayer(id) {
     this.destroyPlayers();
-    this.elements.playerContainer.innerHTML = '<div id="dm-player-target"></div>';
+    // The DM.player API injects the iframe inside this div, so the div MUST have a height. 
+    // Without height:100%, it collapses to 0 height, resulting in a black screen.
+    this.elements.playerContainer.innerHTML = '<div id="dm-player-target" style="width: 100%; height: 100%;"></div>';
 
     const tryInit = () => {
       if (this.state.currentPlatform !== 'dailymotion' || this.state.currentVideo !== id) {
