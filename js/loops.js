@@ -731,8 +731,16 @@ class LoopsMixin {
       const speedValue = seg.speed || 1.0;
       
       const p = this.state.currentPlatform;
-      const speedDisabled = (p === 'twitch' || p === 'soundcloud');
-      const speedTooltip = speedDisabled ? `${p === 'twitch' ? 'Twitch' : 'SoundCloud'} does not support external speed controls` : "Segment Speed";
+      const speedDisabled = (p === 'twitch' || p === 'soundcloud' || p === 'facebook' || p === 'mixcloud' || p === 'loom');
+      
+      let platName = p;
+      if (p === 'twitch') platName = 'Twitch';
+      if (p === 'soundcloud') platName = 'SoundCloud';
+      if (p === 'facebook') platName = 'Facebook';
+      if (p === 'mixcloud') platName = 'Mixcloud';
+      if (p === 'loom') platName = 'Loom';
+      
+      const speedTooltip = speedDisabled ? `${platName} does not support external speed controls` : "Segment Speed";
       const speedDisabledAttr = speedDisabled ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '';
       
       const controlsRow = document.createElement('div');

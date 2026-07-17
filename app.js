@@ -1163,6 +1163,27 @@ class WatchOnRepeat {
       return { platform: 'wistia', id: wistiaMatch[1] };
     }
 
+    // Facebook
+    const fbRegex = /(?:facebook\.com\/(?:[^\/]+\/videos\/|video\.php\?v=)|fb\.watch\/)([a-zA-Z0-9_-]+)/;
+    const fbMatch = url.match(fbRegex);
+    if (fbMatch && fbMatch[1]) {
+      return { platform: 'facebook', id: fbMatch[1] };
+    }
+
+    // Mixcloud
+    const mixcloudRegex = /mixcloud\.com\/([a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+)/;
+    const mixcloudMatch = url.match(mixcloudRegex);
+    if (mixcloudMatch && mixcloudMatch[1]) {
+      return { platform: 'mixcloud', id: mixcloudMatch[1] };
+    }
+
+    // Loom
+    const loomRegex = /loom\.com\/(?:share|embed)\/([a-zA-Z0-9]+)/;
+    const loomMatch = url.match(loomRegex);
+    if (loomMatch && loomMatch[1]) {
+      return { platform: 'loom', id: loomMatch[1] };
+    }
+
     // HTML5 native video
     if (url.endsWith('.mp4') || url.endsWith('.webm') || url.includes('.mp4?')) {
       return { platform: 'html5', id: url };
@@ -1552,6 +1573,12 @@ class WatchOnRepeat {
       this.initSoundCloudPlayer(id);
     } else if (platform === 'wistia') {
       this.initWistiaPlayer(id);
+    } else if (platform === 'facebook') {
+      this.initFacebookPlayer(id);
+    } else if (platform === 'mixcloud') {
+      this.initMixcloudPlayer(id);
+    } else if (platform === 'loom') {
+      this.initLoomPlayer(id);
     }
 
     // Apply speed if passed via URL
@@ -1562,9 +1589,17 @@ class WatchOnRepeat {
     }, 1500);
 
     if (this.elements.playbackSpeed) {
-      if (platform === 'twitch' || platform === 'soundcloud') {
+      if (platform === 'twitch' || platform === 'soundcloud' || platform === 'facebook' || platform === 'mixcloud' || platform === 'loom') {
         this.elements.playbackSpeed.disabled = true;
-        this.elements.playbackSpeed.title = `${platform === 'twitch' ? 'Twitch' : 'SoundCloud'} does not support external speed controls`;
+        
+        let platName = platform;
+        if (platform === 'twitch') platName = 'Twitch';
+        if (platform === 'soundcloud') platName = 'SoundCloud';
+        if (platform === 'facebook') platName = 'Facebook';
+        if (platform === 'mixcloud') platName = 'Mixcloud';
+        if (platform === 'loom') platName = 'Loom';
+        
+        this.elements.playbackSpeed.title = `${platName} does not support external speed controls`;
         if (this.state.playbackRate !== 1) {
           this.state.playbackRate = 1;
           this.elements.playbackSpeed.value = 1;
@@ -4071,6 +4106,116 @@ class WatchOnRepeat {
     else setTimeout(setupTwitch, 1000);
   }
 
+  // --- Facebook Controller ---
+  initFacebookPlayer(id) {
+    this.elements.playerContainer.innerHTML = `<div class="fb-video" data-href="https://www.facebook.com/video.php?v=${id}" data-width="auto" data-show-text="false" data-autoplay="true" data-allowfullscreen="true"></div>`;
+    
+    const setupFB = () => {
+      if (window.FB && window.FB.XFBML) {
+        window.FB.XFBML.parse(this.elements.playerContainer);
+        window.FB.Event.subscribe('xfbml.ready', (msg) => {
+          if (msg.type === 'video') {
+            const player = msg.instance;
+            this.state.players.facebook = player;
+            player.play();
+            player.subscribe('startedPlaying', () => {
+              this.state.isPlaying = true;
+              this.setVideoDuration(player.getDuration() || 0);
+              this.elements.loopStateText.textContent = "Looping";
+              this.elements.loopStateText.className = "stat-value text-green";
+              this.updatePlayPauseUI();
+            });
+            player.subscribe('paused', () => {
+              this.state.isPlaying = false;
+              this.elements.loopStateText.textContent = "Paused";
+              this.elements.loopStateText.className = "stat-value text-muted";
+              this.updatePlayPauseUI();
+            });
+          }
+        });
+      } else {
+        setTimeout(setupFB, 1000);
+      }
+    };
+    setupFB();
+  }
+
+  // --- Mixcloud Controller ---
+  initMixcloudPlayer(id) {
+    this.elements.playerContainer.innerHTML = `<iframe id="mixcloud-player-target" width="100%" height="100%" src="https://www.mixcloud.com/widget/iframe/?hide_cover=1&feed=/${id}/" frameborder="0"></iframe>`;
+    
+    const setupMixcloud = () => {
+      if (window.Mixcloud && window.Mixcloud.PlayerWidget) {
+        const widget = window.Mixcloud.PlayerWidget(document.getElementById('mixcloud-player-target'));
+        this.state.players.mixcloud = widget;
+        
+        widget.ready.then(() => {
+          widget.play();
+          widget.getDuration().then(d => this.setVideoDuration(d || 0)).catch(()=>null);
+          widget.events.play.on(() => {
+            this.state.isPlaying = true;
+            this.elements.loopStateText.textContent = "Looping";
+            this.elements.loopStateText.className = "stat-value text-green";
+            this.updatePlayPauseUI();
+          });
+          widget.events.pause.on(() => {
+            this.state.isPlaying = false;
+            this.elements.loopStateText.textContent = "Paused";
+            this.elements.loopStateText.className = "stat-value text-muted";
+            this.updatePlayPauseUI();
+          });
+        });
+      } else {
+        setTimeout(setupMixcloud, 1000);
+      }
+    };
+    setupMixcloud();
+  }
+
+  // --- Loom Controller ---
+  initLoomPlayer(id) {
+    this.elements.playerContainer.innerHTML = `<iframe id="loom-player-target" src="https://www.loom.com/embed/${id}?autoplay=1" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
+    
+    const iframe = document.getElementById('loom-player-target');
+    
+    const playerWrapper = {
+      play: () => { iframe.contentWindow.postMessage(JSON.stringify({ method: 'play', context: 'player.js' }), '*'); },
+      pause: () => { iframe.contentWindow.postMessage(JSON.stringify({ method: 'pause', context: 'player.js' }), '*'); },
+      seek: (time) => { iframe.contentWindow.postMessage(JSON.stringify({ method: 'setCurrentTime', value: time, context: 'player.js' }), '*'); },
+      currentTime: 0
+    };
+    
+    this.state.players.loom = playerWrapper;
+    
+    const handleLoomMessage = (e) => {
+      let data;
+      try { data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch(err) { return; }
+      if (!data || data.context !== 'player.js') return;
+      
+      if (data.event === 'ready') {
+        iframe.contentWindow.postMessage(JSON.stringify({ method: 'addEventListener', value: 'timeupdate', context: 'player.js' }), '*');
+        playerWrapper.play();
+      } else if (data.event === 'play') {
+        this.state.isPlaying = true;
+        this.elements.loopStateText.textContent = "Looping";
+        this.elements.loopStateText.className = "stat-value text-green";
+        this.updatePlayPauseUI();
+      } else if (data.event === 'pause') {
+        this.state.isPlaying = false;
+        this.elements.loopStateText.textContent = "Paused";
+        this.elements.loopStateText.className = "stat-value text-muted";
+        this.updatePlayPauseUI();
+      } else if (data.event === 'timeupdate') {
+        playerWrapper.currentTime = data.value.seconds || 0;
+      }
+    };
+    window.addEventListener('message', handleLoomMessage);
+    
+    this.state.players.loom._cleanup = () => {
+      window.removeEventListener('message', handleLoomMessage);
+    };
+  }
+
   initSoundCloudPlayer(id) {
     this.destroyPlayers();
     this.elements.playerContainer.innerHTML = '';
@@ -4149,6 +4294,12 @@ class WatchOnRepeat {
       return (ms || 0) / 1000;
     }
     if (p === 'wistia' && this.state.players.wistia) return this.state.players.wistia.time() || 0;
+    if (p === 'facebook' && this.state.players.facebook) return this.state.players.facebook.getCurrentPosition() || 0;
+    if (p === 'mixcloud' && this.state.players.mixcloud) {
+      const ms = await new Promise(r => this.state.players.mixcloud.getPosition().then(r));
+      return ms || 0;
+    }
+    if (p === 'loom' && this.state.players.loom) return this.state.players.loom.currentTime || 0;
     return 0;
   }
 
@@ -4166,6 +4317,9 @@ class WatchOnRepeat {
     if (p === 'twitch' && this.state.players.twitch && typeof this.state.players.twitch.seek === 'function') this.state.players.twitch.seek(seconds);
     if (p === 'soundcloud' && this.state.players.soundcloud && typeof this.state.players.soundcloud.seekTo === 'function') this.state.players.soundcloud.seekTo(seconds * 1000);
     if (p === 'wistia' && this.state.players.wistia && typeof this.state.players.wistia.time === 'function') this.state.players.wistia.time(seconds);
+    if (p === 'facebook' && this.state.players.facebook) this.state.players.facebook.seek(seconds);
+    if (p === 'mixcloud' && this.state.players.mixcloud) this.state.players.mixcloud.seek(seconds);
+    if (p === 'loom' && this.state.players.loom) this.state.players.loom.seek(seconds);
   }
 
   playVideo() {
@@ -4177,6 +4331,9 @@ class WatchOnRepeat {
     if (p === 'twitch' && this.state.players.twitch) this.state.players.twitch.play();
     if (p === 'soundcloud' && this.state.players.soundcloud) this.state.players.soundcloud.play();
     if (p === 'wistia' && this.state.players.wistia) this.state.players.wistia.play();
+    if (p === 'facebook' && this.state.players.facebook) this.state.players.facebook.play();
+    if (p === 'mixcloud' && this.state.players.mixcloud) this.state.players.mixcloud.play();
+    if (p === 'loom' && this.state.players.loom) this.state.players.loom.play();
   }
   
   pauseVideo() {
@@ -4188,6 +4345,9 @@ class WatchOnRepeat {
     if (p === 'twitch' && this.state.players.twitch) this.state.players.twitch.pause();
     if (p === 'soundcloud' && this.state.players.soundcloud) this.state.players.soundcloud.pause();
     if (p === 'wistia' && this.state.players.wistia) this.state.players.wistia.pause();
+    if (p === 'facebook' && this.state.players.facebook) this.state.players.facebook.pause();
+    if (p === 'mixcloud' && this.state.players.mixcloud) this.state.players.mixcloud.pause();
+    if (p === 'loom' && this.state.players.loom) this.state.players.loom.pause();
   }
 
   updateMediaSession(title, platform, id) {
