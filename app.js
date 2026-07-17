@@ -1062,6 +1062,7 @@ class WatchOnRepeat {
           platform: this.state.currentPlatform,
           videoId: this.state.currentVideo.id,
           videoTitle: this.state.currentVideo.title,
+          thumbnail: this.state.currentVideo.thumbnail || '',
           start: seg.start,
           end: seg.end,
           name: finalName,
@@ -1082,6 +1083,7 @@ class WatchOnRepeat {
       videoId: this.state.currentVideo.id,
       platform: this.state.currentPlatform,
       title: sessionTitle,
+      thumbnail: this.state.currentVideo.thumbnail || '',
       settings: settings,
       updatedAt: new Date().toISOString()
     };
@@ -1521,12 +1523,15 @@ class WatchOnRepeat {
     // Update UI Elements immediately
     this.elements.videoTitle.textContent = videoTitle;
     
-    // Always fetch fresh title in background
-    this.fetchVideoTitleMock(id, platform).then(realTitle => {
-      if (realTitle && !realTitle.includes("Cozy Coffee Shop")) {
-        this.elements.videoTitle.textContent = realTitle;
-        document.title = realTitle + " | Watch On Repeat";
-        if (this.state.currentVideo) this.state.currentVideo.title = realTitle;
+    // Always fetch fresh title and thumbnail in background
+    this.fetchVideoMetadata(id, platform).then(meta => {
+      if (meta && meta.title && !meta.title.includes("Cozy Coffee Shop")) {
+        this.elements.videoTitle.textContent = meta.title;
+        document.title = meta.title + " | Watch On Repeat";
+        this.state.currentVideo.title = meta.title;
+        if (meta.thumbnail) {
+          this.state.currentVideo.thumbnail = meta.thumbnail;
+        }
         
         // Removed redundant this.renderTrendsTab() to prevent DB spam on video load
         // Update history cache if needed
@@ -1935,71 +1940,130 @@ class WatchOnRepeat {
     }
   }
 
-  async fetchVideoTitleMock(id, platform) {
+  decodeHtmlEntities(text) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+  }
+
+  async fetchVideoMetadata(id, platform) {
+    let title = null;
+    let thumbnail = null;
+
     try {
+      // 1. OEmbed endpoints for supported platforms
       let videoUrl = '';
       if (platform === 'youtube') {
         videoUrl = `https://www.youtube.com/watch?v=${id}`;
-        const response = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`);
-        if (response.ok) return (await response.json()).title;
+        const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`).catch(()=>null);
+        if (res && res.ok) {
+          const data = await res.json();
+          title = data.title;
+          thumbnail = data.thumbnail_url;
+        }
       } else if (platform === 'vimeo') {
         videoUrl = `https://vimeo.com/${id}`;
-        const response = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(videoUrl)}`);
-        if (response.ok) return (await response.json()).title;
+        const res = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
+        if (res && res.ok) {
+          const data = await res.json();
+          title = data.title;
+          thumbnail = data.thumbnail_url;
+        }
       } else if (platform === 'dailymotion') {
         videoUrl = `https://www.dailymotion.com/video/${id}`;
-        const response = await fetch(`https://www.dailymotion.com/services/oembed?url=${encodeURIComponent(videoUrl)}`);
-        if (response.ok) return (await response.json()).title;
+        const res = await fetch(`https://www.dailymotion.com/services/oembed?url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
+        if (res && res.ok) {
+          const data = await res.json();
+          title = data.title;
+          thumbnail = data.thumbnail_url;
+        }
       } else if (platform === 'soundcloud') {
         videoUrl = `https://soundcloud.com/${id}`;
+        const res = await fetch(`https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
+        if (res && res.ok) {
+          const data = await res.json();
+          title = data.title;
+          thumbnail = data.thumbnail_url;
+        }
+      } else if (platform === 'wistia') {
+        const res = await fetch(`https://fast.wistia.com/oembed?url=https://home.wistia.com/medias/${id}`).catch(()=>null);
+        if (res && res.ok) {
+          const data = await res.json();
+          title = data.title;
+          thumbnail = data.thumbnail_url;
+        }
+      } else if (platform === 'mixcloud') {
+        const res = await fetch(`https://www.mixcloud.com/oembed/?url=https://www.mixcloud.com/${id}&format=json`).catch(()=>null);
+        if (res && res.ok) {
+          const data = await res.json();
+          title = data.title;
+          thumbnail = data.image;
+        }
+      } else if (platform === 'loom') {
+        const res = await fetch(`https://www.loom.com/v1/oembed?url=https://www.loom.com/share/${id}`).catch(()=>null);
+        if (res && res.ok) {
+          const data = await res.json();
+          title = data.title;
+          thumbnail = data.thumbnail_url;
+        }
       }
 
-      if (videoUrl) {
-        // Fallback or generic platform
-        const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(videoUrl)}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.title) {
-            return data.title;
-          }
+      // 2. Generic NoEmbed fallback (works well for Twitch, generic Youtube, etc)
+      if (!title || !thumbnail) {
+        if (platform === 'twitch') {
+          const parts = id.split('=');
+          videoUrl = `https://twitch.tv/${parts[1] || id}`;
+        }
+        if (videoUrl) {
+           const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
+           if (res && res.ok) {
+             const data = await res.json();
+             if (data && data.title && !title) title = data.title;
+             if (data && data.thumbnail_url && !thumbnail) thumbnail = data.thumbnail_url;
+           }
+        }
+      }
+
+      // 3. OpenGraph Proxy Fallback (Crucial for Facebook and others that block anonymous oembed)
+      if (!title || !thumbnail) {
+        let ogUrl = '';
+        if (platform === 'facebook') ogUrl = `https://www.facebook.com/facebook/videos/${id}`;
+        
+        if (ogUrl) {
+          try {
+            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const targetUrl = encodeURIComponent(ogUrl);
+            const res = await fetch(proxyUrl + targetUrl).catch(()=>null);
+            if (res && res.ok) {
+              const data = await res.json();
+              if (data && data.contents) {
+                const html = data.contents;
+                if (!title) {
+                  const titleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) || html.match(/<title>([^<]+)<\/title>/i);
+                  if (titleMatch && titleMatch[1]) title = this.decodeHtmlEntities(titleMatch[1]);
+                }
+                if (!thumbnail) {
+                  const thumbMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
+                  if (thumbMatch && thumbMatch[1]) thumbnail = this.decodeHtmlEntities(thumbMatch[1]);
+                }
+              }
+            }
+          } catch(e) {}
         }
       }
     } catch (err) {
-      if (DEBUG_MODE) console.warn("noembed proxy failed", err);
+      if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.warn("Metadata fetch failed", err);
     }
     
-    let baseId = id;
-    if (platform === 'twitch') {
-      const parts = id.split('=');
-      baseId = parts[1] || id;
-      return `Twitch Stream: ${baseId}`;
+    // 4. Default Fallbacks if all fails (e.g. Private/Blocked videos)
+    if (!title) {
+       title = `${platform.charAt(0).toUpperCase() + platform.slice(1)} Video (Private or Unavailable)`;
     }
-    
-    if (platform === 'facebook') {
-      try {
-        const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const targetUrl = encodeURIComponent(`https://www.facebook.com/plugins/video/oembed.json/?url=https://www.facebook.com/facebook/videos/${id}`);
-        const response = await fetch(proxyUrl + targetUrl);
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.title) return data.title;
-        }
-      } catch (e) {}
-      return 'Facebook Video';
+    if (!thumbnail) {
+       thumbnail = this.getThumbnailUrl(platform, id); // Use deterministic fallback generator
     }
 
-    if (platform === 'wistia') {
-      try {
-        const response = await fetch(`https://fast.wistia.com/oembed?url=https://home.wistia.com/medias/${id}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.title) return data.title;
-        }
-      } catch (e) {}
-      return 'Wistia Video';
-    }
-
-    return `Unknown Video`;
+    return { title, thumbnail };
   }
 
   // --- YouTube Iframe Controller ---
@@ -2889,8 +2953,11 @@ class WatchOnRepeat {
         if (data && data.length > 0) {
           const fetchPromises = data.map(async (d) => {
             let title = d.title;
-            if (!title) title = await this.fetchVideoTitleMock(d.video_id, d.platform);
-            if (title === 'Unknown Video' || !title) title = `Trending ${d.platform} video`;
+            if (!title) {
+              const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
+              title = meta.title;
+            }
+            if (!title || title.includes('(Private or Unavailable)')) title = `Trending ${d.platform} video`;
             return {
               videoId: d.video_id,
               platform: d.platform,
@@ -3163,8 +3230,11 @@ class WatchOnRepeat {
       if (data) {
         const fetchPromises = data.map(async (d) => {
           let title = d.title;
-          if (!title) title = await this.fetchVideoTitleMock(d.video_id, d.platform);
-          if (title === 'Unknown Video' || !title) title = `Trending ${d.platform} video`;
+          if (!title) {
+            const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
+            title = meta.title;
+          }
+          if (!title || title.includes('(Private or Unavailable)')) title = `Trending ${d.platform} video`;
           return {
             videoId: d.video_id,
             platform: d.platform,
@@ -5224,6 +5294,7 @@ class WatchOnRepeat {
       if (!grouped[vId]) {
         grouped[vId] = {
           title: seg.videoTitle || `Video: ${seg.videoId}`,
+          thumbnail: seg.thumbnail,
           platform: seg.platform,
           videoId: seg.videoId,
           segments: []
@@ -5248,7 +5319,7 @@ class WatchOnRepeat {
       div.className = 'note-item';
       div.style = "display: flex; flex-direction: column; background: var(--surface-color); border: 1px solid #333; border-radius: 8px; overflow: hidden; margin-bottom: 8px;";
       
-      const thumbUrl = this.getThumbnailUrl(videoGroup.platform, videoGroup.videoId);
+      const thumbUrl = videoGroup.thumbnail || this.getThumbnailUrl(videoGroup.platform, videoGroup.videoId);
       
       // Video group IDs to pass to deletion logic
       const videoIdsString = videoGroup.segments.map(s => s.id).join(',');
@@ -5439,7 +5510,7 @@ class WatchOnRepeat {
         
         let urlParams = `?instance=${sess.id}`;
         
-        const thumbUrl = this.getThumbnailUrl(sess.platform, sess.videoId);
+        const thumbUrl = sess.thumbnail || this.getThumbnailUrl(sess.platform, sess.videoId);
         html += `
           <div class="video-card note-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid #333; border-radius: 8px; margin-bottom: 8px;">
             <div style="flex: 1; min-width: 0; display: flex; gap: 12px; align-items: center; cursor: pointer;" onclick="app.loadInstance('${sess.id}')">

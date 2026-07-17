@@ -601,6 +601,7 @@ class PlaylistsMixin {
       videoId: this.state.currentVideo.id,
       platform: this.state.currentVideo.platform,
       title: this.state.currentVideo.title,
+      thumbnail: this.state.currentVideo.thumbnail || '',
       addedAt: Date.now()
     };
     
