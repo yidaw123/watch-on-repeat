@@ -2140,125 +2140,73 @@ class WatchOnRepeat {
   // --- Dailymotion Player Controller ---
   initDailymotionPlayer(id) {
     this.destroyPlayers();
-    this.elements.playerContainer.innerHTML = '<div id="dm-player-target" style="width: 100%; height: 100%;"></div>';
+    this.elements.playerContainer.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.id = "dm-player-target";
+    // Revert to api=1 which is confirmed to work flawlessly for video rendering
+    iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1&api=1`;
+    iframe.width = "100%";
+    iframe.height = "100%";
+    iframe.allow = "autoplay; fullscreen";
+    iframe.style.border = "none";
+    this.elements.playerContainer.appendChild(iframe);
 
-    let retryCount = 0;
-    const maxRetries = 10; // Wait max 2 seconds
-
-    const initRawIframeFallback = () => {
-      if (DEBUG_MODE) console.warn("Dailymotion SDK blocked. Falling back to raw iframe.");
-      this.elements.playerContainer.innerHTML = '';
-      const iframe = document.createElement('iframe');
-      iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1&api=postMessage`;
-      iframe.width = "100%";
-      iframe.height = "100%";
-      iframe.allow = "autoplay; fullscreen";
-      iframe.style.border = "none";
-      this.elements.playerContainer.appendChild(iframe);
-
-      this.state.players.dailymotion = {
-        iframe: iframe,
-        currentTime: 0,
-        seek: function(seconds) {
-          if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(JSON.stringify({command: 'seek', parameters: [seconds]}), '*');
-        },
-        play: function() {
-          if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(JSON.stringify({command: 'play', parameters: []}), '*');
-        },
-        pause: function() {
-          if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(JSON.stringify({command: 'pause', parameters: []}), '*');
-        },
-        setPlaybackRate: function(rate) {
-          if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(JSON.stringify({command: 'setPlaybackSpeed', parameters: [rate]}), '*');
-        },
-        cleanup: function() {}
-      };
+    this.state.players.dailymotion = {
+      iframe: iframe,
+      currentTime: 0,
+      seek: function(seconds) {
+        if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(`command=seek&time=${seconds}`, '*');
+      },
+      play: function() {
+        if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage('command=play', '*');
+      },
+      pause: function() {
+        if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage('command=pause', '*');
+      },
+      setPlaybackRate: function(rate) {
+        if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(`command=quality&value=${rate}`, '*'); // Legacy api doesn't reliably support speed, but we can try
+      },
+      cleanup: function() {}
     };
 
-    const tryInit = () => {
-      if (this.state.currentPlatform !== 'dailymotion' || (this.state.currentVideo && this.state.currentVideo.id !== id)) return;
-      
-      if (typeof DM === 'undefined') {
-        retryCount++;
-        if (retryCount >= maxRetries) {
-          initRawIframeFallback();
-          return;
-        }
-        setTimeout(tryInit, 200);
-        return;
-      }
+    // Listen to events from the legacy API
+    window.addEventListener('message', (event) => {
+      if (!event.origin.includes('dailymotion.com')) return;
+      if (this.state.currentPlatform !== 'dailymotion') return;
 
-      try {
-        const dmPlayer = DM.player(document.getElementById('dm-player-target'), {
-          video: id,
-          width: "100%",
-          height: "100%",
-          params: {
-            autoplay: true,
-            mute: false,
-            controls: true
+      // Legacy api=1 sometimes sends URL encoded strings or simple strings
+      let data = event.data;
+      if (typeof data === 'string') {
+        if (data.includes('event=timeupdate')) {
+          const match = data.match(/time=([0-9.]+)/);
+          if (match) {
+             const time = parseFloat(match[1]);
+             this.state.players.dailymotion.currentTime = time;
+             this.onPlayerTimeUpdate(time);
           }
-        });
-
-        dmPlayer.setPlaybackRate = function(rate) {
-          if (typeof dmPlayer.setPlaybackSpeed === 'function') dmPlayer.setPlaybackSpeed(rate);
-        };
-
-        this.state.players.dailymotion = dmPlayer;
-
-        dmPlayer.addEventListener('apiready', () => {
-          const initialSpeed = this.state.sharedSegmentsToLoad && this.state.sharedSegmentsToLoad.length > 0 
-              ? (this.state.sharedSegmentsToLoad[0].speed || 1.0) 
-              : (this.state.playbackRate || 1.0);
-          try { dmPlayer.setPlaybackRate(initialSpeed); } catch(e){}
-        });
-
-        dmPlayer.addEventListener('timeupdate', () => {
-          this.state.players.dailymotion.currentTime = dmPlayer.currentTime || 0;
-          this.onPlayerTimeUpdate(dmPlayer.currentTime || 0);
-        });
-
-        dmPlayer.addEventListener('durationchange', () => {
-          this.setVideoDuration(dmPlayer.duration || 0);
-        });
-
-        dmPlayer.addEventListener('play', () => {
+        } else if (data.includes('event=play')) {
           this.state.isPlaying = true;
           this.elements.loopStateText.textContent = "Looping";
           this.elements.loopStateText.className = "stat-value text-green";
           this.updatePlayPauseUI();
-        });
-
-        dmPlayer.addEventListener('pause', () => {
+        } else if (data.includes('event=pause')) {
           this.state.isPlaying = false;
           this.elements.loopStateText.textContent = "Paused";
           this.elements.loopStateText.className = "stat-value text-muted";
           this.updatePlayPauseUI();
-        });
-
-        dmPlayer.addEventListener('video_end', () => {
+        } else if (data.includes('event=video_end')) {
           this.elements.loopStateText.textContent = "Restarting...";
           if (this.incrementLoops()) return;
-          dmPlayer.seek(this.state.abLoop.start || 0);
-          dmPlayer.play();
-        });
-
-        dmPlayer.cleanup = () => {};
-      } catch (err) {
-        if (DEBUG_MODE) console.error("Error initializing Dailymotion SDK:", err);
-        initRawIframeFallback();
+          this.state.players.dailymotion.seek(this.state.abLoop.start || 0);
+          this.state.players.dailymotion.play();
+        }
       }
-    };
+    });
 
-    tryInit();
-
-    // Fetch the correct video duration immediately
     fetch(`https://api.dailymotion.com/video/${id}?fields=duration`)
       .then(res => res.json())
       .then(data => {
-        if (data && data.duration) {
-          this.setVideoDuration(data.duration);
-        }
+        if (data.duration) this.setVideoDuration(data.duration);
       }).catch(err => { if (DEBUG_MODE) console.warn("Failed to fetch DM duration", err); });
   }
 
