@@ -4653,8 +4653,6 @@ class WatchOnRepeat {
       }
       this.elements.playbackSpeed.value = rate;
     }
-    
-    const p = this.state.currentPlatform;
     try {
       if (p === 'youtube' && this.state.players.youtube) this.state.players.youtube.setPlaybackRate(rate);
       if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.setPlaybackRate(rate);
