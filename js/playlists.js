@@ -83,8 +83,8 @@ class PlaylistsMixin {
               </div>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; gap: 8px;">
-              <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 200px;">
-                <input type="text" class="search-input" data-target="playlist-videos-container" placeholder="Search videos..." style="flex: 1;" onkeyup="app.filterTabList(this)">
+              <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 150px;">
+                <input type="text" class="search-input" data-target="playlist-videos-container" placeholder="Search videos..." style="flex: 1; min-width: 0;" onkeyup="app.filterTabList(this)">
                 <select class="search-input" style="padding: 6px 10px; width: auto; font-size: 13px;" onchange="app.sortPlaylist('${this.escapeHtml(p.id)}', this.value)">
                   <option value="">Sort By...</option>
                   <option value="date">Date Added</option>

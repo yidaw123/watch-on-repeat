@@ -782,9 +782,9 @@
 
           <!-- Playlists Tab -->
           <div id="tab-playlists" class="tab-panel hidden">
-            <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-              <h2 style="margin-bottom: 0;">Your Playlists <span class="badge" id="playlists-count-badge">0</span></h2>
-              <input type="text" class="search-input tab-search-input" data-target="playlists-list" placeholder="Search playlists..." style="max-width: 200px;" onkeyup="app.filterTabList(this)">
+            <div class="tab-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+              <h2 style="margin-bottom: 0; min-width: max-content;">Your Playlists <span class="badge" id="playlists-count-badge">0</span></h2>
+              <input type="text" class="search-input tab-search-input" data-target="playlists-list" placeholder="Search playlists..." style="flex: 1; min-width: 150px; max-width: 100%;" onkeyup="app.filterTabList(this)">
             </div>
             
             <div class="empty-state hidden" id="playlists-auth-required">
