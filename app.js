@@ -1989,14 +1989,16 @@ class WatchOnRepeat {
         }
       } else if (platform === 'soundcloud') {
         videoUrl = `https://soundcloud.com/${id}`;
-        const res = await fetch(`https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
+        const target = `https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(videoUrl)}`;
+        const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(target)}`).catch(()=>null);
         if (res && res.ok) {
           const data = await res.json();
           title = data.title;
           thumbnail = data.thumbnail_url;
         }
       } else if (platform === 'wistia') {
-        const res = await fetch(`https://fast.wistia.com/oembed?url=https://home.wistia.com/medias/${id}`).catch(()=>null);
+        const target = `https://fast.wistia.com/oembed?url=https://home.wistia.com/medias/${id}`;
+        const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(target)}`).catch(()=>null);
         if (res && res.ok) {
           const data = await res.json();
           title = data.title;
@@ -2018,12 +2020,7 @@ class WatchOnRepeat {
         }
       } else if (platform === 'facebook') {
         videoUrl = `https://www.facebook.com/facebook/videos/${id}`;
-        const res = await fetch(`https://www.facebook.com/plugins/video/oembed.json/?url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
-        if (res && res.ok) {
-          const data = await res.json();
-          title = data.title || data.author_name;
-          thumbnail = data.thumbnail_url;
-        }
+        // Facebook oembed requires auth now, we skip directly to OpenGraph fallback
       }
 
       // 2. Generic NoEmbed fallback (works well for Twitch, generic Youtube, etc)
@@ -2046,16 +2043,25 @@ class WatchOnRepeat {
       if (!title || !thumbnail) {
         let ogUrl = '';
         if (platform === 'facebook') ogUrl = `https://www.facebook.com/facebook/videos/${id}`;
+        else if (platform === 'soundcloud') ogUrl = `https://soundcloud.com/${id}`;
+        else if (platform === 'twitch') ogUrl = `https://twitch.tv/${id.split('=')[1] || id}`;
+        else if (platform === 'wistia') ogUrl = `https://home.wistia.com/medias/${id}`;
         
         if (ogUrl) {
           try {
-            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const proxyUrl = 'https://corsproxy.io/?url=';
             const targetUrl = encodeURIComponent(ogUrl);
-            const res = await fetch(proxyUrl + targetUrl).catch(()=>null);
+            const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            let timeoutId = null;
+            if (controller) timeoutId = setTimeout(() => controller.abort(), 6000);
+            
+            const reqInit = controller ? { signal: controller.signal } : {};
+            const res = await fetch(proxyUrl + targetUrl, reqInit).catch(()=>null);
+            if (timeoutId) clearTimeout(timeoutId);
+            
             if (res && res.ok) {
-              const data = await res.json();
-              if (data && data.contents) {
-                const html = data.contents;
+              const html = await res.text();
+              if (html) {
                 if (!title) {
                   const titleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) || html.match(/<title>([^<]+)<\/title>/i);
                   if (titleMatch && titleMatch[1]) title = this.decodeHtmlEntities(titleMatch[1]);
@@ -2929,6 +2935,7 @@ class WatchOnRepeat {
     if (platform === 'youtube') return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
     if (platform === 'vimeo') return `https://vumbnail.com/${id}.jpg`;
     if (platform === 'dailymotion') return `https://www.dailymotion.com/thumbnail/video/${id}`;
+    if (platform === 'wistia') return `https://fast.wistia.com/embed/medias/${id}/swatch`;
     return '';
   }
 
