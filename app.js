@@ -1545,7 +1545,12 @@ class WatchOnRepeat {
                updated = true;
              }
            });
-           if (updated) this.saveDb('history', history);
+           if (updated) {
+             this.saveDb('history', history);
+             if (this.state.currentTab === 'history') {
+               this.renderHistoryTab();
+             }
+           }
         }
         
         // Update notes cache if needed
@@ -2009,6 +2014,14 @@ class WatchOnRepeat {
         if (res && res.ok) {
           const data = await res.json();
           title = data.title;
+          thumbnail = data.thumbnail_url;
+        }
+      } else if (platform === 'facebook') {
+        videoUrl = `https://www.facebook.com/facebook/videos/${id}`;
+        const res = await fetch(`https://www.facebook.com/plugins/video/oembed.json/?url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
+        if (res && res.ok) {
+          const data = await res.json();
+          title = data.title || data.author_name;
           thumbnail = data.thumbnail_url;
         }
       }
