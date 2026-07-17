@@ -1968,7 +1968,17 @@ class WatchOnRepeat {
       baseId = parts[1] || id;
       return `Twitch Stream: ${baseId}`;
     }
-    if (platform === 'wistia') return `Wistia Video`;
+    
+    if (platform === 'wistia') {
+      try {
+        const response = await fetch(`https://fast.wistia.com/oembed?url=https://home.wistia.com/medias/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.title) return data.title;
+        }
+      } catch (e) {}
+      return 'Wistia Video';
+    }
 
     return `Unknown Video`;
   }
@@ -4259,26 +4269,34 @@ class WatchOnRepeat {
     this.elements.playerContainer.innerHTML = `<div class="wistia_embed wistia_async_${id}" style="width:100%;height:100%;"></div>`;
     
     window._wq = window._wq || [];
-    window._wq.push({ id: id, onReady: (video) => {
-      this.state.players.wistia = video;
-      this.setVideoDuration(video.duration());
-
-      video.play();
-
-      video.bind('play', () => {
-        this.elements.loopStateText.textContent = "Looping";
-        this.elements.loopStateText.className = "stat-value text-green";
-      });
-      video.bind('pause', () => {
-        this.elements.loopStateText.textContent = "Paused";
-        this.elements.loopStateText.className = "stat-value text-muted";
-      });
-      video.bind('end', () => {
-        if (this.incrementLoops()) return;
-        this.seekToTime(this.state.abLoop.start || 0);
+    window._wq.push({ 
+      id: id, 
+      options: { autoPlay: true, playbackRate: this.state.playbackRate || 1 },
+      onReady: (video) => {
+        this.state.players.wistia = video;
+        this.setVideoDuration(video.duration());
+        
         video.play();
-      });
-    }});
+
+        video.bind('play', () => {
+          this.state.isPlaying = true;
+          this.elements.loopStateText.textContent = "Looping";
+          this.elements.loopStateText.className = "stat-value text-green";
+          this.updatePlayPauseUI();
+        });
+        video.bind('pause', () => {
+          this.state.isPlaying = false;
+          this.elements.loopStateText.textContent = "Paused";
+          this.elements.loopStateText.className = "stat-value text-muted";
+          this.updatePlayPauseUI();
+        });
+        video.bind('end', () => {
+          if (this.incrementLoops()) return;
+          this.seekToTime(this.state.abLoop.start || 0);
+          video.play();
+        });
+      }
+    });
   }
 
   async getCurrentTime() {
