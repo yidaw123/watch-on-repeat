@@ -623,6 +623,35 @@ h1, h2, h3, h4, .brand-name {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
+.video-wrapper.is-facebook {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-wrapper.is-facebook .fb-video {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.video-wrapper.is-facebook .fb-video span {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.video-wrapper.is-facebook .fb-video iframe {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: 100% !important;
+}
+
 .video-wrapper iframe,
 .video-wrapper #player-iframe-container {
   position: absolute;

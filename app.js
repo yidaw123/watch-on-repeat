@@ -1588,6 +1588,12 @@ class WatchOnRepeat {
       }
     }, 1500);
 
+    const videoWrapper = document.querySelector('.video-wrapper');
+    if (videoWrapper) {
+      if (platform === 'facebook') videoWrapper.classList.add('is-facebook');
+      else videoWrapper.classList.remove('is-facebook');
+    }
+
     if (this.elements.playbackSpeed) {
       if (platform === 'twitch' || platform === 'soundcloud' || platform === 'facebook' || platform === 'mixcloud' || platform === 'loom') {
         this.elements.playbackSpeed.disabled = true;
@@ -1969,6 +1975,17 @@ class WatchOnRepeat {
       return `Twitch Stream: ${baseId}`;
     }
     
+    if (platform === 'facebook') {
+      try {
+        const response = await fetch(`https://www.facebook.com/plugins/video/oembed.json/?url=https://www.facebook.com/facebook/videos/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.title) return data.title;
+        }
+      } catch (e) {}
+      return 'Facebook Video';
+    }
+
     if (platform === 'wistia') {
       try {
         const response = await fetch(`https://fast.wistia.com/oembed?url=https://home.wistia.com/medias/${id}`);
@@ -4140,6 +4157,11 @@ class WatchOnRepeat {
               this.elements.loopStateText.textContent = "Paused";
               this.elements.loopStateText.className = "stat-value text-muted";
               this.updatePlayPauseUI();
+            });
+            player.subscribe('finishedPlaying', () => {
+              if (this.incrementLoops()) return;
+              this.seekToTime(this.state.abLoop.start || 0);
+              player.play();
             });
           }
         });
