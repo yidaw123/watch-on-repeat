@@ -1315,7 +1315,7 @@ h1, h2, h3, h4, .brand-name {
 }
 
 /* Responsive Breakpoints */
-@media (max-width: 1024px) {
+@media (max-width: 1250px) {
   .main-container {
     display: flex;
     flex-direction: column;
@@ -2603,7 +2603,7 @@ input[type="checkbox"]:focus {
 .mobile-sidebar-toggle {
   margin-right: 12px;
 }
-@media (max-width: 1024px) {
+@media (max-width: 1250px) {
   
   .mobile-sidebar-toggle {
     display: flex !important;
