@@ -1562,9 +1562,9 @@ class WatchOnRepeat {
     }, 1500);
 
     if (this.elements.playbackSpeed) {
-      if (platform === 'twitch') {
+      if (platform === 'twitch' || platform === 'soundcloud') {
         this.elements.playbackSpeed.disabled = true;
-        this.elements.playbackSpeed.title = "Twitch does not support external speed controls";
+        this.elements.playbackSpeed.title = `${platform === 'twitch' ? 'Twitch' : 'SoundCloud'} does not support external speed controls`;
         if (this.state.playbackRate !== 1) {
           this.state.playbackRate = 1;
           this.elements.playbackSpeed.value = 1;
@@ -4304,8 +4304,9 @@ class WatchOnRepeat {
       if (p === 'youtube' && this.state.players.youtube) this.state.players.youtube.setPlaybackRate(rate);
       if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.setPlaybackRate(rate);
       if (p === 'dailymotion' && this.state.players.dailymotion) this.state.players.dailymotion.setPlaybackRate(rate);
-      if (p === 'twitch') {
-        this.showToast("Twitch doesn't support external playback speed controls.", "alert-circle");
+      if (p === 'wistia' && this.state.players.wistia) this.state.players.wistia.playbackRate(rate);
+      if (p === 'twitch' || p === 'soundcloud') {
+        this.showToast(`${p === 'twitch' ? 'Twitch' : 'SoundCloud'} doesn't support external playback speed controls.`, "alert-circle");
         return; // Prevent showing the success toast
       }
       if (p === 'html5' && this.state.players.html5) this.state.players.html5.playbackRate = rate;
