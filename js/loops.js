@@ -257,10 +257,16 @@ class LoopsMixin {
       const start = this.state.abLoop.start || 0;
       const end = this.state.abLoop.end || this.state.currentVideoDuration || 0;
       if (end > 0 && t >= end) {
-        this.seekToTime(start);
-        this.incrementLoops();
+        if (!this.state.abLoop.isLoopSeeking) {
+          this.state.abLoop.isLoopSeeking = true;
+          this.seekToTime(start);
+          this.incrementLoops();
+          setTimeout(() => { this.state.abLoop.isLoopSeeking = false; }, 1500);
+        }
       } else if (t < start - 0.5) {
         this.seekToTime(start);
+      } else if (t < end - Math.min(0.5, (end - start) * 0.5)) {
+        this.state.abLoop.isLoopSeeking = false;
       }
       return;
     }
