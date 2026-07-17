@@ -4605,6 +4605,16 @@ class WatchOnRepeat {
   }
 
   setPlaybackSpeed(rate, hideToast = false, fromAutoTempo = false) {
+    const p = this.state.currentPlatform;
+    if (p === 'twitch' || p === 'soundcloud' || p === 'facebook' || p === 'mixcloud' || p === 'loom') {
+      if (!hideToast) {
+        let platName = p.charAt(0).toUpperCase() + p.slice(1);
+        if (p === 'soundcloud') platName = 'SoundCloud';
+        this.showToast(`${platName} doesn't support external playback speed controls.`, "alert-circle");
+      }
+      return;
+    }
+    
     rate = parseFloat(rate);
     this.state.playbackRate = rate;
     
@@ -4643,10 +4653,6 @@ class WatchOnRepeat {
       if (p === 'vimeo' && this.state.players.vimeo) this.state.players.vimeo.setPlaybackRate(rate);
       if (p === 'dailymotion' && this.state.players.dailymotion) this.state.players.dailymotion.setPlaybackRate(rate);
       if (p === 'wistia' && this.state.players.wistia) this.state.players.wistia.playbackRate(rate);
-      if (p === 'twitch' || p === 'soundcloud') {
-        this.showToast(`${p === 'twitch' ? 'Twitch' : 'SoundCloud'} doesn't support external playback speed controls.`, "alert-circle");
-        return; // Prevent showing the success toast
-      }
       if (p === 'html5' && this.state.players.html5) this.state.players.html5.playbackRate = rate;
       if (p === 'local' && this.state.players.local) this.state.players.local.setPlaybackRate(rate);
       if (!hideToast) this.showToast(`Speed set to ${rate}x`);
