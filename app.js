@@ -1899,15 +1899,22 @@ class WatchOnRepeat {
       let videoUrl = '';
       if (platform === 'youtube') {
         videoUrl = `https://www.youtube.com/watch?v=${id}`;
+        const response = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`);
+        if (response.ok) return (await response.json()).title;
       } else if (platform === 'vimeo') {
         videoUrl = `https://vimeo.com/${id}`;
+        const response = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(videoUrl)}`);
+        if (response.ok) return (await response.json()).title;
       } else if (platform === 'dailymotion') {
         videoUrl = `https://www.dailymotion.com/video/${id}`;
+        const response = await fetch(`https://www.dailymotion.com/services/oembed?url=${encodeURIComponent(videoUrl)}`);
+        if (response.ok) return (await response.json()).title;
       } else if (platform === 'soundcloud') {
         videoUrl = `https://soundcloud.com/${id}`;
       }
 
       if (videoUrl) {
+        // Fallback or generic platform
         const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(videoUrl)}`);
         if (response.ok) {
           const data = await response.json();
