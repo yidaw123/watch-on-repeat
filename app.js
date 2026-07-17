@@ -678,10 +678,10 @@ class WatchOnRepeat {
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
 
-    // 3. Dailymotion API
-    if (!window.DM) {
+    // 3. Dailymotion SDK
+    if (typeof dailymotion === 'undefined') {
       const tag = document.createElement('script');
-      tag.src = "https://api.dmcdn.net/all.js";
+      tag.src = "https://geo.dailymotion.com/libs/player.js";
       const firstScriptTag = document.getElementsByTagName('script')[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
@@ -2137,72 +2137,168 @@ class WatchOnRepeat {
     }
   }
 
-  // --- Dailymotion Player Controller ---
   initDailymotionPlayer(id) {
     this.destroyPlayers();
-    this.elements.playerContainer.innerHTML = '';
-    const iframe = document.createElement('iframe');
-    iframe.id = "dm-player-target";
-    // Revert to api=1 which is confirmed to work flawlessly for video rendering
-    iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1&api=1`;
-    iframe.width = "100%";
-    iframe.height = "100%";
-    iframe.allow = "autoplay; fullscreen";
-    iframe.style.border = "none";
-    this.elements.playerContainer.appendChild(iframe);
+    this.elements.playerContainer.innerHTML = '<div id="dm-player-target" style="width: 100%; height: 100%;"></div>';
 
-    this.state.players.dailymotion = {
-      iframe: iframe,
-      currentTime: 0,
-      seek: function(seconds) {
-        if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(`command=seek&time=${seconds}`, '*');
-      },
-      play: function() {
-        if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage('command=play', '*');
-      },
-      pause: function() {
-        if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage('command=pause', '*');
-      },
-      setPlaybackRate: function(rate) {
-        if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(`command=quality&value=${rate}`, '*'); // Legacy api doesn't reliably support speed, but we can try
-      },
-      cleanup: function() {}
+    let retryCount = 0;
+    const maxRetries = 10; // Wait max 2 seconds
+
+    const initLegacyFallback = () => {
+      if (DEBUG_MODE) console.warn("Dailymotion modern SDK failed or blocked. Falling back to robust legacy api=1 iframe.");
+      this.elements.playerContainer.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0&controls=1&api=1`;
+      iframe.width = "100%";
+      iframe.height = "100%";
+      iframe.allow = "autoplay; fullscreen";
+      iframe.style.border = "none";
+      this.elements.playerContainer.appendChild(iframe);
+
+      this.state.players.dailymotion = {
+        iframe: iframe,
+        currentTime: 0,
+        seek: function(seconds) {
+          if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(`command=seek&time=${seconds}`, '*');
+        },
+        play: function() {
+          if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage('command=play', '*');
+        },
+        pause: function() {
+          if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage('command=pause', '*');
+        },
+        setPlaybackRate: function(rate) {
+          // Unsupported in legacy api
+        },
+        cleanup: function() {}
+      };
+
+      // We handle legacy events globally in the constructor/init phase, 
+      // but let's bind a specific message listener just for this fallback
+      const legacyListener = (event) => {
+        if (!event.origin.includes('dailymotion.com')) return;
+        if (this.state.currentPlatform !== 'dailymotion' || this.state.players.dailymotion !== this.state.players.dailymotion) return;
+        
+        let data = event.data;
+        if (typeof data === 'string') {
+          if (data.includes('event=timeupdate')) {
+            const match = data.match(/time=([0-9.]+)/);
+            if (match) {
+               const time = parseFloat(match[1]);
+               if (this.state.players.dailymotion) this.state.players.dailymotion.currentTime = time;
+               this.onPlayerTimeUpdate(time);
+            }
+          } else if (data.includes('event=play')) {
+            this.state.isPlaying = true;
+            this.elements.loopStateText.textContent = "Looping";
+            this.elements.loopStateText.className = "stat-value text-green";
+            this.updatePlayPauseUI();
+          } else if (data.includes('event=pause')) {
+            this.state.isPlaying = false;
+            this.elements.loopStateText.textContent = "Paused";
+            this.elements.loopStateText.className = "stat-value text-muted";
+            this.updatePlayPauseUI();
+          } else if (data.includes('event=video_end')) {
+            this.elements.loopStateText.textContent = "Restarting...";
+            if (this.incrementLoops()) return;
+            if (this.state.players.dailymotion && this.state.players.dailymotion.seek) {
+               this.state.players.dailymotion.seek(this.state.abLoop.start || 0);
+               this.state.players.dailymotion.play();
+            }
+          }
+        }
+      };
+      window.addEventListener('message', legacyListener);
+      this.state.players.dailymotion.cleanup = () => {
+         window.removeEventListener('message', legacyListener);
+      };
     };
 
-    // Listen to events from the legacy API
-    window.addEventListener('message', (event) => {
-      if (!event.origin.includes('dailymotion.com')) return;
-      if (this.state.currentPlatform !== 'dailymotion') return;
+    const tryInitModern = () => {
+      // Abort if the user quickly clicked another video before this resolved
+      if (this.state.currentPlatform !== 'dailymotion' || (this.state.currentVideo && this.state.currentVideo.id !== id)) return;
+      
+      if (typeof dailymotion === 'undefined') {
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          initLegacyFallback();
+          return;
+        }
+        setTimeout(tryInitModern, 200);
+        return;
+      }
 
-      // Legacy api=1 sometimes sends URL encoded strings or simple strings
-      let data = event.data;
-      if (typeof data === 'string') {
-        if (data.includes('event=timeupdate')) {
-          const match = data.match(/time=([0-9.]+)/);
-          if (match) {
-             const time = parseFloat(match[1]);
-             this.state.players.dailymotion.currentTime = time;
-             this.onPlayerTimeUpdate(time);
-          }
-        } else if (data.includes('event=play')) {
+      dailymotion.createPlayer('dm-player-target', {
+        video: id,
+        params: {
+          autoplay: true,
+          mute: false,
+          controls: true
+        }
+      }).then((player) => {
+        // Abort if user navigated away while the Promise was resolving
+        if (this.state.currentPlatform !== 'dailymotion' || (this.state.currentVideo && this.state.currentVideo.id !== id)) {
+           return;
+        }
+        
+        let dmInterval = null;
+        this.state.players.dailymotion = {
+           player: player,
+           currentTime: 0,
+           seek: function(seconds) { player.seek(seconds); },
+           play: function() { player.play(); },
+           pause: function() { player.pause(); },
+           setPlaybackRate: function(rate) {
+              try { player.setPlaybackSpeed(rate); } catch(e){}
+           },
+           cleanup: function() {
+              if (dmInterval) clearInterval(dmInterval);
+           }
+        };
+
+        const initialSpeed = this.state.sharedSegmentsToLoad && this.state.sharedSegmentsToLoad.length > 0 
+              ? (this.state.sharedSegmentsToLoad[0].speed || 1.0) 
+              : (this.state.playbackRate || 1.0);
+        try { player.setPlaybackSpeed(initialSpeed); } catch(e){}
+
+        // Use the native SDK events where available
+        player.on('play', () => {
           this.state.isPlaying = true;
           this.elements.loopStateText.textContent = "Looping";
           this.elements.loopStateText.className = "stat-value text-green";
           this.updatePlayPauseUI();
-        } else if (data.includes('event=pause')) {
+        });
+        player.on('pause', () => {
           this.state.isPlaying = false;
           this.elements.loopStateText.textContent = "Paused";
           this.elements.loopStateText.className = "stat-value text-muted";
           this.updatePlayPauseUI();
-        } else if (data.includes('event=video_end')) {
-          this.elements.loopStateText.textContent = "Restarting...";
-          if (this.incrementLoops()) return;
-          this.state.players.dailymotion.seek(this.state.abLoop.start || 0);
-          this.state.players.dailymotion.play();
-        }
-      }
-    });
+        });
 
+        // Some events may not fire consistently, so we poll the state natively
+        dmInterval = setInterval(() => {
+           if (this.state.isPlaying) {
+              player.getState().then(state => {
+                 if (state && typeof state.videoTime === 'number') {
+                    this.state.players.dailymotion.currentTime = state.videoTime;
+                    this.onPlayerTimeUpdate(state.videoTime);
+                 }
+                 if (state && typeof state.videoDuration === 'number' && state.videoDuration > 0) {
+                    this.setVideoDuration(state.videoDuration);
+                 }
+              }).catch(e => {});
+           }
+        }, 200);
+
+      }).catch(err => {
+         if (DEBUG_MODE) console.error("Modern Dailymotion SDK rejected:", err);
+         initLegacyFallback();
+      });
+    };
+
+    tryInitModern();
+
+    // Fetch the correct video duration immediately just in case
     fetch(`https://api.dailymotion.com/video/${id}?fields=duration`)
       .then(res => res.json())
       .then(data => {
