@@ -1540,7 +1540,8 @@ class WatchOnRepeat {
            let updated = false;
            history.forEach(h => {
              if (h.videoId === id && h.platform === platform) {
-               h.title = realTitle;
+               h.title = meta.title;
+               if (meta.thumbnail) h.thumbnail = meta.thumbnail;
                updated = true;
              }
            });
@@ -1549,15 +1550,18 @@ class WatchOnRepeat {
         
         // Update notes cache if needed
         const notes = this.getDb('notes');
-        if (notes && notes.__titles) {
-          const vId = `${platform}_${id}`;
-          if (notes[vId]) {
-            notes.__titles[vId] = realTitle;
-            this.saveDb('notes', notes);
-          }
+        const vId = `${platform}_${id}`;
+        if (notes && notes[vId]) {
+           notes.__titles = notes.__titles || {};
+           notes.__titles[vId] = meta.title;
+           if (meta.thumbnail) {
+             notes.__thumbnails = notes.__thumbnails || {};
+             notes.__thumbnails[vId] = meta.thumbnail;
+           }
+           this.saveDb('notes', notes);
         }
-      }
-      this.updateMediaSession(realTitle || videoTitle, platform, id);
+
+        this.updateMediaSession(meta.title || videoTitle, platform, id, meta.thumbnail);
     });
     this.updatePlatformBadge(platform);
     this.updateStatsUI();
@@ -2654,15 +2658,24 @@ class WatchOnRepeat {
     const existingIdx = history.findIndex(h => 
       h.videoId === videoId && h.platform === platform && h.userId === this.state.user.id
     );
+    
+    // Grab thumbnail if we already have it in current state
+    let thumbnail = '';
+    if (this.state.currentVideo && this.state.currentVideo.id === videoId && this.state.currentVideo.platform === platform) {
+      thumbnail = this.state.currentVideo.thumbnail || '';
+    }
 
     if (existingIdx !== -1) {
       history[existingIdx].timestamp = Date.now();
       history[existingIdx].lastPlayed = new Date().toISOString();
+      history[existingIdx].title = title || history[existingIdx].title;
+      if (thumbnail) history[existingIdx].thumbnail = thumbnail;
     } else {
       history.push({
         videoId,
         platform,
         title,
+        thumbnail,
         userId: this.state.user.id,
         loopsCount: 0,
         lastPlayed: new Date().toISOString(),
