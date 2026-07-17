@@ -1560,8 +1560,9 @@ class WatchOnRepeat {
            }
            this.saveDb('notes', notes);
         }
+      }
 
-        this.updateMediaSession(meta.title || videoTitle, platform, id, meta.thumbnail);
+      this.updateMediaSession(meta.title || videoTitle, platform, id, meta.thumbnail);
     });
     this.updatePlatformBadge(platform);
     this.updateStatsUI();
