@@ -493,7 +493,7 @@ h1, h2, h3, h4, .brand-name {
 /* Main Container Grid Layout */
 .main-container {
   display: grid;
-  grid-template-columns: 1fr 480px;
+  grid-template-columns: minmax(0, 1fr) 480px;
   gap: 2rem;
   padding: 2rem;
   max-width: 1450px;
@@ -1442,7 +1442,7 @@ h1, h2, h3, h4, .brand-name {
   }
   
   .stats-dashboard {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
