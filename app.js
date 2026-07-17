@@ -2689,6 +2689,30 @@ class WatchOnRepeat {
     this.renderHistoryTab();
   }
 
+  async deleteHistoryItem(videoId) {
+    if (!this.state.user) return;
+
+    let history = this.getDb('history');
+    history = history.filter(h => !(h.userId === this.state.user.id && (h.videoId === videoId || h.id === videoId)));
+    this.saveDb('history', history);
+
+    if (window.supabaseClient) {
+      const { error } = await supabaseClient.from('user_history')
+        .update({ last_played: null, loops_count: 0 })
+        .eq('user_id', this.state.user.id)
+        .eq('video_id', videoId);
+        
+      if (error) {
+        console.error("Supabase delete history error:", error);
+      }
+    }
+
+    this.showToast('Removed from history', 'trash-2');
+    if (this.state.activeTab === 'history') {
+      this.renderHistoryTab();
+    }
+  }
+
   async clearHistory() {
     if (!this.state.user) return;
     
@@ -3264,10 +3288,8 @@ class WatchOnRepeat {
     card.className = 'video-card';
     
     // Resolve thumbnail
-    let thumbUrl = '';
-    if (video.platform === 'youtube') {
-      thumbUrl = `https://img.youtube.com/vi/${video.videoId || video.id}/hqdefault.jpg`;
-    } else {
+    let thumbUrl = video.thumbnail || this.getThumbnailUrl(video.platform, video.videoId || video.id);
+    if (!thumbUrl) {
       // Gradient SVG placeholder for non-youtube to maintain a sleek UI (using single quotes to prevent HTML attribute breaking)
       thumbUrl = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60' viewBox='0 0 90 60'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%238b5cf6'/><stop offset='100%' stop-color='%23ec4899'/></linearGradient></defs><rect width='90' height='60' fill='url(%23g)' opacity='0.85'/><text x='45' y='35' font-family='Outfit,sans-serif' font-size='10' font-weight='bold' fill='white' text-anchor='middle'>${video.platform.toUpperCase()}</text></svg>`;
     }
@@ -3284,15 +3306,22 @@ class WatchOnRepeat {
     // Rank prefix for leaderboard
     const rankPrefix = rank ? `<span class="badge" style="margin-right:0.25rem; background: var(--gradient-primary); color:white;">#${rank}</span>` : '';
 
+    let deleteBtn = '';
+    if (isHistory) {
+      deleteBtn = `<button class="btn-icon-delete" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); padding:4px;" onclick="event.stopPropagation(); app.deleteHistoryItem('${video.videoId || video.id}')" title="Delete from history"><i data-lucide="trash-2"></i></button>`;
+    }
+
+    card.style.position = 'relative'; // Ensure absolute positioning of delete button works
     card.innerHTML = `
       <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" alt="${this.escapeHtml(video.title)}">
-      <div class="video-card-details">
+      <div class="video-card-details" style="padding-right: 32px;">
         <h4 class="video-card-title">${rankPrefix}${this.escapeHtml(video.title)}</h4>
         <div class="video-card-meta">
           <span class="badge">${video.platform}</span>
           ${subMeta}
         </div>
       </div>
+      ${deleteBtn}
     `;
 
     if (video.platform === 'youtube') {
