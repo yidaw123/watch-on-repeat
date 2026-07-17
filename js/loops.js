@@ -730,6 +730,11 @@ class LoopsMixin {
       
       const speedValue = seg.speed || 1.0;
       
+      const p = this.state.currentPlatform;
+      const speedDisabled = (p === 'twitch' || p === 'soundcloud');
+      const speedTooltip = speedDisabled ? `${p === 'twitch' ? 'Twitch' : 'SoundCloud'} does not support external speed controls` : "Segment Speed";
+      const speedDisabledAttr = speedDisabled ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '';
+      
       const controlsRow = document.createElement('div');
       controlsRow.style.display = 'flex';
       controlsRow.style.gap = '4px';
@@ -752,8 +757,8 @@ class LoopsMixin {
           <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', -0.05, ${index})"><i data-lucide="minus" style="width:12px;height:12px;"></i></button>
           <button class="btn btn-secondary btn-sm" style="padding: 0 6px; height:24px; min-height:24px;" onclick="app.fineTuneLoop('end', 0.05, ${index})"><i data-lucide="plus" style="width:12px;height:12px;"></i></button>
         </div>
-        <div style="display:flex; gap:2px; margin-left: 4px;" class="tooltip" data-tip="Segment Speed">
-          <select id="multi-speed-${index}" class="select-input" style="height:24px; min-height:24px; font-size:11px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff;" onchange="app.setSegmentSpeed(this.value, ${index})">
+        <div style="display:flex; gap:2px; margin-left: 4px;" class="tooltip" data-tip="${speedTooltip}">
+          <select id="multi-speed-${index}" class="select-input" style="height:24px; min-height:24px; font-size:11px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff;" onchange="app.setSegmentSpeed(this.value, ${index})" ${speedDisabledAttr}>
             <option style="color: #000; background: #fff;" value="0.25" ${speedValue == 0.25 ? 'selected' : ''}>0.25x</option>
             <option style="color: #000; background: #fff;" value="0.5" ${speedValue == 0.5 ? 'selected' : ''}>0.5x</option>
             <option style="color: #000; background: #fff;" value="0.75" ${speedValue == 0.75 ? 'selected' : ''}>0.75x</option>
