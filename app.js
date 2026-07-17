@@ -4147,7 +4147,17 @@ class WatchOnRepeat {
             player.play();
             player.subscribe('startedPlaying', () => {
               this.state.isPlaying = true;
-              this.setVideoDuration(player.getDuration() || 0);
+              
+              const updateDur = () => {
+                const d = player.getDuration();
+                if (d > 0) {
+                  this.setVideoDuration(d);
+                } else {
+                  setTimeout(updateDur, 500);
+                }
+              };
+              updateDur();
+              
               this.elements.loopStateText.textContent = "Looping";
               this.elements.loopStateText.className = "stat-value text-green";
               this.updatePlayPauseUI();

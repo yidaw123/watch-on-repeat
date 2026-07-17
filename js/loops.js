@@ -300,14 +300,14 @@ class LoopsMixin {
     }
     
     // 2. Not in any segment. Did we just naturally finish the current segment?
-    if (t >= seg.end && t < seg.end + 1.5) {
+    if (seg.end > 0 && t >= seg.end && t < seg.end + 1.5) {
       this.state.abLoop.lastLoopAdvance = now;
       this.advanceLoopSegment();
       return;
     }
     
     // 2.5. Natural loop jump (YouTube's native loop=1 skipped the t >= seg.end check)
-    if (prevT > seg.end - 2.0 && t < (seg.start !== null ? seg.start : 0) + 2.0) {
+    if (seg.end > 0 && prevT > seg.end - 2.0 && t < (seg.start !== null ? seg.start : 0) + 2.0) {
       this.state.abLoop.lastLoopAdvance = now;
       this.advanceLoopSegment();
       return;
