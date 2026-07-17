@@ -1837,6 +1837,7 @@ class WatchOnRepeat {
 
   setVideoDuration(duration) {
     if (!duration || isNaN(duration) || duration <= 0) return;
+    if (this.state.currentVideoDuration && Math.abs(this.state.currentVideoDuration - duration) < 0.1) return;
     
     this.state.currentVideoDuration = duration;
     
