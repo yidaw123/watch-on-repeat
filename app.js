@@ -2033,7 +2033,19 @@ class WatchOnRepeat {
            const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
            if (res && res.ok) {
              const data = await res.json();
-             if (data && data.title && !title) title = data.title;
+             if (data && data.title && !title) {
+               // For Facebook, noembed sets title to the URL. We want to extract it from the HTML instead.
+               if (platform === 'facebook' && data.html) {
+                 const htmlMatch = data.html.match(/<a href="[^"]+">([^<]+)<\/a>/);
+                 if (htmlMatch && htmlMatch[1]) {
+                   title = this.decodeHtmlEntities(htmlMatch[1]);
+                 } else {
+                   title = data.title;
+                 }
+               } else {
+                 title = data.title;
+               }
+             }
              if (data && data.thumbnail_url && !thumbnail) thumbnail = data.thumbnail_url;
            }
         }
