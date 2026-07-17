@@ -2186,7 +2186,6 @@ class WatchOnRepeat {
             if (match) {
                const time = parseFloat(match[1]);
                if (this.state.players.dailymotion) this.state.players.dailymotion.currentTime = time;
-               this.onPlayerTimeUpdate(time);
             }
           } else if (data.includes('event=play')) {
             this.state.isPlaying = true;
@@ -2281,7 +2280,6 @@ class WatchOnRepeat {
               player.getState().then(state => {
                  if (state && typeof state.videoTime === 'number') {
                     this.state.players.dailymotion.currentTime = state.videoTime;
-                    this.onPlayerTimeUpdate(state.videoTime);
                  }
                  if (state && typeof state.videoDuration === 'number' && state.videoDuration > 0) {
                     this.setVideoDuration(state.videoDuration);
@@ -3803,7 +3801,6 @@ class WatchOnRepeat {
           }
         }
       }
-      if (!skipMultiRender) this.renderMultiSegments();
     };
 
     this.updateTimelineUI = (skipMultiRender = false) => {
