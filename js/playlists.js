@@ -74,7 +74,7 @@ class PlaylistsMixin {
       if (createRow) createRow.style.display = 'none';
       list.innerHTML = `
         <div class="playlist-header-container">
-          <div style="margin-bottom: 16px; display:flex; flex-direction:column; gap:12px;">
+          <div style="margin-bottom: 16px; display:flex; flex-direction:column; gap:12px; min-width: 0;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <button class="btn btn-sm btn-outline" onclick="app.backToPlaylists()"><i data-lucide="arrow-left"></i> Back</button>
               <div style="display: flex; gap: 8px;">
@@ -102,7 +102,7 @@ class PlaylistsMixin {
             <button class="btn-icon-delete" style="color: var(--text-muted);" title="Rename Playlist" onclick="app.renamePlaylist('${this.escapeHtml(p.id)}')"><i data-lucide="edit-3"></i></button>
           </h2>
         </div>
-        <div id="playlist-videos-container" style="display: flex; flex-direction: column;"></div>
+        <div id="playlist-videos-container" style="display: flex; flex-direction: column; min-width: 0;"></div>
       `;
       
       const vidsContainer = list.querySelector('#playlist-videos-container');
