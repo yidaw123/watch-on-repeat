@@ -1977,7 +1977,9 @@ class WatchOnRepeat {
     
     if (platform === 'facebook') {
       try {
-        const response = await fetch(`https://www.facebook.com/plugins/video/oembed.json/?url=https://www.facebook.com/facebook/videos/${id}`);
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
+        const targetUrl = encodeURIComponent(`https://www.facebook.com/plugins/video/oembed.json/?url=https://www.facebook.com/facebook/videos/${id}`);
+        const response = await fetch(proxyUrl + targetUrl);
         if (response.ok) {
           const data = await response.json();
           if (data && data.title) return data.title;
