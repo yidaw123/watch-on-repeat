@@ -501,6 +501,7 @@ class LoopsMixin {
     this.state.abLoop.currentSegmentIndex = this.state.abLoop.multiSegments.length - 1;
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
+    if (this.renderMultiSegments) this.renderMultiSegments();
   }
 
   removeLoopSegment(index) {
@@ -514,6 +515,7 @@ class LoopsMixin {
     }
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
+    if (this.renderMultiSegments) this.renderMultiSegments();
   }
 
   async deleteAllSegments() {
@@ -530,6 +532,7 @@ class LoopsMixin {
     this.state.abLoop.currentSegmentIndex = 0;
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
+    if (this.renderMultiSegments) this.renderMultiSegments();
     if (this.showToast) this.showToast("All segments deleted.", "trash-2");
   }
 
