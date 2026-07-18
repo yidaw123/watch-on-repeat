@@ -790,12 +790,23 @@ class WatchOnRepeat {
             platform = 'vimeo'; // fallback for /video/123456
           }
         } else if (type === 'videos') {
-          videoId = 'video=' + id;
-          platform = 'twitch';
+          if (/^\d{14,}$/.test(id)) {
+            videoId = id;
+            platform = 'facebook';
+          } else {
+            videoId = 'video=' + id;
+            platform = 'twitch';
+          }
         } else if (parts.length >= 3 && id.toLowerCase() === 'clip') {
           videoId = 'clip=' + parts[2];
           platform = 'twitch';
         }
+      }
+    }
+
+    if (!platform || platform === 'youtube') {
+      if (videoId && /^\d{14,}$/.test(videoId)) {
+        platform = 'facebook';
       }
     }
 
