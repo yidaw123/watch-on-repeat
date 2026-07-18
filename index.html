@@ -31,18 +31,75 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "WatchOnRepeat",
-    "alternateName": "Watch On Repeat",
-    "url": "https://watchonrepeat.com",
-    "applicationCategory": "MultimediaApplication",
-    "operatingSystem": "All",
-    "description": "Watch on repeat allows you to loop YouTube, Vimeo, and Twitch videos infinitely. The best video looper to repeat sections, change speed, and practice.",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    }
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "WatchOnRepeat",
+        "alternateName": "Watch On Repeat",
+        "url": "https://watchonrepeat.com",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "All",
+        "description": "WatchOnRepeat is a free web-based video looper. It allows users to infinitely repeat YouTube, Facebook, Twitch, Vimeo, and local video files. It includes advanced features like A/B segment looping, variable playback speed control, and an audio recorder for practice.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "Infinite Video Looping",
+          "A/B Segment Looping",
+          "Playback Speed and Tempo Control",
+          "Audio Recording Tool",
+          "Multi-Segment Saving",
+          "Cross-Device Cloud Sync"
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I loop a YouTube video?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "To loop a YouTube video, simply paste the video link into the search bar on WatchOnRepeat and hit Enter. The video will automatically load and play in an infinite loop. You can also use the URL shortcut by changing 'youtube.com' to 'watchonrepeat.com' in your browser's address bar."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I loop a Facebook video?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, you can easily loop Facebook videos and reels. Just copy the video URL from Facebook and paste it into the search bar at WatchOnRepeat. The tool will automatically extract the video and play it on repeat without interruptions."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a way to loop only a specific part of a video?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, WatchOnRepeat has a built-in A/B looper. Once your video is loaded, you can set a custom 'Start' and 'End' timestamp using the slider controls. The video will then continuously loop only that specific segment, which is perfect for practicing an instrument or studying a lecture."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I slow down a Twitch VOD?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Unfortunately, Twitch's official embedded video player does not support custom playback speeds. While WatchOnRepeat can infinitely loop Twitch clips and VODs, third-party sites are restricted from altering the playback speed of Twitch videos."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does WatchOnRepeat work with local files?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Pro users can upload offline MP4, WebM, or OGG video files directly from their computer into the browser. The files are not uploaded to any external server, ensuring complete privacy while using the looping and speed control features."
+            }
+          }
+        ]
+      }
+    ]
   }
   </script>
   
