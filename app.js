@@ -2973,12 +2973,21 @@ class WatchOnRepeat {
             .limit(20);
           
           if (data && data.length > 0) {
-            discoverVideos = data.map(d => ({
-              videoId: d.video_id,
-              platform: d.platform,
-              title: `Trending ${d.platform} video`,
-              globalLoops: d.global_loops
-            }));
+            const fetchPromises = data.map(async (d) => {
+              let title = d.title;
+              if (!title) {
+                const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
+                title = meta.title;
+              }
+              if (!title || title.includes('(Private or Unavailable)')) title = `Trending ${d.platform} video`;
+              return {
+                videoId: d.video_id,
+                platform: d.platform,
+                title: title,
+                globalLoops: d.global_loops
+              };
+            });
+            discoverVideos = await Promise.all(fetchPromises);
           }
         } catch(e) {}
       }
@@ -3357,6 +3366,7 @@ class WatchOnRepeat {
       deleteBtn = `<button class="btn-icon-delete" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); padding:4px;" onclick="event.stopPropagation(); app.deleteHistoryItem('${video.videoId || video.id}')" title="Delete from history"><i data-lucide="trash-2"></i></button>`;
     }
 
+    card.title = video.title || '';
     card.style.position = 'relative'; // Ensure absolute positioning of delete button works
     card.innerHTML = `
       <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" alt="${this.escapeHtml(video.title)}">
