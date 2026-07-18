@@ -4282,7 +4282,7 @@ class WatchOnRepeat {
 
   // --- Facebook Controller ---
   initFacebookPlayer(id) {
-    this.elements.playerContainer.innerHTML = `<div class="fb-video" data-href="https://www.facebook.com/video.php?v=${id}" data-width="auto" data-show-text="false" data-autoplay="true" data-allowfullscreen="true"></div>`;
+    this.elements.playerContainer.innerHTML = `<div class="fb-video" data-href="https://www.facebook.com/video.php?v=${id}" data-width="auto" data-show-text="false" data-autoplay="true" data-allowfullscreen="true" data-controls="true"></div>`;
     
     const setupFB = () => {
       if (window.FB && window.FB.XFBML) {
