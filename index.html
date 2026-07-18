@@ -749,7 +749,10 @@
               </div>
               <div class="notes-container">
                 <div class="notes-input-area">
-                  <div style="position: relative; flex: 1;">\n                      <textarea id="note-input" placeholder="Type a note here..." oninput="app.updateNoteCharCount(this)" style="min-height: 80px; width: 100%; padding-bottom: 24px;"></textarea>\n                      <div id="note-char-count" style="position: absolute; bottom: 8px; right: 12px; font-size: 10px; color: var(--text-muted); pointer-events: none;">0 / 200</div>\n                    </div>
+                  <div style="position: relative; flex: 1;">
+                      <textarea id="note-input" placeholder="Type a note here..." oninput="app.updateNoteCharCount(this)" style="min-height: 80px; width: 100%; padding-bottom: 24px;"></textarea>
+                      <div id="note-char-count" style="position: absolute; bottom: 8px; right: 12px; font-size: 10px; color: var(--text-muted); pointer-events: none;">0 / 200</div>
+                    </div>
                   <div style="display: flex; gap: 8px; flex-direction: column;">
                     <button class="btn btn-primary btn-sm" onclick="app.addNote()">
                       <i data-lucide="plus"></i> Add at Current Time
