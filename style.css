@@ -2716,3 +2716,33 @@ input[type="checkbox"]:focus {
 .pagination-input[type=number] {
   -moz-appearance: textfield;
 }
+
+/* Ad Sidebars */
+.ad-sidebar {
+  display: none; /* Hidden by default on smaller screens */
+  position: fixed;
+  top: 150px;
+  width: 160px;
+  height: 600px;
+  z-index: 10;
+}
+
+/* Only show ads if screen is wide enough (e.g. 1350px+) so they don't overlap the main player */
+@media (min-width: 1350px) {
+  .ad-sidebar {
+    display: block;
+  }
+  .ad-sidebar-left {
+    left: 20px;
+  }
+  .ad-sidebar-right {
+    right: 20px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .ad-sidebar {
+    width: 300px;
+  }
+}
+
