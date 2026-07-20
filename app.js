@@ -3040,10 +3040,14 @@ class WatchOnRepeat {
           .select('*')
           .neq('platform', 'local')
           .order('global_loops', { ascending: false })
-          .limit(10);
+          .limit(20);
         
         if (data && data.length > 0) {
-          const fetchPromises = data.map(async (d) => {
+          // Shuffle and pick 10
+          let shuffledData = data.sort(() => 0.5 - Math.random());
+          let selectedData = shuffledData.slice(0, 10);
+          
+          const fetchPromises = selectedData.map(async (d) => {
             let title = d.title;
             if (!title) {
               const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
@@ -3074,7 +3078,8 @@ class WatchOnRepeat {
     pageData.forEach((v, index) => {
       const globalIndex = startIdx + index;
       const isTrending = !!v.globalLoops;
-      const card = this.createVideoCard(v, false, isTrending ? globalIndex + 1 : null);
+      // Do not show rank badge since videos are randomized
+      const card = this.createVideoCard(v, false, null);
       this.elements.discoverList.appendChild(card);
     });
     
