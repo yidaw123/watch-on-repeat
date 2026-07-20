@@ -3164,7 +3164,7 @@ class WatchOnRepeat {
       paginatedFavorites.forEach(f => {
         const historyItem = historyDb.find(h => h.videoId === f.videoId && h.platform === f.platform);
         f.loopsCount = historyItem ? historyItem.loopsCount : 0;
-        const card = this.createVideoCard(f, true); // true to show loopsCount instead of global
+        const card = this.createVideoCard(f, true, null, false); // true to show loopsCount, false to hide inner delete btn
         
         const wrapper = document.createElement('div');
         wrapper.style = "display: flex; align-items: center; gap: 12px;";
@@ -3349,7 +3349,7 @@ class WatchOnRepeat {
     if (window.lucide) window.lucide.createIcons();
   }
 
-  createVideoCard(video, isHistory = false, rank = null) {
+  createVideoCard(video, isHistory = false, rank = null, showDeleteBtn = null) {
     const card = document.createElement('div');
     card.className = 'video-card';
     
@@ -3373,7 +3373,8 @@ class WatchOnRepeat {
     const rankPrefix = rank ? `<span class="badge" style="margin-right:0.25rem; background: var(--gradient-primary); color:white;">#${rank}</span>` : '';
 
     let deleteBtn = '';
-    if (isHistory) {
+    if (showDeleteBtn === null) showDeleteBtn = isHistory;
+    if (showDeleteBtn) {
       deleteBtn = `<button class="btn-icon-delete" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); padding:4px;" onclick="event.stopPropagation(); app.deleteHistoryItem('${video.videoId || video.id}')" title="Delete from history"><i data-lucide="trash-2"></i></button>`;
     }
 
