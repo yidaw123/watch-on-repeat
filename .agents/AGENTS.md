@@ -65,6 +65,7 @@ When building features that rely on aggregate or global data, explicitly define 
 
 ### Dependency Tracing Rule
 Before modifying a shared UI component, global CSS class, or database table, explicitly trace its dependencies across the entire application to ensure changes do not cause collateral damage or break unrelated features.
+Before modifying a shared UI component, global CSS class, or database table, explicitly trace its dependencies across the entire application to ensure changes do not cause collateral damage or break unrelated features.
 
 ### Zero Assumptions Rule
 Always actively verify existing database schemas, local data structures, and native Web API methods before writing logic that interacts with them. Never rely on assumptions or memory when manipulating state or the DOM.
@@ -72,3 +73,6 @@ Always actively verify existing database schemas, local data structures, and nat
 ### Async Management Rule
 Strictly manage asynchronous operations. Never allow background fetches, intervals, or auto-saves to mutate the database or UI until the core application state has been fully initialized and validated.
 - Never use client-side absolute overwrites for database counters. Always use server-side increments (RPCs) to prevent race conditions from wiping data.
+
+### Affiliate Product Selection Rule
+When selecting, suggesting, or inserting affiliate product links (e.g., Amazon gear recommendations), always test the links to ensure they are active. Additionally, strictly select products that are highly popular (many products sold) and have a high rating (4 stars or higher; the higher the better) to ensure quality recommendations.
