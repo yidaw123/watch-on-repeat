@@ -75,4 +75,4 @@ Strictly manage asynchronous operations. Never allow background fetches, interva
 - Never use client-side absolute overwrites for database counters. Always use server-side increments (RPCs) to prevent race conditions from wiping data.
 
 ### Affiliate Product Selection Rule
-When selecting, suggesting, or inserting affiliate product links (e.g., Amazon gear recommendations), always test the links to ensure they are active. Additionally, strictly select products that are highly popular (many products sold) and have a high rating (4 stars or higher; the higher the better) to ensure quality recommendations.
+When selecting, suggesting, or inserting affiliate product links (e.g., Amazon gear recommendations), you MUST manually verify the item can actually be purchased and is not sold out/unavailable before using it in the pages. Additionally, strictly select products that are highly popular (many products sold) and have a high rating (4 stars or higher; the higher the better) to ensure quality recommendations.
