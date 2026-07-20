@@ -39,6 +39,7 @@ class AudioRecorderMixin {
 
   startRecording(stream) {
     this.state.audio.isRecording = true;
+    this.state.audio.wantsSync = false;
     this.state.audio.chunks = [];
     this.state.audio.startTime = Date.now();
     this.state.audio.duration = 0;
@@ -217,9 +218,11 @@ class AudioRecorderMixin {
     if (!this.state.audio || !this.state.audio.audioEl) return;
     
     if (this.state.audio.audioEl.paused) {
+      this.state.audio.wantsSync = true;
       this.state.audio.audioEl.play();
       document.getElementById('play-recording-btn').innerHTML = '<i data-lucide="pause"></i> Pause';
     } else {
+      this.state.audio.wantsSync = false;
       this.state.audio.audioEl.pause();
       document.getElementById('play-recording-btn').innerHTML = '<i data-lucide="play"></i> Play';
     }
@@ -228,6 +231,7 @@ class AudioRecorderMixin {
 
   deleteCurrentRecording() {
     if (!this.state.audio) return;
+    this.state.audio.wantsSync = false;
     const oldUrl = this.state.audio.blobUrl;
     this.state.audio.blobUrl = null;
     if (this.state.audio.audioEl) {
@@ -259,7 +263,7 @@ class AudioRecorderMixin {
   }
 
   syncRecordingWithVideo() {
-    if (this.state.audio && this.state.audio.audioEl && this.state.audio.blobUrl) {
+    if (this.state.audio && this.state.audio.audioEl && this.state.audio.blobUrl && this.state.audio.wantsSync) {
       this.state.audio.audioEl.currentTime = 0;
       this.state.audio.audioEl.play().catch(e => console.warn("Audio sync play failed:", e));
       const playBtn = document.getElementById('play-recording-btn');
@@ -314,9 +318,14 @@ class AudioRecorderMixin {
     this.state.audio.audioEl = new Audio(blobUrl);
     this.state.audio.audioEl.volume = this.state.audio.volume;
     this.state.audio.blobUrl = blobUrl; // Set as current
+    this.state.audio.wantsSync = false;
     this.state.audio.audioEl.play();
     
     document.getElementById('play-recording-btn')?.classList.remove('hidden');
+    document.getElementById('download-recording-btn')?.classList.remove('hidden');
+    document.getElementById('delete-recording-btn')?.classList.remove('hidden');
+    document.getElementById('recording-volume')?.classList.remove('hidden');
+    
     const playBtn = document.getElementById('play-recording-btn');
     if (playBtn) playBtn.innerHTML = '<i data-lucide="pause"></i> Pause';
     if (window.lucide) window.lucide.createIcons();
