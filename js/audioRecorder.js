@@ -108,7 +108,7 @@ class AudioRecorderMixin {
     
     // Timer
     const tier = this.state.user ? (this.state.user.tier || (this.state.user.user_metadata && this.state.user.user_metadata.tier) || (this.state.user.isPremium ? 'premium' : 'free')) : 'free';
-    const maxDuration = tier === 'pro' ? Infinity : (tier === 'premium' ? 3600 : 30);
+    const maxDuration = tier === 'pro' ? 600 : (tier === 'premium' ? 300 : 30);
     
     this.state.audio.timerId = setInterval(() => {
       const elapsed = Math.floor((Date.now() - this.state.audio.startTime) / 1000);
@@ -118,12 +118,12 @@ class AudioRecorderMixin {
       if (display) {
         const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
         const secs = (elapsed % 60).toString().padStart(2, '0');
-        display.textContent = `${mins}:${secs} ${tier === 'pro' ? '' : (tier === 'premium' ? '/ 60:00' : '/ 00:30')}`;
+        display.textContent = `${mins}:${secs} ${tier === 'pro' ? '/ 10:00' : (tier === 'premium' ? '/ 05:00' : '/ 00:30')}`;
       }
       
       if (elapsed >= maxDuration) {
         this.stopRecording();
-        this.openUpgradeModal(tier === 'free' ? "Recording longer than 30 seconds requires a Premium account." : "Recording longer than 1 hour requires a Pro account.");
+        this.openUpgradeModal(tier === 'free' ? "Recording longer than 30 seconds requires a Premium account." : (tier === 'premium' ? "Recording longer than 5 minutes requires a Pro account." : "You have reached the maximum recording limit of 10 minutes."));
       }
     }, 1000);
   }
@@ -164,9 +164,9 @@ class AudioRecorderMixin {
       if (this.state.audio && this.state.audio.isRecording) return;
       
       if (tier === 'pro') {
-        recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (Unlimited)';
+        recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (10min)';
       } else if (tier === 'premium') {
-        recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (1hr)';
+        recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (5min)';
       } else {
         recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (30s Free)';
       }
