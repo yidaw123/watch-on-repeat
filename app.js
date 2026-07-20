@@ -2040,7 +2040,11 @@ class WatchOnRepeat {
       if (!title || !thumbnail) {
         if (platform === 'twitch') {
           const parts = id.split('=');
-          videoUrl = `https://twitch.tv/${parts[1] || id}`;
+          const type = parts[0];
+          const val = parts[1] || id;
+          if (type === 'video') videoUrl = `https://twitch.tv/videos/${val}`;
+          else if (type === 'clip') videoUrl = `https://clips.twitch.tv/${val}`;
+          else videoUrl = `https://twitch.tv/${val}`;
         }
         if (videoUrl) {
            const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
@@ -2069,7 +2073,14 @@ class WatchOnRepeat {
         let ogUrl = '';
         if (platform === 'facebook') ogUrl = `https://www.facebook.com/facebook/videos/${id}`;
         else if (platform === 'soundcloud') ogUrl = `https://soundcloud.com/${id}`;
-        else if (platform === 'twitch') ogUrl = `https://twitch.tv/${id.split('=')[1] || id}`;
+        else if (platform === 'twitch') {
+          const parts = id.split('=');
+          const type = parts[0];
+          const val = parts[1] || id;
+          if (type === 'video') ogUrl = `https://twitch.tv/videos/${val}`;
+          else if (type === 'clip') ogUrl = `https://clips.twitch.tv/${val}`;
+          else ogUrl = `https://twitch.tv/${val}`;
+        }
         else if (platform === 'wistia') ogUrl = `https://home.wistia.com/medias/${id}`;
         
         if (ogUrl) {
