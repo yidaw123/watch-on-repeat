@@ -2746,3 +2746,12 @@ input[type="checkbox"]:focus {
   }
 }
 
+/* Upload Button Hover Effect */
+.upload-btn:hover {
+  border-color: var(--primary-color) !important;
+  background: rgba(139, 92, 246, 0.05) !important;
+}
+.upload-btn:hover .upload-btn-text, .upload-btn:hover i {
+  color: var(--primary-color) !important;
+}
+
