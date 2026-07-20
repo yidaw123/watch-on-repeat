@@ -183,10 +183,11 @@ class AudioRecorderMixin {
       if (this.state.audio && this.state.audio.isRecording) return;
       
       const display = document.getElementById('recording-time-display');
+      let rawDur = audioEl.duration;
+      if (!rawDur || rawDur === Infinity) rawDur = this.state.audio.duration || 0;
+      
       if (display) {
         const cur = Math.floor(audioEl.currentTime || 0);
-        let rawDur = audioEl.duration;
-        if (!rawDur || rawDur === Infinity) rawDur = this.state.audio.duration || 0;
         const dur = Math.floor(rawDur);
         
         const curMins = Math.floor(cur / 60).toString().padStart(2, '0');
@@ -196,6 +197,19 @@ class AudioRecorderMixin {
         const durSecs = (dur % 60).toString().padStart(2, '0');
         
         display.textContent = `${curMins}:${curSecs} / ${durMins}:${durSecs}`;
+      }
+      
+      // WebM blobs from MediaRecorder often have Infinity duration, meaning 'ended' never fires natively.
+      // So we manually check if we've reached the true recorded duration.
+      if (audioEl.duration === Infinity && this.state.audio.duration && audioEl.currentTime >= this.state.audio.duration) {
+        audioEl.pause();
+        audioEl.currentTime = 0;
+        if (this.state.audio) this.state.audio.wantsSync = false;
+        const playBtn = document.getElementById('play-recording-btn');
+        if (playBtn) {
+          playBtn.innerHTML = '<i data-lucide="play"></i> Play';
+          if (window.lucide) window.lucide.createIcons();
+        }
       }
     });
 
