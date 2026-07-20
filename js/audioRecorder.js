@@ -181,7 +181,12 @@ class AudioRecorderMixin {
       
       if (elapsed >= maxDuration) {
         this.stopRecording();
-        this.openUpgradeModal(tier === 'free' ? "Recording longer than 30 seconds requires a Premium account." : (tier === 'premium' ? "Recording longer than 5 minutes requires a Pro account." : "You have reached the maximum recording limit of 10 minutes."));
+        if (tier === 'pro') {
+          if (typeof this.showToast === 'function') this.showToast("You have reached the maximum recording limit of 10 minutes.", "alert-circle");
+          else alert("You have reached the maximum recording limit of 10 minutes.");
+        } else {
+          this.openUpgradeModal(tier === 'free' ? "Recording longer than 30 seconds requires a Premium account." : "Recording longer than 5 minutes requires a Pro account.");
+        }
       }
     }, 1000);
   }
