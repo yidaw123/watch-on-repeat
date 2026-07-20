@@ -578,6 +578,7 @@
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Advanced loop segments</li>
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Unlimited notes & history</li>
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Customizable Hotkeys</li>
+              <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Extended Audio Recording (up to 15)</li>
             </ul>
             <button class="btn btn-outline w-full" disabled style="justify-content: center; margin-top: 24px; opacity: 0.5; cursor: not-allowed;">Upgrade to Premium (Coming Soon)</button>
           </div>
@@ -759,7 +760,7 @@
               </div>
               <div class="empty-state-list" id="recorded-audio-empty">
                 <i data-lucide="mic"></i>
-                <p>No audio recorded yet. Use the Audio Recorder Studio below the video player to record your practice sessions!</p>
+                <p>Your recorded audio and corresponding video will be saved here locally on this browser.<br><br><span style="font-size:0.85em; opacity:0.8;">Note: Voice recordings are stored in this browser's local storage. They will persist across sessions, but clearing your browser data will delete them. They do not sync across devices.</span></p>
               </div>
             </div>
               </div>
@@ -1237,6 +1238,7 @@
       });
     }
   </script>
+  <script src="/js/audioDb.js"></script>
   <script src="/js/database.js?v=63"></script>
   <script src="/js/auth.js?v=63"></script>
   <script src="/js/notes.js?v=63"></script>

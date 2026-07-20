@@ -1,5 +1,5 @@
 class AudioRecorderMixin {
-  initAudioRecorder() {
+  async initAudioRecorder() {
     if (!this.state.audio) {
       this.state.audio = {
         recorder: null,
@@ -15,16 +15,56 @@ class AudioRecorderMixin {
         timerId: null,
         duration: 0,
         volume: 1.0,
-        recordings: [] // For the Recorded Audio tab
+        recordings: [] // In-memory cache of DB recordings
       };
+      
+      try {
+        if (window.AudioDB) {
+          const recs = await window.AudioDB.getAllRecordings();
+          this.state.audio.recordings = recs;
+          this.renderRecordedAudioTab();
+        }
+      } catch (err) {
+        console.error("Failed to load recordings from IndexedDB:", err);
+      }
     }
   }
 
   async toggleRecording() {
-    this.initAudioRecorder();
+    await this.initAudioRecorder();
     
     if (this.state.audio.isRecording) {
       this.stopRecording();
+      return;
+    }
+    
+    const tier = this.state.user ? (this.state.user.tier || (this.state.user.user_metadata && this.state.user.user_metadata.tier) || (this.state.user.isPremium ? 'premium' : 'free')) : 'free';
+    const maxRecsPerVideo = tier === 'free' ? 1 : 3;
+    const maxVideos = tier === 'free' ? 2 : 5;
+    
+    const recs = this.state.audio.recordings || [];
+    const currentVideoId = this.state.currentVideoId;
+    const currentPlatform = this.state.currentPlatform;
+    
+    if (!currentVideoId || !currentPlatform) {
+      if (typeof this.showToast === 'function') this.showToast("Please load a video first before recording.", "alert-circle");
+      return;
+    }
+    
+    const recsForThisVideo = recs.filter(r => r.videoId === currentVideoId && r.platform === currentPlatform);
+    
+    if (recsForThisVideo.length >= maxRecsPerVideo) {
+      const msg = `You can only have up to ${maxRecsPerVideo} recording${maxRecsPerVideo > 1 ? 's' : ''} per video on the ${tier} tier.`;
+      if (tier === 'pro') this.showToast(msg, "alert-circle");
+      else this.openUpgradeModal(msg);
+      return;
+    }
+    
+    const uniqueVideos = new Set(recs.map(r => r.platform + ":" + r.videoId));
+    if (!uniqueVideos.has(currentPlatform + ":" + currentVideoId) && uniqueVideos.size >= maxVideos) {
+      const msg = `You have reached the maximum limit of ${maxVideos} videos with recordings for the ${tier} tier.`;
+      if (tier === 'pro') this.showToast(msg, "alert-circle");
+      else this.openUpgradeModal(msg);
       return;
     }
     
@@ -33,7 +73,7 @@ class AudioRecorderMixin {
       this.startRecording(stream);
     } catch (err) {
       console.error("Microphone access denied or error:", err);
-      this.showToast("Microphone access required to record.", "alert-circle");
+      if (typeof this.showToast === 'function') this.showToast("Microphone access required to record.", "alert-circle");
     }
   }
 
@@ -62,7 +102,7 @@ class AudioRecorderMixin {
       if (e.data.size > 0) this.state.audio.chunks.push(e.data);
     };
     
-    this.state.audio.recorder.onstop = () => {
+    this.state.audio.recorder.onstop = async () => {
       const blob = new Blob(this.state.audio.chunks, { type: 'audio/webm' });
       this.state.audio.blobUrl = URL.createObjectURL(blob);
       
@@ -74,21 +114,38 @@ class AudioRecorderMixin {
         this.state.audio.audioEl.volume = this.state.audio.volume;
       }
       
-      // Save to recordings list
+      // Save to recordings list and IndexedDB
       const timestamp = new Date().toLocaleTimeString();
+      const name = `Recording at ${timestamp}`;
+      const videoId = this.state.currentVideoId;
+      const platform = this.state.currentPlatform;
+      const videoTitle = this.state.videoTitle || "Unknown Video";
+      const thumbnail = this.getThumbnailUrl(platform, videoId);
+      
+      let dbId = Date.now().toString(); // fallback
+      if (window.AudioDB) {
+        try {
+          dbId = await window.AudioDB.saveRecording(videoId, platform, blob, this.state.audio.duration, name, videoTitle, thumbnail);
+        } catch (err) {
+          console.error("Failed to save to AudioDB:", err);
+        }
+      }
+      
       const newRec = {
-        id: Date.now().toString(),
-        name: `Recording at ${timestamp}`,
+        id: dbId,
+        videoId,
+        platform,
+        name,
         blobUrl: this.state.audio.blobUrl,
-        duration: this.state.audio.duration
+        duration: this.state.audio.duration,
+        blob: blob, // Store blob for consistency
+        videoTitle,
+        thumbnail,
+        createdAt: Date.now()
       };
       
-      const tier = this.state.user ? (this.state.user.tier || (this.state.user.user_metadata && this.state.user.user_metadata.tier) || (this.state.user.isPremium ? 'premium' : 'free')) : 'free';
-      if (tier === 'free') {
-        this.state.audio.recordings = [newRec];
-      } else {
-        this.state.audio.recordings.push(newRec);
-      }
+      if (!this.state.audio.recordings) this.state.audio.recordings = [];
+      this.state.audio.recordings.push(newRec);
       
       this.renderRecordedAudioTab();
       
@@ -289,29 +346,42 @@ class AudioRecorderMixin {
     if (window.lucide) window.lucide.createIcons();
   }
 
-  deleteCurrentRecording() {
+  async deleteCurrentRecording(forceDeleteUrl = null) {
     if (!this.state.audio) return;
     this.state.audio.wantsSync = false;
-    const oldUrl = this.state.audio.blobUrl;
-    this.state.audio.blobUrl = null;
-    if (this.state.audio.audioEl) {
-      this.state.audio.audioEl.pause();
-      this.state.audio.audioEl = null;
+    
+    // We can pass a specific blobUrl to delete, otherwise it deletes the current one
+    const targetUrl = forceDeleteUrl || this.state.audio.blobUrl;
+    if (!targetUrl) return;
+    
+    const recToDelete = this.state.audio.recordings.find(r => r.blobUrl === targetUrl);
+    
+    if (this.state.audio.blobUrl === targetUrl) {
+      this.state.audio.blobUrl = null;
+      if (this.state.audio.audioEl) {
+        this.state.audio.audioEl.pause();
+        this.state.audio.audioEl = null;
+      }
+      document.getElementById('play-recording-btn')?.classList.add('hidden');
+      document.getElementById('download-recording-btn')?.classList.add('hidden');
+      document.getElementById('delete-recording-btn')?.classList.add('hidden');
+      document.getElementById('recording-volume')?.classList.add('hidden');
+      
+      const display = document.getElementById('recording-time-display');
+      if (display) display.textContent = '00:00 / 00:30';
     }
     
-    // Remove from recordings list
-    if (oldUrl) {
-      this.state.audio.recordings = this.state.audio.recordings.filter(r => r.blobUrl !== oldUrl);
+    if (recToDelete) {
+      this.state.audio.recordings = this.state.audio.recordings.filter(r => r.id !== recToDelete.id);
       this.renderRecordedAudioTab();
+      if (window.AudioDB && recToDelete.id) {
+        try {
+          await window.AudioDB.deleteRecording(recToDelete.id);
+        } catch (err) {
+          console.error("Failed to delete from AudioDB", err);
+        }
+      }
     }
-    
-    document.getElementById('play-recording-btn')?.classList.add('hidden');
-    document.getElementById('download-recording-btn')?.classList.add('hidden');
-    document.getElementById('delete-recording-btn')?.classList.add('hidden');
-    document.getElementById('recording-volume')?.classList.add('hidden');
-    
-    const display = document.getElementById('recording-time-display');
-    if (display) display.textContent = '00:00 / 00:30';
   }
 
   setRecordingVolume(val) {
@@ -338,7 +408,7 @@ class AudioRecorderMixin {
     const badge = document.getElementById('recorded-audio-count');
     if (!container) return;
     
-    if (!this.state.audio || this.state.audio.recordings.length === 0) {
+    if (!this.state.audio || !this.state.audio.recordings || this.state.audio.recordings.length === 0) {
       container.innerHTML = '';
       if (emptyState) emptyState.classList.remove('hidden');
       if (badge) badge.textContent = '0';
@@ -348,19 +418,69 @@ class AudioRecorderMixin {
     if (emptyState) emptyState.classList.add('hidden');
     if (badge) badge.textContent = this.state.audio.recordings.length;
     
-    let html = '';
+    // Group recordings by platform:videoId
+    const grouped = {};
     this.state.audio.recordings.forEach(rec => {
-      const mins = Math.floor(rec.duration / 60).toString().padStart(2, '0');
-      const secs = (rec.duration % 60).toString().padStart(2, '0');
+      // Re-hydrate blobUrl if missing (loaded from IndexedDB)
+      if (!rec.blobUrl && rec.blob) {
+        rec.blobUrl = URL.createObjectURL(rec.blob);
+      }
+      
+      const key = `${rec.platform}:${rec.videoId}`;
+      if (!grouped[key]) {
+        grouped[key] = {
+          videoId: rec.videoId,
+          platform: rec.platform,
+          videoTitle: rec.videoTitle || "Unknown Video",
+          thumbnail: rec.thumbnail || "",
+          recordings: []
+        };
+      }
+      grouped[key].recordings.push(rec);
+    });
+    
+    let html = '';
+    Object.values(grouped).forEach(group => {
       html += `
-        <div class="p-3 mb-2 rounded bg-[rgba(255,255,255,0.02)] border border-[var(--border-color)] flex justify-between items-center">
-          <div>
-            <div class="text-sm font-medium text-white">${rec.name}</div>
-            <div class="text-xs text-gray-400">Duration: ${mins}:${secs}</div>
+        <div class="mb-4 bg-[#1a1f2e] border border-[var(--border-color)] rounded-lg overflow-hidden">
+          <div class="flex items-center gap-3 p-3 cursor-pointer hover:bg-[rgba(255,255,255,0.02)] transition-colors border-b border-[var(--border-color)]" onclick="app.loadVideo('${group.videoId}', '${group.platform}')">
+            ${group.thumbnail ? `<img src="${group.thumbnail}" class="w-16 h-10 object-cover rounded shadow-sm" alt="Thumbnail">` : `<div class="w-16 h-10 bg-gray-800 rounded flex items-center justify-center"><i data-lucide="video" class="text-gray-500 w-5 h-5"></i></div>`}
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold text-white truncate" title="${group.videoTitle}">${group.videoTitle}</div>
+              <div class="text-xs text-gray-400 mt-0.5 capitalize flex items-center gap-1">
+                <i data-lucide="${group.platform === 'youtube' ? 'youtube' : group.platform === 'twitch' ? 'twitch' : group.platform === 'vimeo' ? 'video' : 'play-circle'}" class="w-3 h-3"></i>
+                ${group.platform}
+              </div>
+            </div>
           </div>
-          <div class="flex gap-2">
-            <button class="btn btn-secondary btn-sm" onclick="app.playSpecificRecording('${rec.blobUrl}')"><i data-lucide="play" style="width:14px;height:14px;"></i></button>
-            <a href="${rec.blobUrl}" download="${rec.name}.webm" class="btn btn-primary btn-sm"><i data-lucide="download" style="width:14px;height:14px;"></i></a>
+          <div class="p-2 flex flex-col gap-2">
+      `;
+      
+      group.recordings.forEach(rec => {
+        const mins = Math.floor(rec.duration / 60).toString().padStart(2, '0');
+        const secs = (rec.duration % 60).toString().padStart(2, '0');
+        html += `
+          <div class="p-2 rounded bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] flex justify-between items-center group/item hover:border-[rgba(255,255,255,0.1)] transition-colors">
+            <div>
+              <div class="text-sm font-medium text-gray-200">${rec.name}</div>
+              <div class="text-xs text-gray-400 mt-0.5"><i data-lucide="clock" class="inline w-3 h-3 mr-1 mb-0.5"></i>${mins}:${secs}</div>
+            </div>
+            <div class="flex gap-1.5 opacity-80 group-hover/item:opacity-100 transition-opacity">
+              <button class="btn btn-secondary btn-sm h-8 px-2" onclick="app.playSpecificRecording('${rec.blobUrl}', '${group.videoId}', '${group.platform}')" title="Play">
+                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+              </button>
+              <a href="${rec.blobUrl}" download="${rec.name}.webm" class="btn btn-primary btn-sm h-8 px-2" title="Download">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              </a>
+              <button class="btn btn-error btn-sm h-8 px-2" onclick="app.deleteCurrentRecording('${rec.blobUrl}')" title="Delete">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += `
           </div>
         </div>
       `;
@@ -370,7 +490,7 @@ class AudioRecorderMixin {
     if (window.lucide) window.lucide.createIcons();
   }
 
-  playSpecificRecording(blobUrl) {
+  playSpecificRecording(blobUrl, videoId = null, platform = null) {
     if (!this.state.audio) return;
     if (this.state.audio.audioEl) {
       this.state.audio.audioEl.pause();
@@ -390,6 +510,16 @@ class AudioRecorderMixin {
     const playBtn = document.getElementById('play-recording-btn');
     if (playBtn) playBtn.innerHTML = '<i data-lucide="pause"></i> Pause';
     if (window.lucide) window.lucide.createIcons();
+    
+    // Switch to the video tab (Audio Recorder Studio)
+    if (typeof this.switchTab === 'function') this.switchTab('main-view');
+    
+    // If a different video is currently loaded, load the corresponding one
+    if (videoId && platform && (this.state.currentVideoId !== videoId || this.state.currentPlatform !== platform)) {
+      if (typeof this.loadVideo === 'function') {
+        this.loadVideo(videoId, platform);
+      }
+    }
   }
 }
 
