@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://geo.dailymotion.com/libs/player.js"></script>
+</head>
+<body>
+    <div id="dm-player-target" style="width: 640px; height: 360px;"></div>
+    <script>
+        setTimeout(() => {
+            dailymotion.createPlayer('dm-player-target', {
+                video: 'x8xdub5',
+                params: { autoplay: false, mute: true }
+            }).then((player) => {
+                console.log('API_READY: YES');
+                console.log('PLAYER KEYS:', Object.keys(player));
+                
+                setInterval(() => {
+                   player.getState().then(state => {
+                      console.log('STATE:', state.videoTime, state.playerIsPlaying, state.videoDuration);
+                   }).catch(e => {});
+                }, 1000);
+
+                setTimeout(() => {
+                   player.play();
+                   console.log("Called player.play()");
+                }, 2000);
+            });
+        }, 500);
+    </script>
+</body>
+</html>

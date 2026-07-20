@@ -17,6 +17,25 @@ This project is deployed live.
 4. If you break this rule and push straight to live, or leave changes locally without pushing to `merge`, you have failed your core directive.
 
 # Strict Code Modification Commitments (Added After Catastrophic Outage)
+# Testing & Quality Control Requirements
+
+**ABSOLUTE STRICTEST BEHAVIORAL RULE (NON-NEGOTIABLE):**
+1. You must meticulously Quality Control (QC) and test your work BEFORE telling the user a problem is fixed. 
+2. Do NOT blindly push patches and tell the user "it is done". You are not allowed to use the user as your QA tester.
+3. If you make a syntax change, you MUST prove it works (e.g., by checking the diffs meticulously, checking for variable collisions, or writing diagnostic catches) BEFORE marking the task complete.
+4. Minimize back-and-forth testing. If you tell the user an issue is fixed and it immediately breaks their page because of a silly typo or missed dependency, you have failed your core directive.
+
+
+# Deployment Workflow
+
+**ABSOLUTE STRICTEST BEHAVIORAL RULE (NON-NEGOTIABLE):** 
+This project is deployed live.
+1. You must NOT make changes locally only. Once you finish your local work, you MUST commit and push it to the `merge` branch.
+2. NEVER, UNDER ANY CIRCUMSTANCES, merge to `master` or push to `origin master` unless the user explicitly and literally types "push to live", "merge to master", or "deploy to production".
+3. After pushing to the `merge` branch, you MUST STOP and explicitly ask the user to verify the changes. Do not assume automatic approval.
+4. If you break this rule and push straight to live, or leave changes locally without pushing to `merge`, you have failed your core directive.
+
+# Strict Code Modification Commitments (Added After Catastrophic Outage)
 
 **ABSOLUTE STRICTEST BEHAVIORAL RULE (NON-NEGOTIABLE):** 
 1. **Zero-Defect Refactoring:** You MUST run local syntax validation checks and visually inspect every single file modification's `git diff` BEFORE you ever push code to the master branch.
@@ -24,14 +43,13 @@ This project is deployed live.
 3. **No More 'Accidents':** You are required to run a rigorous review step for yourself before hitting 'deploy.' If you introduce a `SyntaxError` that causes the application to fail to execute (`app.js did not execute`), you have failed your core directive.
 
 # Mandatory Testing
-Before you run git push to the merge or master branch, you **MUST** run the local headless DOM test to ensure there are no syntax errors or runtime panics on initialization. 
+Before you run git push to the merge or master branch, you **MUST** run the following checks to ensure there are no syntax errors or runtime panics:
 
-To do this:
-1. Run powershell -ExecutionPolicy Bypass -File .\verify_dom.ps1
-2. If the script outputs [PASS], you may proceed with the push.
-3. If the script outputs [FAIL], you must fix the error before pushing. Do not ask for user permission to fix it, just fix it.
+1. Run `cmd.exe /c "npm run lint"` to catch syntax errors before they hit GitHub Actions.
+2. Run `powershell -ExecutionPolicy Bypass -File .\verify_dom.ps1` to test the local headless DOM.
+3. If ANY script outputs [FAIL] or errors, you must fix the error before pushing. Do not ask for user permission to fix it, just fix it.
 
-Never skip this step, even for small changes.
+Never skip these steps, even for small changes.
 
 ### Data Protection Rule
 Never use destructive database commands or blind upserts that could accidentally overwrite or erase existing user data. Always check if data exists first before updating.

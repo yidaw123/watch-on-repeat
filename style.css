@@ -2767,3 +2767,12 @@ input[type="checkbox"]:focus {
     grid-template-columns: 1fr;
   }
 }
+ 
+/* Batch 3 fixes */
+.ad-container { min-height: 90px; }
+@media (max-width: 768px) {
+  #main-pro-controls .btn-sm {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

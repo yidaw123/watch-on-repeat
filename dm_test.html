@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://geo.dailymotion.com/libs/player.js"></script>
+</head>
+<body>
+  <div id="dm-player-target" style="width: 640px; height: 360px;"></div>
+  <script>
+    setTimeout(() => {
+      console.log('dailymotion is defined?', typeof dailymotion !== 'undefined');
+      try {
+        dailymotion.createPlayer('dm-player-target', {
+          video: "x8xdub5"
+        }).then(player => {
+           console.log('Player created!', player);
+           player.on('timeupdate', () => console.log('time update!'));
+        }).catch(err => {
+           console.error("Error creating player:", err);
+        });
+      } catch (err) {
+        console.error('Error creating DM.player:', err);
+      }
+    }, 2000);
+  </script>
+</body>
+</html>

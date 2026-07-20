@@ -233,6 +233,9 @@ class DatabaseMixin {
   // ==========================================
 
   setupEventListeners() {
+    if (this._listenersAttached) return;
+    this._listenersAttached = true;
+
     // Close dropdown when clicking outside
     document.addEventListener('click', () => {
       if (this.elements.userMenu && !this.elements.userMenu.classList.contains('hidden')) {

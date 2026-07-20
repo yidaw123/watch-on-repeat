@@ -1474,24 +1474,33 @@ class WatchOnRepeat {
       ];
 
       if (this.state.user) {
-        promises.push(
-          supabaseClient.from('user_history')
+        const fetchHistoryWithRetry = (retries = 3, delay = 5000) => {
+          return supabaseClient.from('user_history')
             .select('loops_count')
             .eq('user_id', this.state.user.id)
             .eq('video_id', id)
             .eq('platform', platform)
             .single()
             .then(({ data, error }) => {
-              // If error is PGRST116, it just means no row exists yet (new video for this user), which is fine.
-              // If it's a different error (e.g. network), we DO NOT want to set historyLoaded to true,
-              // otherwise we might overwrite their real data with 0.
               if (error && error.code !== 'PGRST116') {
                 if (DEBUG_MODE) console.error("Failed to fetch user history for video:", error);
-                // Set historyLoaded = true even on failure to avoid locking up loop tracking for the session.
-                this.state.historyLoaded = true;
+                if (retries > 0) {
+                   if (this.elements.loopStateText) {
+                     this.elements.loopStateText.textContent = "Sync paused (retrying...)";
+                     this.elements.loopStateText.className = "stat-value text-orange-500";
+                   }
+                   setTimeout(() => fetchHistoryWithRetry(retries - 1, delay * 2), delay);
+                } else {
+                   if (this.elements.loopStateText) {
+                     this.elements.loopStateText.textContent = "Sync failed (offline)";
+                   }
+                }
                 return;
               }
               
+              if (this.elements.loopStateText && this.elements.loopStateText.textContent.includes("Sync")) {
+                 this.updatePlayPauseUI(); // Restore normal state text
+              }
               this.state.historyLoaded = true;
               if (data) {
                 this.state.currentLifetimeLoops = data.loops_count || 0;
@@ -1503,8 +1512,9 @@ class WatchOnRepeat {
                 }
                 this.updateStatsUI();
               }
-            })
-        );
+            });
+        };
+        promises.push(fetchHistoryWithRetry());
       }
 
       Promise.all(promises);
@@ -2366,6 +2376,10 @@ class WatchOnRepeat {
 
       player.on('pause', () => {
         this.state.isPlaying = false;
+      });
+
+      player.on('seeked', () => {
+        if (this.state.abLoop) this.state.abLoop.isLoopSeeking = false;
       });
     };
 
