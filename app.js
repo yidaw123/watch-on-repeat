@@ -1336,7 +1336,9 @@ class WatchOnRepeat {
     });
 
     videoEl.addEventListener('ended', () => {
-      this.handleLoop(this.state.currentVideo, this.state.abLoop.start || 0);
+      this.incrementLoops();
+      this.seekToTime(this.state.abLoop.start || 0);
+      videoEl.play();
     });
 
     if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');

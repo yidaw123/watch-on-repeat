@@ -228,10 +228,17 @@ class AudioRecorderMixin {
 
   deleteCurrentRecording() {
     if (!this.state.audio) return;
+    const oldUrl = this.state.audio.blobUrl;
     this.state.audio.blobUrl = null;
     if (this.state.audio.audioEl) {
       this.state.audio.audioEl.pause();
       this.state.audio.audioEl = null;
+    }
+    
+    // Remove from recordings list
+    if (oldUrl) {
+      this.state.audio.recordings = this.state.audio.recordings.filter(r => r.blobUrl !== oldUrl);
+      this.renderRecordedAudioTab();
     }
     
     document.getElementById('play-recording-btn')?.classList.add('hidden');
@@ -262,14 +269,20 @@ class AudioRecorderMixin {
   }
 
   renderRecordedAudioTab() {
-    // Will be implemented when the sidebar is created
     const container = document.getElementById('recorded-audio-list');
+    const emptyState = document.getElementById('recorded-audio-empty');
+    const badge = document.getElementById('recorded-audio-count');
     if (!container) return;
     
     if (!this.state.audio || this.state.audio.recordings.length === 0) {
-      container.innerHTML = '<p class="text-sm text-gray-400 p-4">No audio recorded this session.</p>';
+      container.innerHTML = '';
+      if (emptyState) emptyState.classList.remove('hidden');
+      if (badge) badge.textContent = '0';
       return;
     }
+    
+    if (emptyState) emptyState.classList.add('hidden');
+    if (badge) badge.textContent = this.state.audio.recordings.length;
     
     let html = '';
     this.state.audio.recordings.forEach(rec => {
