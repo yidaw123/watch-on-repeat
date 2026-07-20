@@ -195,9 +195,13 @@ class DatabaseMixin {
             }
           }
       } else if (key === 'shortcuts') {
-        await supabaseClient.from('user_settings').upsert({ user_id: this.state.user.id, shortcuts: data });
+        await supabaseClient.from('user_settings').upsert({ user_id: this.state.user.id, shortcuts: data }).then(({ error }) => {
+          if (error) console.error("Shortcuts upsert failed:", error);
+        });
       } else if (key === 'analytics') {
-        await supabaseClient.from('user_settings').upsert({ user_id: this.state.user.id, analytics: data });
+        await supabaseClient.from('user_settings').upsert({ user_id: this.state.user.id, analytics: data }).then(({ error }) => {
+          if (error) console.error("Analytics upsert failed:", error);
+        });
       } else if (key === 'instances') {
         const instancesToPush = [];
         for (const uuid in data) {

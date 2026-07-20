@@ -185,7 +185,7 @@
         <form id="paste-form" onsubmit="app.handleSearchSubmit(event)">
           <div class="search-wrapper">
             <i data-lucide="link-2" class="search-icon"></i>
-            <input type="text" id="video-url-input" placeholder="Paste direct link (YouTube, Facebook, Twitch, SoundCloud, Dailymotion, Vimeo, etc.)..." autocomplete="off">
+            <input type="text" id="video-url-input" aria-label="Video URL" placeholder="Paste direct link (YouTube, Facebook, Twitch, SoundCloud, Dailymotion, Vimeo, etc.)..." autocomplete="off">
             <button type="submit" class="search-btn">
               <span>Loop It</span>
               <i data-lucide="play"></i>
@@ -1223,19 +1223,12 @@
 
 
   <script>
-    // SELF DESTRUCT OLD SERVICE WORKERS & CACHES
+    // Register Service Worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        for (let name of names) {
-          caches.delete(name);
-        }
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(error => {
+          console.error('ServiceWorker registration failed:', error);
+        });
       });
     }
   </script>

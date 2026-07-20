@@ -505,11 +505,12 @@ class AudioRecorderMixin {
 
   playSpecificRecording(blobUrl, videoId = null, platform = null) {
     if (!this.state.audio) return;
-    if (this.state.audio.audioEl) {
-      this.state.audio.audioEl.pause();
+    if (!this.state.audio.audioEl) {
+      this.state.audio.audioEl = new Audio();
+      this.setupAudioListeners(this.state.audio.audioEl);
     }
-    this.state.audio.audioEl = new Audio(blobUrl);
-    this.setupAudioListeners(this.state.audio.audioEl);
+    this.state.audio.audioEl.pause();
+    this.state.audio.audioEl.src = blobUrl;
     this.state.audio.audioEl.volume = this.state.audio.volume;
     this.state.audio.blobUrl = blobUrl; // Set as current
     this.state.audio.wantsSync = false;

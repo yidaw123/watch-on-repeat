@@ -1487,7 +1487,8 @@ class WatchOnRepeat {
               // otherwise we might overwrite their real data with 0.
               if (error && error.code !== 'PGRST116') {
                 if (DEBUG_MODE) console.error("Failed to fetch user history for video:", error);
-                // Do not set historyLoaded = true. This prevents accidental overwriting.
+                // Set historyLoaded = true even on failure to avoid locking up loop tracking for the session.
+                this.state.historyLoaded = true;
                 return;
               }
               
@@ -2223,7 +2224,13 @@ class WatchOnRepeat {
               this.setVideoDuration(dur);
             } else {
               // YouTube sometimes returns 0 initially. Poll for it.
+              let pollCount = 0;
               const checkDur = setInterval(() => {
+                pollCount++;
+                if (pollCount > 20) {
+                  clearInterval(checkDur);
+                  return;
+                }
                 if (event.target && event.target.getDuration) {
                   const d = event.target.getDuration();
                   if (d > 0) {
@@ -2276,6 +2283,12 @@ class WatchOnRepeat {
   }
 
   handleYouTubeStateChange(event) {
+    if (event.data === YT.PlayerState.PLAYING) {
+      this.state.isPlaying = true;
+    } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+      this.state.isPlaying = false;
+    }
+    
     // YT.PlayerState.ENDED is 0
     if (event.data === YT.PlayerState.ENDED) {
       this.elements.loopStateText.textContent = "Restarting...";
@@ -2343,11 +2356,16 @@ class WatchOnRepeat {
       });
 
       player.on('play', () => {
+        this.state.isPlaying = true;
         player.getDuration().then((duration) => {
           if (!this.state.currentVideoDuration) {
             this.setVideoDuration(duration);
           }
         });
+      });
+
+      player.on('pause', () => {
+        this.state.isPlaying = false;
       });
     };
 
@@ -2403,7 +2421,7 @@ class WatchOnRepeat {
       // but let's bind a specific message listener just for this fallback
       const legacyListener = (event) => {
         if (!event.origin.includes('dailymotion.com')) return;
-        if (this.state.currentPlatform !== 'dailymotion' || this.state.players.dailymotion !== this.state.players.dailymotion) return;
+        if (this.state.currentPlatform !== 'dailymotion' || !this.state.players.dailymotion || this.state.players.dailymotion.iframe !== iframe) return;
         
         let data = event.data;
         if (typeof data === 'string') {
@@ -6008,7 +6026,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (abStartEl) {
       new CascadingTimeInput(abStartEl, false, (seconds) => {
         if (app.state && app.state.abLoop) {
-          app.state.abLoop.start = seconds;
+          const maxStart = app.state.abLoop.end !== null ? app.state.abLoop.end : (app.state.currentVideoDuration || 0);
+          app.state.abLoop.start = Math.max(0, Math.min(seconds, maxStart));
           app.state.abLoop.active = true;
           app.updateTimelineUI();
           app.saveLoopData();
@@ -6020,7 +6039,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (abEndEl) {
       new CascadingTimeInput(abEndEl, false, (seconds) => {
         if (app.state && app.state.abLoop) {
-          app.state.abLoop.end = seconds;
+          let minEnd = app.state.abLoop.start !== null ? app.state.abLoop.start : 0;
+          app.state.abLoop.end = Math.max(minEnd, Math.min(seconds, app.state.currentVideoDuration || seconds));
           app.state.abLoop.active = true;
           app.updateTimelineUI();
           app.saveLoopData();
