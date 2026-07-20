@@ -372,11 +372,6 @@ class AudioRecorderMixin {
         this.state.audio.audioEl.load();
         this.state.audio.audioEl = null;
       }
-    }
-    
-    if (targetUrl && targetUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(targetUrl);
-    }
       document.getElementById('play-recording-btn')?.classList.add('hidden');
       document.getElementById('download-recording-btn')?.classList.add('hidden');
       document.getElementById('delete-recording-btn')?.classList.add('hidden');
@@ -386,6 +381,9 @@ class AudioRecorderMixin {
       if (display) display.textContent = '00:00 / 00:30';
     }
     
+    if (targetUrl && targetUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(targetUrl);
+    }
     if (recToDelete) {
       this.state.audio.recordings = this.state.audio.recordings.filter(r => r.id !== recToDelete.id);
       this.renderRecordedAudioTab();
