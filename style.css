@@ -2755,3 +2755,15 @@ input[type="checkbox"]:focus {
   color: var(--primary-color) !important;
 }
 
+
+/* Gear Grid Responsive Layout */
+.gear-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+@media (max-width: 650px) {
+  .gear-grid {
+    grid-template-columns: 1fr;
+  }
+}
