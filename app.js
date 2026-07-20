@@ -2147,7 +2147,7 @@ class WatchOnRepeat {
     
     // 4. Default Fallbacks if all fails (e.g. Private/Blocked videos)
     if (!title) {
-       title = `${platform.charAt(0).toUpperCase() + platform.slice(1)} Video (Private or Unavailable)`;
+       title = `${platform.charAt(0).toUpperCase() + platform.slice(1)} Video`;
     }
     if (!thumbnail) {
        thumbnail = this.getThumbnailUrl(platform, id); // Use deterministic fallback generator
@@ -3027,13 +3027,16 @@ class WatchOnRepeat {
             .limit(20);
           
           if (data && data.length > 0) {
-            const fetchPromises = data.map(async (d) => {
+            let shuffledData = data.sort(() => 0.5 - Math.random());
+            let selectedData = shuffledData.slice(0, 10);
+            
+            const fetchPromises = selectedData.map(async (d) => {
               let title = d.title;
               if (!title) {
                 const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
                 title = meta.title;
               }
-              if (!title || title.includes('(Private or Unavailable)')) title = `Trending ${d.platform} video`;
+              if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) title = `Trending ${d.platform} video`;
               return {
                 videoId: d.video_id,
                 platform: d.platform,
@@ -3094,7 +3097,7 @@ class WatchOnRepeat {
               const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
               title = meta.title;
             }
-            if (!title || title.includes('(Private or Unavailable)')) title = `Trending ${d.platform} video`;
+            if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) title = `Trending ${d.platform} video`;
             return {
               videoId: d.video_id,
               platform: d.platform,
@@ -3372,7 +3375,7 @@ class WatchOnRepeat {
             const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
             title = meta.title;
           }
-          if (!title || title.includes('(Private or Unavailable)')) title = `Trending ${d.platform} video`;
+          if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) title = `Trending ${d.platform} video`;
           return {
             videoId: d.video_id,
             platform: d.platform,
