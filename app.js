@@ -2295,6 +2295,7 @@ class WatchOnRepeat {
   handleYouTubeStateChange(event) {
     if (event.data === YT.PlayerState.PLAYING) {
       this.state.isPlaying = true;
+      if (this.state.abLoop) this.state.abLoop.isLoopSeeking = false;
     } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
       this.state.isPlaying = false;
     }
@@ -4340,6 +4341,10 @@ class WatchOnRepeat {
     video.addEventListener('pause', () => {
       this.elements.loopStateText.textContent = "Paused";
       this.elements.loopStateText.className = "stat-value text-muted";
+    });
+
+    video.addEventListener('seeked', () => {
+      if (this.state.abLoop) this.state.abLoop.isLoopSeeking = false;
     });
   }
 

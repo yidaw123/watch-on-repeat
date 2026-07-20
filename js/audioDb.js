@@ -22,19 +22,19 @@ class AudioDB {
           reject(event.target.error);
         };
 
-      request.onsuccess = (event) => {
-        this.db = event.target.result;
-        resolve();
-      };
+        request.onsuccess = (event) => {
+          this.db = event.target.result;
+          resolve();
+        };
 
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          // create store with auto incrementing key
-          const store = db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
-          store.createIndex('videoId', 'videoId', { unique: false });
-        }
-      };
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(this.storeName)) {
+            // create store with auto incrementing key
+            const store = db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
+            store.createIndex('videoId', 'videoId', { unique: false });
+          }
+        };
       } catch(e) {
         console.warn("IndexedDB blocked:", e);
         reject(e);
