@@ -853,7 +853,7 @@ class WatchOnRepeat {
   }
 
   handleSharedPayload(videoId, platform, segmentsParam, notesParam) {
-    const isPremium = this.state.user && this.state.user.isPremium;
+    const isPremium = this.getUserTier() !== 'free';
     this.state.isReadOnlyShared = false;
     let hasProFeatures = false;
     
@@ -1019,7 +1019,7 @@ class WatchOnRepeat {
     // Check subscription limits if creating a new session
     const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
     if (!this.state.currentInstanceId) {
-      const userTier = this.state.user ? (this.state.user.tier || 'free') : 'free';
+      const userTier = this.getUserTier();
       const userId = this.state.user ? this.state.user.id : 'guest';
       const userInstancesCount = Object.values(localInstances).filter(i => i.userId === userId).length;
       
@@ -1246,7 +1246,7 @@ class WatchOnRepeat {
   // LOCAL VIDEO (OFFLINE MODE)
   // ==========================================
   triggerLocalVideo() {
-    if (!this.state.user || this.state.user.tier !== 'pro') {
+    if (this.getUserTier() !== 'pro') {
       this.openUpgradeModal("Offline Local Video mode is an exclusive Pro feature!");
       return;
     }
@@ -1361,6 +1361,19 @@ class WatchOnRepeat {
   // ==========================================
 
   destroyPlayers() {
+    if (this.state.abLoop && this.state.abLoop.timer) {
+      clearTimeout(this.state.abLoop.timer);
+      this.state.abLoop.timer = null;
+    }
+
+    if (this._timelinePointerMove) {
+      document.removeEventListener('pointermove', this._timelinePointerMove);
+      document.removeEventListener('pointerup', this._timelinePointerUp);
+      document.removeEventListener('pointercancel', this._timelinePointerUp);
+      this._timelinePointerMove = null;
+      this._timelinePointerUp = null;
+    }
+
     if (this.state.players) {
       if (this.state.players.youtube && typeof this.state.players.youtube.destroy === 'function') {
         try { this.state.players.youtube.destroy(); } catch(e) {}
@@ -1380,9 +1393,26 @@ class WatchOnRepeat {
       if (this.state.players.html5) {
         try { 
            this.state.players.html5.pause();
+           if (this.state.players.html5.src && this.state.players.html5.src.startsWith('blob:')) {
+             URL.revokeObjectURL(this.state.players.html5.src);
+           }
            this.state.players.html5.removeAttribute('src');
            this.state.players.html5.load();
         } catch(e) {}
+      }
+      if (this.state.players.local) {
+        try {
+          const videoEl = document.getElementById('native-video-player');
+          if (videoEl) {
+            videoEl.pause();
+            if (videoEl.src && videoEl.src.startsWith('blob:')) {
+              URL.revokeObjectURL(videoEl.src);
+            }
+            videoEl.removeAttribute('src');
+            videoEl.load();
+          }
+        } catch(e) {}
+        this.state.players.local = null;
       }
       
       this.state.players = {
@@ -1836,7 +1866,7 @@ class WatchOnRepeat {
       this.state.isViewingSharedSegments = true;
       this.state.sharedSegmentsToLoad = null; 
     } else if (data) {
-      const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+      const isPremium = this.getUserTier() !== 'free';
       this.state.abLoop.multiSegments = isPremium ? (data.multiSegments || []) : [];
       this.state.isMultiSegment = data.isMultiSegment || false;
       
@@ -2743,7 +2773,7 @@ class WatchOnRepeat {
     history.sort((a, b) => b.timestamp - a.timestamp);
     
     // Enforce History Limit for Free tier
-    const tier = this.state.user.tier || 'free';
+    const tier = this.getUserTier();
     if (tier === 'free') {
       const userHistory = history.filter(h => h.userId === this.state.user.id);
       if (userHistory.length > 50) {
@@ -4081,6 +4111,9 @@ class WatchOnRepeat {
       };
       this.state.abLoop.currentSegmentIndex = draggingHandle.index;
       
+      this._timelinePointerMove = handlePointerMove;
+      this._timelinePointerUp = handlePointerUp;
+      
       document.addEventListener('pointermove', handlePointerMove, {passive: false});
       document.addEventListener('pointerup', handlePointerUp);
       document.addEventListener('pointercancel', handlePointerUp);
@@ -4105,17 +4138,11 @@ class WatchOnRepeat {
       if (this.state.isMultiSegment) {
         const segs = this.state.abLoop.multiSegments;
         if (draggingHandle.type === 'start') {
-          let minStart = (idx > 0 && segs[idx - 1].end !== null) ? segs[idx - 1].end : 0;
-          let maxStart = (segs[idx].end !== null) ? segs[idx].end : duration;
-          minStart = Math.max(0, minStart);
-          maxStart = Math.min(maxStart, duration);
-          segs[idx].start = Math.max(minStart, Math.min(val, maxStart));
+          let maxStart = segs[idx].end || duration;
+          segs[idx].start = Math.max(0, Math.min(val, maxStart));
         } else {
-          let minEnd = (segs[idx].start !== null) ? segs[idx].start : 0;
-          let maxEnd = (idx < segs.length - 1 && segs[idx + 1].start !== null) ? segs[idx + 1].start : duration;
-          minEnd = Math.max(0, minEnd);
-          maxEnd = Math.min(maxEnd, duration);
-          segs[idx].end = Math.max(minEnd, Math.min(val, maxEnd));
+          let minEnd = segs[idx].start || 0;
+          segs[idx].end = Math.max(minEnd, Math.min(val, duration));
         }
       } else {
         if (draggingHandle.type === 'start') {
@@ -4153,9 +4180,12 @@ class WatchOnRepeat {
       }
       
       draggingHandle = null;
-      document.removeEventListener('pointermove', handlePointerMove);
-      document.removeEventListener('pointerup', handlePointerUp);
-      document.removeEventListener('pointercancel', handlePointerUp);
+      document.removeEventListener('pointermove', this._timelinePointerMove);
+      document.removeEventListener('pointerup', this._timelinePointerUp);
+      document.removeEventListener('pointercancel', this._timelinePointerUp);
+      
+      this._timelinePointerMove = null;
+      this._timelinePointerUp = null;
       
       this.saveLoopData();
     };
@@ -4559,6 +4589,22 @@ class WatchOnRepeat {
     if (p === 'loom' && this.state.players.loom) this.state.players.loom.seek(seconds);
   }
 
+  updatePlayPauseUI() {
+    const playBtn = document.getElementById('play-pause-btn');
+    if (!playBtn) return;
+    
+    // Check if lucide icons are available
+    if (this.state.isPlaying) {
+      playBtn.innerHTML = '<i data-lucide="pause"></i>';
+    } else {
+      playBtn.innerHTML = '<i data-lucide="play"></i>';
+    }
+    
+    if (window.lucide) {
+      lucide.createIcons({ root: playBtn });
+    }
+  }
+
   playVideo() {
     const p = this.state.currentPlatform;
     if (p === 'youtube' && this.state.players.youtube) this.state.players.youtube.playVideo();
@@ -4911,7 +4957,7 @@ class WatchOnRepeat {
     this.state.shortcuts = { ...this.defaultShortcuts };
     
     // Load custom shortcuts if premium
-    if (this.state.user && this.state.user.isPremium) {
+    if (this.getUserTier() !== 'free') {
       const saved = this.getDb('shortcuts');
       if (saved && Object.keys(saved).length > 0) {
         this.state.shortcuts = { ...this.defaultShortcuts, ...saved };
@@ -4933,7 +4979,7 @@ class WatchOnRepeat {
       
       const key = e.key.toLowerCase();
       const s = this.state.shortcuts;
-      const isPremium = this.state.user && this.state.user.isPremium;
+      const isPremium = this.getUserTier() !== 'free';
       
       if (isPremium && key === s.prevLoop) {
         e.preventDefault();
@@ -4987,7 +5033,7 @@ class WatchOnRepeat {
   // Reload shortcuts when tier changes or app starts
   reloadShortcuts() {
     this.state.shortcuts = { ...this.defaultShortcuts };
-    const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+    const isPremium = this.getUserTier() !== 'free';
     if (isPremium) {
       const saved = this.getDb('shortcuts');
       if (saved && Object.keys(saved).length > 0) {
@@ -5015,7 +5061,7 @@ class WatchOnRepeat {
     if (this.state.user) {
       emailInput.value = this.state.user.email;
       
-      const tier = this.state.user.tier;
+      const tier = this.getUserTier();
       planBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
       if (tier === 'pro') planBadge.style.background = 'var(--accent)';
       else if (tier === 'premium') planBadge.style.background = 'var(--primary)';
@@ -5182,7 +5228,7 @@ class WatchOnRepeat {
     const warning = document.getElementById('shortcuts-free-warning');
     if (!list) return;
     
-    const isPremium = this.state.user && this.state.user.isPremium;
+    const isPremium = this.getUserTier() !== 'free';
     if (warning) warning.classList.toggle('hidden', isPremium);
     
     list.innerHTML = '';
@@ -5256,7 +5302,7 @@ class WatchOnRepeat {
     if (['control', 'shift', 'alt', 'meta'].includes(key)) return;
     
     const actionId = this.state.recordingActionId;
-    if (actionId && this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'))) {
+    if (actionId && this.getUserTier() !== 'free') {
       let saved = this.getDb('shortcuts') || {};
       
       // Prevent duplicate hotkeys: unbind this key from any other action

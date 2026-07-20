@@ -344,12 +344,29 @@ class AuthMixin {
     if (window.lucide) lucide.createIcons();
   }
 
+  getUserTier() {
+    if (!this.state.user) return 'free';
+    
+    // Check all possible locations for tier in descending order of priority
+    const explicitTier = this.state.user.tier || (this.state.user.user_metadata && this.state.user.user_metadata.tier);
+    if (explicitTier === 'pro') return 'pro';
+    if (explicitTier === 'premium' || this.state.user.isPremium) return 'premium';
+    
+    return 'free';
+  }
+
   updateAdsVisibility(isPremium) {
-    const tier = this.state.user ? this.state.user.tier : 'free';
-    const hasPremiumAds = tier === 'premium' || tier === 'pro' || isPremium;
+    const tier = this.getUserTier();
+    const isPaying = tier === 'premium' || tier === 'pro';
+    
     document.querySelectorAll('.ad-slot').forEach(slot => {
-      slot.style.display = hasPremiumAds ? 'none' : 'block';
+      slot.style.display = isPaying ? 'none' : 'block';
     });
+
+    if (isPaying) {
+      // Actively remove AdSense scripts for paying users
+      document.querySelectorAll('script[src*="adsbygoogle.js"]').forEach(script => script.remove());
+    }
   }
 
   openUpgradeModal(message = "You've hit a limit! Upgrade your account to continue.") {
@@ -364,7 +381,7 @@ class AuthMixin {
 
 
   checkLimit(type) {
-    const tier = this.state.user ? this.state.user.tier : 'free';
+    const tier = this.getUserTier();
     
     if (tier === 'pro' || tier === 'premium') return true;
 

@@ -387,7 +387,7 @@ class PlaylistsMixin {
   }
 
   togglePlaylistPublic(id, isPublic) {
-    if (!this.state.user || !this.state.user.isPremium) {
+    if (!this.state.user || this.getUserTier() === 'free') {
       this.openUpgradeModal("Sharing public playlists is a Pro feature! Upgrade to share your playlists with the world.");
       this.renderPlaylistsTab(); // Reset checkbox UI
       return;
@@ -464,7 +464,7 @@ class PlaylistsMixin {
     const userPlaylists = playlists.filter(p => p.userId === this.state.user.id);
 
     // Free limit: 5 playlists
-    const tier = this.state.user.tier || 'free';
+    const tier = this.getUserTier();
     if (tier === 'free' && userPlaylists.length >= 5) {
       this.openUpgradeModal("Free users can create up to 5 playlists. Upgrade to Premium for unlimited playlists!");
       return;
@@ -538,7 +538,7 @@ class PlaylistsMixin {
     const userPlaylists = playlists.filter(p => p.userId === this.state.user.id);
 
     // Free limit: 5 playlists
-    const tier = this.state.user.tier || 'free';
+    const tier = this.getUserTier();
     if (tier === 'free' && userPlaylists.length >= 5) {
       this.closePlaylistModal();
       this.openUpgradeModal("Free users can create up to 5 playlists. Upgrade to Premium for unlimited playlists!");
@@ -575,7 +575,7 @@ class PlaylistsMixin {
   addVideoToPlaylist(playlistId) {
     const playlists = this.getDb('playlists');
     const userPlaylists = playlists.filter(p => p.userId === this.state.user.id);
-    const tier = this.state.user.tier || 'free';
+    const tier = this.getUserTier();
     
     // Check for downgraded user freeze
     if (tier === 'free' && userPlaylists.length > 5) {

@@ -38,7 +38,7 @@ class AudioRecorderMixin {
       return;
     }
     
-    const tier = this.state.user ? (this.state.user.tier || (this.state.user.user_metadata && this.state.user.user_metadata.tier) || (this.state.user.isPremium ? 'premium' : 'free')) : 'free';
+    const tier = this.getUserTier();
     const maxRecsPerVideo = tier === 'free' ? 1 : 3;
     const maxVideos = tier === 'free' ? 2 : 5;
     
@@ -104,6 +104,9 @@ class AudioRecorderMixin {
     
     this.state.audio.recorder.onstop = async () => {
       const blob = new Blob(this.state.audio.chunks, { type: 'audio/webm' });
+      if (this.state.audio.blobUrl) {
+        URL.revokeObjectURL(this.state.audio.blobUrl);
+      }
       this.state.audio.blobUrl = URL.createObjectURL(blob);
       
       if (this.state.audio.audioEl) {
@@ -165,7 +168,7 @@ class AudioRecorderMixin {
     this.setupVisualizer(stream);
     
     // Timer
-    const tier = this.state.user ? (this.state.user.tier || (this.state.user.user_metadata && this.state.user.user_metadata.tier) || (this.state.user.isPremium ? 'premium' : 'free')) : 'free';
+    const tier = this.getUserTier();
     const maxDuration = tier === 'pro' ? 600 : (tier === 'premium' ? 300 : 30);
     
     this.state.audio.timerId = setInterval(() => {
@@ -220,7 +223,7 @@ class AudioRecorderMixin {
   }
 
   updateRecordButtonUI() {
-    const tier = this.state.user ? (this.state.user.tier || (this.state.user.user_metadata && this.state.user.user_metadata.tier) || (this.state.user.isPremium ? 'premium' : 'free')) : 'free';
+    const tier = this.getUserTier();
     const recordBtn = document.getElementById('record-btn');
     if (recordBtn) {
       // Don't overwrite if it's currently recording (saying "Stop Recording")
@@ -365,8 +368,15 @@ class AudioRecorderMixin {
       this.state.audio.blobUrl = null;
       if (this.state.audio.audioEl) {
         this.state.audio.audioEl.pause();
+        this.state.audio.audioEl.removeAttribute('src');
+        this.state.audio.audioEl.load();
         this.state.audio.audioEl = null;
       }
+    }
+    
+    if (targetUrl && targetUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(targetUrl);
+    }
       document.getElementById('play-recording-btn')?.classList.add('hidden');
       document.getElementById('download-recording-btn')?.classList.add('hidden');
       document.getElementById('delete-recording-btn')?.classList.add('hidden');

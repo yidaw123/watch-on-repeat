@@ -48,7 +48,7 @@ class NotesMixin {
     const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     
     // Enforce Notes Limit for Free tier
-    const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+    const isPremium = this.getUserTier() !== 'free';
     if (!isPremium) {
       // 2. Max 5 videos with notes
       const uniqueVideos = Object.keys(notes).filter(k => k !== '__titles' && Array.isArray(notes[k]) && notes[k].length > 0);

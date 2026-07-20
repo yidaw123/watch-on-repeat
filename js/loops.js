@@ -2,7 +2,7 @@ class LoopsMixin {
   // ADVANCED PRO LOOP CONTROLS
   // ==========================================
   enforcePremiumFeature(message) {
-    if (!this.state.user || !this.state.user.isPremium) {
+    if (this.getUserTier() === 'free') {
       this.openUpgradeModal(message || "This advanced feature is only available for Premium and Pro users!");
       return false;
     }
@@ -489,7 +489,7 @@ class LoopsMixin {
   addLoopSegment() {
     if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
     
-    const tier = this.state.user ? this.state.user.tier : 'free';
+    const tier = this.getUserTier();
     const limit = tier === 'pro' ? 10 : (tier === 'premium' ? 7 : 1);
     
     if (this.state.abLoop.multiSegments.length >= limit) {
@@ -595,7 +595,7 @@ class LoopsMixin {
     
     const checkbox = document.getElementById('multi-segment-checkbox');
     const addBtn = document.getElementById('add-segment-btn');
-    const isPremium = this.state.user && this.state.user.isPremium;
+    const isPremium = this.getUserTier() !== 'free';
 
     const isMultiActive = this.state.isMultiSegment;
     if (checkbox) checkbox.checked = !!isMultiActive;
@@ -635,7 +635,7 @@ class LoopsMixin {
         addBtn.classList.remove('hidden');
         if (delBtn) delBtn.classList.remove('hidden');
         
-        const tier = this.state.user ? this.state.user.tier : 'free';
+        const tier = this.getUserTier();
         const limit = tier === 'pro' ? 10 : (tier === 'premium' ? 7 : 1);
         
         if (this.state.abLoop.multiSegments.length >= limit) {
