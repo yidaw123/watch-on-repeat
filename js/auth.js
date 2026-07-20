@@ -335,7 +335,13 @@ class AuthMixin {
     
     // Always sync shortcuts with tier privileges
     this.reloadShortcuts();
-    lucide.createIcons();
+      
+    // Update Audio Recorder UI if available
+    if (typeof this.updateRecordButtonUI === 'function') {
+      this.updateRecordButtonUI();
+    }
+      
+    if (window.lucide) lucide.createIcons();
   }
 
   updateAdsVisibility(isPremium) {

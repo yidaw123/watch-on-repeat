@@ -82,8 +82,8 @@ class AudioRecorderMixin {
         duration: this.state.audio.duration
       };
       
-      const isPremiumUser = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
-      if (!isPremiumUser) {
+      const tier = this.state.user ? (this.state.user.tier || (this.state.user.user_metadata && this.state.user.user_metadata.tier) || (this.state.user.isPremium ? 'premium' : 'free')) : 'free';
+      if (tier === 'free') {
         this.state.audio.recordings = [newRec];
       } else {
         this.state.audio.recordings.push(newRec);
@@ -107,8 +107,8 @@ class AudioRecorderMixin {
     this.setupVisualizer(stream);
     
     // Timer
-    const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
-    const maxDuration = isPremium ? 3600 : 30; // 1 hr vs 30s
+    const tier = this.state.user ? (this.state.user.tier || (this.state.user.user_metadata && this.state.user.user_metadata.tier) || (this.state.user.isPremium ? 'premium' : 'free')) : 'free';
+    const maxDuration = tier === 'pro' ? Infinity : (tier === 'premium' ? 3600 : 30);
     
     this.state.audio.timerId = setInterval(() => {
       const elapsed = Math.floor((Date.now() - this.state.audio.startTime) / 1000);
@@ -118,12 +118,12 @@ class AudioRecorderMixin {
       if (display) {
         const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
         const secs = (elapsed % 60).toString().padStart(2, '0');
-        display.textContent = `${mins}:${secs} ${isPremium ? '' : '/ 00:30'}`;
+        display.textContent = `${mins}:${secs} ${tier === 'pro' ? '' : (tier === 'premium' ? '/ 60:00' : '/ 00:30')}`;
       }
       
-      if (!isPremium && elapsed >= 30) {
+      if (elapsed >= maxDuration) {
         this.stopRecording();
-        this.openUpgradeModal("Recording longer than 30 seconds requires a Premium account.");
+        this.openUpgradeModal(tier === 'free' ? "Recording longer than 30 seconds requires a Premium account." : "Recording longer than 1 hour requires a Pro account.");
       }
     }, 1000);
   }
@@ -153,10 +153,23 @@ class AudioRecorderMixin {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
     
-    const isPremium = this.state.user && (this.state.user.isPremium || (this.state.user.user_metadata && this.state.user.user_metadata.tier === 'premium'));
+    this.updateRecordButtonUI();
+  }
+
+  updateRecordButtonUI() {
+    const tier = this.state.user ? (this.state.user.tier || (this.state.user.user_metadata && this.state.user.user_metadata.tier) || (this.state.user.isPremium ? 'premium' : 'free')) : 'free';
     const recordBtn = document.getElementById('record-btn');
     if (recordBtn) {
-      recordBtn.innerHTML = isPremium ? '<i data-lucide="mic"></i> Record (1hr)' : '<i data-lucide="mic"></i> Record (30s Free)';
+      // Don't overwrite if it's currently recording (saying "Stop Recording")
+      if (this.state.audio && this.state.audio.isRecording) return;
+      
+      if (tier === 'pro') {
+        recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (Unlimited)';
+      } else if (tier === 'premium') {
+        recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (1hr)';
+      } else {
+        recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (30s Free)';
+      }
       recordBtn.classList.remove('btn-secondary');
       recordBtn.classList.add('btn-error');
       if (window.lucide) window.lucide.createIcons();
