@@ -70,6 +70,7 @@ class AudioRecorderMixin {
         this.state.audio.audioEl.src = this.state.audio.blobUrl;
       } else {
         this.state.audio.audioEl = new Audio(this.state.audio.blobUrl);
+        this.setupAudioListeners(this.state.audio.audioEl);
         this.state.audio.audioEl.volume = this.state.audio.volume;
       }
       
@@ -174,6 +175,38 @@ class AudioRecorderMixin {
       recordBtn.classList.add('btn-error');
       if (window.lucide) window.lucide.createIcons();
     }
+  }
+
+  setupAudioListeners(audioEl) {
+    audioEl.addEventListener('timeupdate', () => {
+      // Don't update display if currently recording
+      if (this.state.audio && this.state.audio.isRecording) return;
+      
+      const display = document.getElementById('recording-time-display');
+      if (display) {
+        const cur = Math.floor(audioEl.currentTime || 0);
+        let rawDur = audioEl.duration;
+        if (!rawDur || rawDur === Infinity) rawDur = this.state.audio.duration || 0;
+        const dur = Math.floor(rawDur);
+        
+        const curMins = Math.floor(cur / 60).toString().padStart(2, '0');
+        const curSecs = (cur % 60).toString().padStart(2, '0');
+        
+        const durMins = Math.floor(dur / 60).toString().padStart(2, '0');
+        const durSecs = (dur % 60).toString().padStart(2, '0');
+        
+        display.textContent = `${curMins}:${curSecs} / ${durMins}:${durSecs}`;
+      }
+    });
+
+    audioEl.addEventListener('ended', () => {
+      if (this.state.audio) this.state.audio.wantsSync = false;
+      const playBtn = document.getElementById('play-recording-btn');
+      if (playBtn) {
+        playBtn.innerHTML = '<i data-lucide="play"></i> Play';
+        if (window.lucide) window.lucide.createIcons();
+      }
+    });
   }
 
   setupVisualizer(stream) {
@@ -329,6 +362,7 @@ class AudioRecorderMixin {
       this.state.audio.audioEl.pause();
     }
     this.state.audio.audioEl = new Audio(blobUrl);
+    this.setupAudioListeners(this.state.audio.audioEl);
     this.state.audio.audioEl.volume = this.state.audio.volume;
     this.state.audio.blobUrl = blobUrl; // Set as current
     this.state.audio.wantsSync = false;
