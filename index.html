@@ -3,6 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E9NYZYJL0D"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E9NYZYJL0D');
+  </script>
+
   <meta name="google" content="notranslate">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -580,7 +590,7 @@
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Customizable Hotkeys</li>
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Audio Recording (15 slots, 5min)</li>
             </ul>
-            <button class="btn btn-outline w-full" disabled style="justify-content: center; margin-top: 24px; opacity: 0.5; cursor: not-allowed;">Upgrade to Premium (Coming Soon)</button>
+            <button class="btn btn-outline w-full" onclick="app.trackUpgradeIntent('Premium')" style="justify-content: center; margin-top: 24px;">Upgrade to Premium (Coming Soon)</button>
           </div>
           
           <!-- Pro Tier -->
@@ -597,7 +607,7 @@
               <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Team & Classroom Features</li>
               <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> API & Data Export</li>
             </ul>
-            <button class="btn btn-primary w-full" disabled style="justify-content: center; margin-top: 24px; opacity: 0.5; cursor: not-allowed;">Upgrade to Pro (Coming Soon)</button>
+            <button class="btn btn-primary w-full" onclick="app.trackUpgradeIntent('Pro')" style="justify-content: center; margin-top: 24px;">Upgrade to Pro (Coming Soon)</button>
           </div>
         </div>
       </div>

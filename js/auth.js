@@ -376,10 +376,23 @@ class AuthMixin {
   openUpgradeModal(message = "You've hit a limit! Upgrade your account to continue.") {
     if (this.elements.upgradeMessage) this.elements.upgradeMessage.textContent = message;
     if (this.elements.upgradeModal) this.elements.upgradeModal.classList.remove('hidden');
+    
+    // Log to Google Analytics
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'paywall_hit', { feature: message });
+    }
   }
 
   closeUpgradeModal() {
     if (this.elements.upgradeModal) this.elements.upgradeModal.classList.add('hidden');
+  }
+
+  trackUpgradeIntent(tier) {
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'upgrade_button_click', { tier: tier });
+    }
+    this.closeUpgradeModal();
+    this.showToast(`Subscriptions for ${tier} are launching soon! We'll notify you.`, 'info');
   }
 
 
