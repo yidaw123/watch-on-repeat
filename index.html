@@ -590,7 +590,16 @@
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Customizable Hotkeys</li>
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Audio Recording (15 slots, 5min)</li>
             </ul>
-            <button class="btn btn-outline w-full" onclick="app.trackUpgradeIntent('Premium')" style="justify-content: center; margin-top: 24px;">Upgrade to Premium (Coming Soon)</button>
+            <div id="waitlist-container-Premium" style="margin-top: 24px;">
+              <button class="btn btn-outline w-full" onclick="app.showWaitlistInput('Premium')" style="justify-content: center;">Upgrade to Premium (Coming Soon)</button>
+            </div>
+            <div id="waitlist-form-Premium" class="hidden" style="margin-top: 24px; text-align: left;">
+              <label class="text-sm text-gray-400 mb-2 block">Join the VIP waitlist for 50% off:</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="email" id="waitlist-email-Premium" placeholder="Enter your email" class="time-input" style="flex: 1; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white;">
+                <button class="btn btn-primary" onclick="app.joinWaitlist('Premium')">Join</button>
+              </div>
+            </div>
           </div>
           
           <!-- Pro Tier -->
@@ -607,7 +616,16 @@
               <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Team & Classroom Features</li>
               <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> API & Data Export</li>
             </ul>
-            <button class="btn btn-primary w-full" onclick="app.trackUpgradeIntent('Pro')" style="justify-content: center; margin-top: 24px;">Upgrade to Pro (Coming Soon)</button>
+            <div id="waitlist-container-Pro" style="margin-top: 24px;">
+              <button class="btn btn-primary w-full" onclick="app.showWaitlistInput('Pro')" style="justify-content: center;">Upgrade to Pro (Coming Soon)</button>
+            </div>
+            <div id="waitlist-form-Pro" class="hidden" style="margin-top: 24px; text-align: left;">
+              <label class="text-sm text-gray-400 mb-2 block">Join the VIP waitlist for 50% off:</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="email" id="waitlist-email-Pro" placeholder="Enter your email" class="time-input" style="flex: 1; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white;">
+                <button class="btn btn-primary" onclick="app.joinWaitlist('Pro')">Join</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

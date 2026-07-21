@@ -391,8 +391,41 @@ class AuthMixin {
     if (typeof window.gtag === 'function') {
       window.gtag('event', 'upgrade_button_click', { tier: tier });
     }
-    this.closeUpgradeModal();
-    this.showToast(`Subscriptions for ${tier} are launching soon! We'll notify you.`, 'info');
+  }
+
+  showWaitlistInput(tier) {
+    this.trackUpgradeIntent(tier);
+    document.getElementById(`waitlist-container-${tier}`).classList.add('hidden');
+    document.getElementById(`waitlist-form-${tier}`).classList.remove('hidden');
+  }
+
+  async joinWaitlist(tier) {
+    const emailInput = document.getElementById(`waitlist-email-${tier}`);
+    const email = emailInput.value.trim();
+    if (!email) {
+      this.showToast('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    try {
+      const { error } = await window.supabaseClient
+        .from('waitlist')
+        .insert([{ email, tier }]);
+
+      if (error) throw error;
+      
+      this.showToast(`Awesome! You're on the list for ${tier}. We'll email you when it's live!`, 'success');
+      this.closeUpgradeModal();
+      
+      // Reset the form
+      document.getElementById(`waitlist-container-${tier}`).classList.remove('hidden');
+      document.getElementById(`waitlist-form-${tier}`).classList.add('hidden');
+      emailInput.value = '';
+
+    } catch (err) {
+      console.error('Waitlist error:', err);
+      this.showToast('Something went wrong. Please try again later.', 'error');
+    }
   }
 
 
