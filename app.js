@@ -244,6 +244,8 @@ class WatchOnRepeat {
       },
       playbackRate: 1,
       guestPromptShown: false,
+      playlistQueue: [],
+      currentPlaylistIndex: 0,
       analyticsSession: {
         videoId: null,
         platform: null,
@@ -1132,9 +1134,19 @@ class WatchOnRepeat {
     if (!url) return null;
     url = url.trim();
 
+    // Check for YouTube Playlist
+    const listRegex = /[?&]list=([a-zA-Z0-9_-]+)/;
+    const listMatch = url.match(listRegex);
+    let playlistId = listMatch ? listMatch[1] : null;
+
     // YouTube (Including Shorts and Music)
     const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/|music\.youtube\.com\/.*[?&]v=|repeatyoutube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/;
     const ytMatch = url.match(ytRegex);
+    
+    if (playlistId) {
+       return { platform: 'youtube_playlist', id: playlistId, videoId: (ytMatch ? ytMatch[1] : null) };
+    }
+    
     if (ytMatch && ytMatch[1]) {
       return { platform: 'youtube', id: ytMatch[1] };
     }
@@ -1227,10 +1239,17 @@ class WatchOnRepeat {
           if (DEBUG_MODE) console.warn("pushState failed, likely due to file:/// protocol restrictions.");
         }
         
-        this.loadVideo(parsed.id, parsed.platform).catch(err => {
-          if (DEBUG_MODE) console.error("loadVideo Error:", err);
-          this.showToast("Failed to load video: " + err.message, "alert-circle");
-        });
+        if (parsed.platform === 'youtube_playlist') {
+          this.loadPlaylist(parsed.id, parsed.videoId).catch(err => {
+            if (DEBUG_MODE) console.error("loadPlaylist Error:", err);
+            this.showToast("Failed to load playlist: " + err.message, "alert-circle");
+          });
+        } else {
+          this.loadVideo(parsed.id, parsed.platform).catch(err => {
+            if (DEBUG_MODE) console.error("loadVideo Error:", err);
+            this.showToast("Failed to load video: " + err.message, "alert-circle");
+          });
+        }
       } else {
         this.showToast('Invalid URL. Please enter a valid YouTube, Vimeo, Dailymotion, or other supported link.', 'alert-triangle');
       }
@@ -1425,6 +1444,97 @@ class WatchOnRepeat {
         wistia: null,
         local: null
       };
+    }
+  }
+  async loadPlaylist(playlistId, startVideoId) {
+    const API_KEY = 'AIzaSyCoKRvtR9t5emJrGCGD6ol-yK62zivqvnY';
+    try {
+      this.showToast("Fetching playlist...", "loader");
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=${playlistId}&key=${API_KEY}`);
+      const data = await res.json();
+      
+      if (data.error) {
+        throw new Error(data.error.message);
+      }
+      
+      if (!data.items || data.items.length === 0) {
+        this.showToast("Playlist is empty or private.", "alert-circle");
+        return;
+      }
+      
+      this.state.playlistQueue = data.items.map(item => ({
+        id: item.contentDetails.videoId,
+        title: item.snippet.title,
+        thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url
+      })).filter(v => v.title !== "Private video" && v.title !== "Deleted video");
+      
+      this.state.currentPlaylistIndex = 0;
+      if (startVideoId) {
+        const idx = this.state.playlistQueue.findIndex(v => v.id === startVideoId);
+        if (idx !== -1) this.state.currentPlaylistIndex = idx;
+      }
+      
+      this.renderPlaylistUI();
+      const firstVid = this.state.playlistQueue[this.state.currentPlaylistIndex];
+      this.loadVideo(firstVid.id, 'youtube');
+      this.showToast(`Loaded ${this.state.playlistQueue.length} videos from playlist!`, "list");
+    } catch (err) {
+      console.error(err);
+      this.showToast("Failed to load playlist.", "alert-circle");
+    }
+  }
+
+  renderPlaylistUI() {
+    let container = document.getElementById('playlist-queue-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'playlist-queue-container';
+      container.className = 'glass-panel';
+      container.style.marginTop = '1rem';
+      container.style.padding = '1rem';
+      container.style.maxHeight = '400px';
+      container.style.overflowY = 'auto';
+      
+      const playerWrapper = document.getElementById('player-wrapper');
+      playerWrapper.parentNode.insertBefore(container, playerWrapper.nextSibling);
+    }
+    
+    let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3 style="margin:0; font-family:'Orbitron', sans-serif; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;"><i data-lucide="list"></i> Up Next</h3>
+      <div style="font-size:0.8rem; color:var(--text-muted);">${this.state.currentPlaylistIndex + 1} / ${this.state.playlistQueue.length}</div>
+    </div><div style="display:flex; flex-direction:column; gap:0.5rem;">`;
+    
+    this.state.playlistQueue.forEach((v, index) => {
+      const isActive = index === this.state.currentPlaylistIndex;
+      html += `
+        <div onclick="app.playPlaylistItem(${index})" class="playlist-item ${isActive ? 'active' : ''}" style="display:flex; gap:1rem; padding:0.5rem; border-radius:var(--radius-md); cursor:pointer; background: ${isActive ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isActive ? 'var(--primary-color)' : 'transparent'}; transition: background 0.2s;">
+          <img src="${v.thumbnail}" style="width:100px; height:56px; object-fit:cover; border-radius:4px;">
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+            <div style="font-size:0.9rem; font-weight:500; color: ${isActive ? 'var(--text-primary)' : 'var(--text-secondary)'}; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${v.title}</div>
+            ${isActive ? '<div style="font-size:0.75rem; color:var(--primary-color); margin-top:4px;"><i data-lucide="play" style="width:12px; height:12px; display:inline;"></i> Playing</div>' : ''}
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+    if (window.lucide) window.lucide.createIcons();
+    
+    // Auto-scroll to active
+    setTimeout(() => {
+      const activeEl = container.querySelector('.playlist-item.active');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 100);
+  }
+
+  playPlaylistItem(index) {
+    if (index >= 0 && index < this.state.playlistQueue.length) {
+      this.state.currentPlaylistIndex = index;
+      const v = this.state.playlistQueue[index];
+      this.renderPlaylistUI();
+      this.loadVideo(v.id, 'youtube');
     }
   }
 
@@ -2304,6 +2414,15 @@ class WatchOnRepeat {
     if (event.data === YT.PlayerState.ENDED) {
       this.elements.loopStateText.textContent = "Restarting...";
       this.elements.loopStateText.className = "stat-value text-muted";
+      
+      // If we have a playlist AND the user isn't forcing an A/B loop, auto-advance!
+      if (this.state.playlistQueue && this.state.playlistQueue.length > 0 && (!this.state.abLoop.enabled && !this.state.abLoop.start && !this.state.abLoop.end)) {
+        if (this.state.currentPlaylistIndex < this.state.playlistQueue.length - 1) {
+           this.elements.loopStateText.textContent = "Playing Next...";
+           this.playPlaylistItem(this.state.currentPlaylistIndex + 1);
+           return;
+        }
+      }
       
       if (typeof this.advanceLoopSegment === 'function') {
         this.advanceLoopSegment();
