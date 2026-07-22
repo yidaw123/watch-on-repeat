@@ -1475,10 +1475,17 @@ class WatchOnRepeat {
         thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url
       })).filter(v => v.title !== "Private video" && v.title !== "Deleted video");
       
+      this.state.playlistSearchQuery = '';
+      this.state.playlistPage = 1;
+      
       this.state.currentPlaylistIndex = 0;
       if (startVideoId) {
         const idx = this.state.playlistQueue.findIndex(v => v.id === startVideoId);
-        if (idx !== -1) this.state.currentPlaylistIndex = idx;
+        if (idx !== -1) {
+          this.state.currentPlaylistIndex = idx;
+          // Auto-calculate which page the active video is on (10 items per page)
+          this.state.playlistPage = Math.floor(idx / 10) + 1;
+        }
       }
       
       this.renderPlaylistUI();
@@ -1497,49 +1504,119 @@ class WatchOnRepeat {
       container = document.createElement('div');
       container.id = 'playlist-queue-container';
       container.className = 'glass-panel';
-      container.style.marginTop = '1rem';
-      container.style.padding = '1rem';
-      container.style.maxHeight = '400px';
-      container.style.overflowY = 'auto';
+      container.style.marginTop = '1.5rem';
+      container.style.position = 'relative';
+      container.style.padding = '0'; // padding moved to inner elements
+      container.style.overflow = 'hidden'; // clip rounded corners
       
       const playerWrapper = document.getElementById('player-loaded-state');
       playerWrapper.parentNode.insertBefore(container, playerWrapper.nextSibling);
     }
     
-    let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-      <h3 style="margin:0; font-family:'Orbitron', sans-serif; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;"><i data-lucide="list"></i> Up Next</h3>
-      <div style="font-size:0.8rem; color:var(--text-muted);">${this.state.currentPlaylistIndex + 1} / ${this.state.playlistQueue.length}</div>
-    </div><div style="display:flex; flex-direction:column; gap:0.5rem;">`;
+    // Filter items
+    const query = (this.state.playlistSearchQuery || '').toLowerCase();
+    let filteredItems = this.state.playlistQueue.map((item, originalIndex) => ({...item, originalIndex}));
+    if (query) {
+      filteredItems = filteredItems.filter(v => v.title.toLowerCase().includes(query));
+    }
     
-    this.state.playlistQueue.forEach((v, index) => {
-      const isActive = index === this.state.currentPlaylistIndex;
-      html += `
-        <div onclick="app.playPlaylistItem(${index})" class="playlist-item ${isActive ? 'active' : ''}" style="display:flex; gap:1rem; padding:0.5rem; border-radius:var(--radius-md); cursor:pointer; background: ${isActive ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isActive ? 'var(--primary-color)' : 'transparent'}; transition: background 0.2s;">
-          <img src="${v.thumbnail}" style="width:100px; height:56px; object-fit:cover; border-radius:4px;">
-          <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
-            <div style="font-size:0.9rem; font-weight:500; color: ${isActive ? 'var(--text-primary)' : 'var(--text-secondary)'}; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${v.title}</div>
-            ${isActive ? '<div style="font-size:0.75rem; color:var(--primary-color); margin-top:4px;"><i data-lucide="play" style="width:12px; height:12px; display:inline;"></i> Playing</div>' : ''}
+    // Pagination
+    const itemsPerPage = 10;
+    const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
+    let currentPage = this.state.playlistPage || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    this.state.playlistPage = currentPage;
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage);
+    
+    let html = `
+      <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); background: var(--bg-card); z-index: 10;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h3 style="margin:0; font-family:'Orbitron', sans-serif; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;"><i data-lucide="list"></i> Up Next</h3>
+          <div style="font-size:0.8rem; color:var(--text-muted);">${this.state.currentPlaylistIndex + 1} / ${this.state.playlistQueue.length} Total</div>
+        </div>
+        <div style="position: relative;">
+          <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
+          <input type="text" id="playlist-search-input" value="${this.escapeHtml(this.state.playlistSearchQuery || '')}" placeholder="Search playlist..." style="width: 100%; padding: 0.6rem 0.6rem 0.6rem 36px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text-primary); font-size: 0.9rem; transition: border-color 0.2s;" onkeyup="app.handlePlaylistSearch(event)">
+        </div>
+      </div>
+      <div style="padding: 1rem; display:flex; flex-direction:column; gap:0.5rem; max-height: 400px; overflow-y: auto;">
+    `;
+    
+    if (paginatedItems.length === 0) {
+      html += `<div style="text-align:center; padding: 2rem; color: var(--text-muted);">No videos found matching "${this.escapeHtml(query)}"</div>`;
+    } else {
+      paginatedItems.forEach((v) => {
+        const isActive = v.originalIndex === this.state.currentPlaylistIndex;
+        html += `
+          <div onclick="app.playPlaylistItem(${v.originalIndex})" class="playlist-item ${isActive ? 'active' : ''}" style="display:flex; gap:1rem; padding:0.5rem; border-radius:var(--radius-md); cursor:pointer; background: ${isActive ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isActive ? 'var(--primary-color)' : 'transparent'}; transition: background 0.2s;">
+            <div style="display:flex; align-items:center; justify-content:center; min-width: 24px; font-size: 0.85rem; font-weight: bold; color: var(--text-muted);">${v.originalIndex + 1}</div>
+            <img src="${v.thumbnail}" style="width:100px; height:56px; object-fit:cover; border-radius:4px;">
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+              <div style="font-size:0.9rem; font-weight:500; color: ${isActive ? 'var(--text-primary)' : 'var(--text-secondary)'}; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${v.title}</div>
+              ${isActive ? '<div style="font-size:0.75rem; color:var(--primary-color); margin-top:4px;"><i data-lucide="play" style="width:12px; height:12px; display:inline;"></i> Playing</div>' : ''}
+            </div>
           </div>
+        `;
+      });
+    }
+    html += `</div>`;
+    
+    // Pagination Controls
+    if (totalPages > 1) {
+      html += `
+        <div style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); background: var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+          <button class="btn btn-secondary btn-sm" onclick="app.setPlaylistPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''} style="opacity: ${currentPage <= 1 ? '0.5' : '1'}; cursor: ${currentPage <= 1 ? 'not-allowed' : 'pointer'};"><i data-lucide="chevron-left"></i> Prev</button>
+          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Page ${currentPage} of ${totalPages}</span>
+          <button class="btn btn-secondary btn-sm" onclick="app.setPlaylistPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''} style="opacity: ${currentPage >= totalPages ? '0.5' : '1'}; cursor: ${currentPage >= totalPages ? 'not-allowed' : 'pointer'};">Next <i data-lucide="chevron-right"></i></button>
         </div>
       `;
-    });
-    html += `</div>`;
+    }
+    
     container.innerHTML = html;
     if (window.lucide) window.lucide.createIcons();
     
-    // Auto-scroll to active
-    setTimeout(() => {
-      const activeEl = container.querySelector('.playlist-item.active');
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    }, 100);
+    const searchInput = document.getElementById('playlist-search-input');
+    if (searchInput && this.state._playlistSearchFocused) {
+      searchInput.focus();
+      const val = searchInput.value;
+      searchInput.value = '';
+      searchInput.value = val;
+    }
+    
+    // Auto-scroll to active if on the same page and no search query
+    if (!query) {
+      setTimeout(() => {
+        const activeEl = container.querySelector('.playlist-item.active');
+        if (activeEl && typeof activeEl.scrollIntoView === 'function') {
+          activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    }
+  }
+
+  handlePlaylistSearch(e) {
+    this.state.playlistSearchQuery = e.target.value;
+    this.state.playlistPage = 1;
+    this.state._playlistSearchFocused = true;
+    this.renderPlaylistUI();
+    this.state._playlistSearchFocused = false;
+  }
+  
+  setPlaylistPage(page) {
+    this.state.playlistPage = page;
+    this.renderPlaylistUI();
   }
 
   playPlaylistItem(index) {
     if (index >= 0 && index < this.state.playlistQueue.length) {
       this.state.currentPlaylistIndex = index;
       const v = this.state.playlistQueue[index];
+      
+      // Auto-update page to where the newly clicked video is
+      this.state.playlistPage = Math.floor(index / 10) + 1;
+      
       this.renderPlaylistUI();
       this.loadVideo(v.id, 'youtube');
     }
