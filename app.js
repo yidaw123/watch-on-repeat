@@ -848,7 +848,14 @@ class WatchOnRepeat {
       if (segmentsParam || notesParam) {
         this.handleSharedPayload(videoId, platform, segmentsParam, notesParam);
       }
-      this.loadVideo(videoId, platform);
+      if (platform === 'youtube_playlist') {
+        this.loadPlaylist(videoId).catch(err => {
+          if (DEBUG_MODE) console.error("loadPlaylist Error:", err);
+          this.showToast("Failed to load playlist: " + err.message, "alert-circle");
+        });
+      } else {
+        this.loadVideo(videoId, platform);
+      }
     } else {
       this.loadHome();
     }
