@@ -1624,7 +1624,7 @@ class WatchOnRepeat {
       this.state.playlistPage = Math.floor(index / 10) + 1;
       
       this.renderPlaylistUI();
-      this.loadVideo(v.id, 'youtube');
+      this.loadVideo(v.id, v.platform || 'youtube');
     }
   }
 

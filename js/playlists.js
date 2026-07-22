@@ -152,10 +152,10 @@ class PlaylistsMixin {
           <div class="yt-playlist-index">
             ${isActive ? '<i data-lucide="play" style="width:14px;height:14px;color:var(--color-primary)"></i>' : (index + 1)}
           </div>
-          <div class="yt-playlist-thumb-wrapper" onclick="app.loadVideo('${this.escapeHtml(v.videoId || v.id)}', '${this.escapeHtml(v.platform)}')" style="cursor:pointer;">
+          <div class="yt-playlist-thumb-wrapper" onclick="app.playNativePlaylist(app.getDb('playlists').find(pl => pl.id === '${this.escapeHtml(p.id)}') || app.state.sharedPlaylist, ${index})" style="cursor:pointer;">
             <img src="${this.escapeHtml(thumbUrl)}" class="yt-playlist-thumb" alt="${this.escapeHtml(v.title)}">
           </div>
-          <div class="yt-playlist-info" onclick="app.loadVideo('${this.escapeHtml(v.videoId || v.id)}', '${this.escapeHtml(v.platform)}')" style="cursor:pointer;">
+          <div class="yt-playlist-info" onclick="app.playNativePlaylist(app.getDb('playlists').find(pl => pl.id === '${this.escapeHtml(p.id)}') || app.state.sharedPlaylist, ${index})" style="cursor:pointer;">
             <div class="yt-playlist-title">${this.escapeHtml(v.title)}</div>
             <div class="yt-playlist-channel">${this.escapeHtml(v.platform)}</div>
           </div>
@@ -236,14 +236,16 @@ class PlaylistsMixin {
 
       const isStacked = vidsCount > 1 ? ' stacked' : '';
 
+      const clickHandlerStr = `app.playNativePlaylist(app.getDb('playlists').find(pl => pl.id === '${this.escapeHtml(p.id)}') || app.state.sharedPlaylist, 0)`;
+
       card.innerHTML = `
-        <div class="playlist-thumb-wrapper${isStacked}" onclick="app.viewPlaylist('${this.escapeHtml(p.id)}')">
+        <div class="playlist-thumb-wrapper${isStacked}" onclick="${clickHandlerStr}">
           <div class="playlist-thumb-container">
             ${thumbContent}
           </div>
         </div>
         <div class="playlist-card-modern-info">
-          <div class="playlist-card-modern-title" onclick="app.viewPlaylist('${this.escapeHtml(p.id)}')">${this.escapeHtml(p.name)}</div>
+          <div class="playlist-card-modern-title" onclick="${clickHandlerStr}">${this.escapeHtml(p.name)}</div>
           <div class="playlist-card-modern-meta">
             ${p.isPublic ? 'Public' : 'Private'} • ${vidsCount} video${vidsCount !== 1 ? 's' : ''}
           </div>
@@ -428,13 +430,12 @@ class PlaylistsMixin {
         return;
       }
 
-      this.state.sharedPlaylist = data;
-      this.switchTab('playlists');
-      
-      // Auto-play the first video
+      // Check if there are videos
       if (data.videos && data.videos.length > 0) {
-        const firstVid = data.videos[0];
-        this.loadVideo(firstVid.videoId || firstVid.id, firstVid.platform);
+        this.playNativePlaylist(data, 0);
+      } else {
+        this.state.sharedPlaylist = data;
+        this.switchTab('playlists');
       }
     } catch (e) {
       if (DEBUG_MODE) console.error(e);
@@ -618,5 +619,27 @@ class PlaylistsMixin {
     if (this.state.activeTab === 'playlists') this.renderPlaylistsTab();
   }
 
+  playNativePlaylist(playlist, startIndex = 0) {
+    if (!playlist || !playlist.videos) return;
+    app.state.currentPlaylistTitle = playlist.name;
+    app.state.playlistQueue = playlist.videos.map(v => ({
+      id: v.videoId || v.id,
+      platform: v.platform || 'youtube',
+      title: v.title || 'Unknown Video',
+      thumbnail: v.thumbnail || this.getThumbnailUrl(v.platform, v.videoId || v.id)
+    }));
+    
+    app.state.playlistSearchQuery = '';
+    app.state.currentPlaylistIndex = startIndex;
+    app.state.playlistPage = Math.floor(startIndex / 10) + 1;
+    
+    app.renderPlaylistUI();
+    app.showTab('up-next');
+    
+    if (app.state.playlistQueue.length > 0) {
+      const v = app.state.playlistQueue[startIndex];
+      app.loadVideo(v.id, v.platform);
+    }
+  }
 }
 window.PlaylistsMixin = PlaylistsMixin;

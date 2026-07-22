@@ -69,10 +69,10 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "How do I loop a YouTube video?",
+            "name": "How do I loop a YouTube video or playlist?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "To loop a YouTube video, simply paste the video link into the search bar on WatchOnRepeat and hit Enter. The video will automatically load and play in an infinite loop. You can also use the URL shortcut by changing 'youtube.com' to 'watchonrepeat.com' in your browser's address bar."
+              "text": "To loop a YouTube video or a public YouTube playlist, simply paste the link into the search bar on WatchOnRepeat and hit Enter. The video or playlist will automatically load. For playlists, you can view the queue in the Up Next tab."
             }
           },
           {
@@ -195,7 +195,7 @@
         <form id="paste-form" onsubmit="app.handleSearchSubmit(event)">
           <div class="search-wrapper">
             <i data-lucide="link-2" class="search-icon"></i>
-            <input type="text" id="video-url-input" aria-label="Video URL" placeholder="Paste direct link (YouTube, Facebook, Twitch, SoundCloud, Dailymotion, Vimeo, etc.)..." autocomplete="off">
+            <input type="text" id="video-url-input" aria-label="Video URL" placeholder="Paste direct link or YouTube Playlist..." autocomplete="off">
             <button type="submit" class="search-btn">
               <span>Loop It</span>
               <i data-lucide="play"></i>
@@ -295,8 +295,7 @@
                 <i data-lucide="tv-2"></i>
               </div>
               <h2>Ready to Loop?</h2>
-              <p style="margin-bottom: 15px;">Paste a video URL above, click "Loop It", and enjoy infinite replays with automatic counters.</p>
-              
+              <p style="margin-bottom: 15px;">Paste a video or public YouTube playlist URL above, click "Loop It", and enjoy infinite replays with automatic counters.</p>
               <div class="shortcut-tip" style="margin-top: 0; transform: scale(0.9);">
                 <h3><i data-lucide="sparkles"></i> The URL Trick</h3>
                 <p>You can swap the domain (like <code>youtube.com</code> or <code>facebook.com</code>) in any URL with <code>watchonrepeat.com</code> in your browser search bar to instantly load and loop it here!</p>
