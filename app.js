@@ -1651,6 +1651,16 @@ class WatchOnRepeat {
       if (input) input.click();
       return;
     }
+    
+    // Sync playlist UI if this video exists in the currently loaded playlist
+    if (this.state.playlistQueue && this.state.playlistQueue.length > 0) {
+      const idx = this.state.playlistQueue.findIndex(v => v.id === id);
+      if (idx !== -1) {
+        this.state.currentPlaylistIndex = idx;
+        this.state.playlistPage = Math.floor(idx / 10) + 1;
+        this.renderPlaylistUI();
+      }
+    }
     this.state.currentPlatform = platform;
     this.state.personalLoops = 0;
     this.state.currentGlobalLoops = 0;
