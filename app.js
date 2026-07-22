@@ -1495,7 +1495,7 @@ class WatchOnRepeat {
       container.style.maxHeight = '400px';
       container.style.overflowY = 'auto';
       
-      const playerWrapper = document.getElementById('player-wrapper');
+      const playerWrapper = document.getElementById('player-loaded-state');
       playerWrapper.parentNode.insertBefore(container, playerWrapper.nextSibling);
     }
     
