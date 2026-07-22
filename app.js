@@ -587,11 +587,11 @@ class WatchOnRepeat {
       loopTimer: document.getElementById('loop-timer'),
       
       // Tabs
-      tabDiscover: document.getElementById('tab-discover'),
+      tabUpNext: document.getElementById('tab-up-next'),
       tabFavorites: document.getElementById('tab-favorites'),
       tabHistory: document.getElementById('tab-history'),
       
-      tabDiscoverBtn: document.getElementById('tab-discover-btn'),
+      tabUpNextBtn: document.getElementById('tab-up-next-btn'),
       tabFavoritesBtn: document.getElementById('tab-favorites-btn'),
       tabHistoryBtn: document.getElementById('tab-history-btn'),
       tabSavedLoopsBtn: document.getElementById('tab-saved-loops-btn'),
@@ -3199,7 +3199,7 @@ class WatchOnRepeat {
     if (tabId === 'analytics' && !this.checkLimit('analytics')) return;
     this.state.activeTab = tabId;
     
-    this.elements.tabDiscoverBtn.classList.toggle('active', tabId === 'discover');
+    if (this.elements.tabUpNextBtn) this.elements.tabUpNextBtn.classList.toggle('active', tabId === 'up-next');
     this.elements.tabFavoritesBtn.classList.toggle('active', tabId === 'favorites');
     this.elements.tabPlaylistsBtn = document.getElementById('tab-playlists-btn');
     if (this.elements.tabPlaylistsBtn) this.elements.tabPlaylistsBtn.classList.toggle('active', tabId === 'playlists');
@@ -3213,7 +3213,7 @@ class WatchOnRepeat {
     if (tabSavedSessionsBtn) tabSavedSessionsBtn.classList.toggle('active', tabId === 'saved-sessions');
 
     const panels = {
-      'discover': this.elements.tabDiscover,
+      'up-next': this.elements.tabUpNext,
       'favorites': this.elements.tabFavorites,
       'playlists': this.elements.tabPlaylists || document.getElementById('tab-playlists'),
       'history': this.elements.tabHistory,
