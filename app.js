@@ -1574,7 +1574,13 @@ class WatchOnRepeat {
       html += `
         <div style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); background: var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
           <button class="btn btn-secondary btn-sm" onclick="app.setPlaylistPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''} style="opacity: ${currentPage <= 1 ? '0.5' : '1'}; cursor: ${currentPage <= 1 ? 'not-allowed' : 'pointer'};"><i data-lucide="chevron-left"></i> Prev</button>
-          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Page ${currentPage} of ${totalPages}</span>
+          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 4px;">
+            Page 
+            <input type="number" min="1" max="${totalPages}" value="${currentPage}" 
+                   onchange="app.setPlaylistPage(parseInt(this.value))" 
+                   style="width: 40px; padding: 2px 4px; border-radius: 4px; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 0.85rem;" />
+            of ${totalPages}
+          </span>
           <button class="btn btn-secondary btn-sm" onclick="app.setPlaylistPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''} style="opacity: ${currentPage >= totalPages ? '0.5' : '1'}; cursor: ${currentPage >= totalPages ? 'not-allowed' : 'pointer'};">Next <i data-lucide="chevron-right"></i></button>
         </div>
       `;
@@ -1611,6 +1617,17 @@ class WatchOnRepeat {
   }
   
   setPlaylistPage(page) {
+    if (isNaN(page)) return;
+    const itemsPerPage = 10;
+    const query = (this.state.playlistSearchQuery || '').toLowerCase();
+    const totalItems = query ? 
+      this.state.playlistQueue.filter(v => v.title.toLowerCase().includes(query)).length : 
+      this.state.playlistQueue.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
     this.state.playlistPage = page;
     this.renderPlaylistUI();
   }
@@ -3820,33 +3837,29 @@ class WatchOnRepeat {
     const pageIndicator = document.createElement('div');
     pageIndicator.className = 'pagination-indicator';
     
-    if (tabId === 'favorites' || tabId === 'history') {
-      const inputWrapper = document.createElement('div');
-      inputWrapper.style = "display: flex; align-items: center; gap: 4px;";
-      
-      const inputEl = document.createElement('input');
-      inputEl.type = 'number';
-      inputEl.min = '1';
-      inputEl.max = totalPages;
-      inputEl.value = currentPage;
-      inputEl.className = 'pagination-input';
-      inputEl.onchange = (e) => {
-        let val = parseInt(e.target.value);
-        if (isNaN(val) || val < 1) val = 1;
-        if (val > totalPages) val = totalPages;
-        this.state.pagination[tabId] = val;
-        onPageChange();
-      };
-      
-      const totalSpan = document.createElement('span');
-      totalSpan.textContent = ` of ${totalPages}`;
-      
-      inputWrapper.appendChild(inputEl);
-      inputWrapper.appendChild(totalSpan);
-      pageIndicator.appendChild(inputWrapper);
-    } else {
-      pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
-    }
+    const inputWrapper = document.createElement('div');
+    inputWrapper.style = "display: flex; align-items: center; gap: 4px;";
+    
+    const inputEl = document.createElement('input');
+    inputEl.type = 'number';
+    inputEl.min = '1';
+    inputEl.max = totalPages;
+    inputEl.value = currentPage;
+    inputEl.className = 'pagination-input';
+    inputEl.onchange = (e) => {
+      let val = parseInt(e.target.value);
+      if (isNaN(val) || val < 1) val = 1;
+      if (val > totalPages) val = totalPages;
+      this.state.pagination[tabId] = val;
+      onPageChange();
+    };
+    
+    const totalSpan = document.createElement('span');
+    totalSpan.textContent = ` of ${totalPages}`;
+    
+    inputWrapper.appendChild(inputEl);
+    inputWrapper.appendChild(totalSpan);
+    pageIndicator.appendChild(inputWrapper);
 
     container.appendChild(prevBtn);
     container.appendChild(pageIndicator);
