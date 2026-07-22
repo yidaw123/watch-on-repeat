@@ -1469,6 +1469,17 @@ class WatchOnRepeat {
         return;
       }
       
+      let playlistTitle = "Up Next";
+      try {
+        const pRes = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistId}&key=${API_KEY}`);
+        const pData = await pRes.json();
+        if (pData.items && pData.items.length > 0) {
+          playlistTitle = pData.items[0].snippet.title;
+        }
+      } catch(e) {}
+      
+      this.state.currentPlaylistTitle = playlistTitle;
+      
       this.state.playlistQueue = data.items.map(item => ({
         id: item.contentDetails.videoId,
         title: item.snippet.title,
@@ -1533,8 +1544,8 @@ class WatchOnRepeat {
     let html = `
       <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); background: var(--bg-card); z-index: 10;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-          <h3 style="margin:0; font-family:'Orbitron', sans-serif; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;"><i data-lucide="list"></i> Up Next</h3>
-          <div style="font-size:0.8rem; color:var(--text-muted);">${this.state.currentPlaylistIndex + 1} / ${this.state.playlistQueue.length} Total</div>
+          <h3 style="margin:0; font-family:'Orbitron', sans-serif; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 80%;" title="${this.escapeHtml(this.state.currentPlaylistTitle || 'Up Next')}"><i data-lucide="list"></i> ${this.escapeHtml(this.state.currentPlaylistTitle || 'Up Next')}</h3>
+          <div style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; flex-shrink:0;">${this.state.currentPlaylistIndex + 1} / ${this.state.playlistQueue.length} Total</div>
         </div>
         <div style="position: relative;">
           <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
