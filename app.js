@@ -5240,8 +5240,8 @@ class WatchOnRepeat {
 
   initHotkeys() {
     this.defaultShortcuts = {
-      'prevLoop': 'arrowleft',
-      'nextLoop': 'arrowright',
+      'prevLoop': ',',
+      'nextLoop': '.',
       'openNotes': 'n',
       'shiftLeft': 'a',
       'shiftRight': 'd',
@@ -5280,7 +5280,13 @@ class WatchOnRepeat {
       const s = this.state.shortcuts;
       const isPremium = this.getUserTier() !== 'free';
       
-      if (isPremium && key === s.prevLoop) {
+      if (key === 'arrowleft') {
+        e.preventDefault();
+        this.getCurrentTime().then(t => this.seekToTime(Math.max(0, t - 5)));
+      } else if (key === 'arrowright') {
+        e.preventDefault();
+        this.getCurrentTime().then(t => this.seekToTime(t + 5));
+      } else if (isPremium && key === s.prevLoop) {
         e.preventDefault();
         if (typeof this.jumpToLoopSegment === 'function') this.jumpToLoopSegment(-1);
       } else if (isPremium && key === s.nextLoop) {
