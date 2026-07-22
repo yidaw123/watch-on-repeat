@@ -484,14 +484,24 @@
           <!-- Stats Dashboard moved to Analytics Tab -->
         </div>
 
-        <div id="up-next-section" class="player-card" style="margin-top: 1.5rem; display: none;">
+        <div id="discover-section" class="player-card" style="margin-top: 1.5rem;">
           <div class="video-info-bar" style="border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem; margin-bottom: 1rem;">
             <h3 style="font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-              <i data-lucide="play-square" style="color: var(--color-primary);"></i> Suggested Loops
+              <i data-lucide="compass" style="color: var(--color-primary);"></i> Most Looped Videos
             </h3>
           </div>
-          <div class="video-grid" id="up-next-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
-            <!-- Suggested videos will be inserted here -->
+          <div class="video-grid" id="discover-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
+            <!-- Discover videos will be inserted here -->
+          </div>
+          
+          <!-- Bookmark Shortcut -->
+          <div class="bookmarklet-box" style="margin-top: 2rem;">
+            <h4><i data-lucide="bookmark"></i> WatchOnRepeat Bookmark</h4>
+            <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Facebook, Vimeo, Dailymotion, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
+            <a id="bookmarklet-btn" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;">
+              <i data-lucide="repeat"></i>
+              <span>Watch On Repeat</span>
+            </a>
           </div>
         </div>
 
@@ -502,8 +512,8 @@
         <div class="sidebar-card">
           <!-- Sidebar Tabs Header -->
           <div class="sidebar-tabs">
-            <button class="tab-btn active" id="tab-discover-btn" onclick="app.showTab('discover')">
-              <i data-lucide="compass"></i> Discover
+            <button class="tab-btn active" id="tab-up-next-btn" onclick="app.showTab('up-next')">
+              <i data-lucide="list"></i> Up Next
             </button>
             <button class="tab-btn" id="tab-favorites-btn" onclick="app.showTab('favorites')">
               <i data-lucide="heart"></i> Favorites
@@ -849,23 +859,23 @@
               </div>
             </div>
 
-            <!-- Discover Tab -->
-            <div id="tab-discover" class="tab-panel active">
+            <!-- Up Next Tab -->
+            <div id="tab-up-next" class="tab-panel active">
               <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <h3 style="margin-left: 12px; margin-bottom: 0;">Most looped videos</h3>
+                <h3 style="margin-left: 12px; margin-bottom: 0;">Up Next</h3>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted);">
+                  <span>Auto-play</span>
+                  <label class="switch" style="transform: scale(0.8); margin: 0;">
+                    <input type="checkbox" id="up-next-autoplay" onchange="app.toggleAutoplay(this.checked)" checked>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
               </div>
-              <div class="video-grid" id="discover-list">
-                <!-- Will be loaded dynamically -->
-              </div>
-              
-              <!-- Bookmark Shortcut -->
-              <div class="bookmarklet-box">
-                <h4><i data-lucide="bookmark"></i> WatchOnRepeat Bookmark</h4>
-                <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Facebook, Vimeo, Dailymotion, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
-                <a id="bookmarklet-btn" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;">
-                  <i data-lucide="repeat"></i>
-                  <span>Watch On Repeat</span>
-                </a>
+              <div id="up-next-sidebar-container">
+                <!-- If not playlist, show suggested loops vertically -->
+                <div class="video-grid" id="up-next-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <!-- Suggested videos will be inserted here -->
+                </div>
               </div>
             </div>
 

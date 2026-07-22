@@ -1514,14 +1514,13 @@ class WatchOnRepeat {
     if (!container) {
       container = document.createElement('div');
       container.id = 'playlist-queue-container';
-      container.className = 'glass-panel';
-      container.style.marginTop = '1.5rem';
-      container.style.position = 'relative';
-      container.style.padding = '0'; // padding moved to inner elements
-      container.style.overflow = 'hidden'; // clip rounded corners
       
-      const playerWrapper = document.getElementById('player-loaded-state');
-      playerWrapper.parentNode.insertBefore(container, playerWrapper.nextSibling);
+      const sidebarContainer = document.getElementById('up-next-sidebar-container');
+      if (sidebarContainer) {
+        const upNextList = document.getElementById('up-next-list');
+        if (upNextList) upNextList.style.display = 'none'; // hide suggested loops
+        sidebarContainer.appendChild(container);
+      }
     }
     
     // Filter items
@@ -1543,16 +1542,12 @@ class WatchOnRepeat {
     
     let html = `
       <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); background: var(--bg-card); z-index: 10;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-          <h3 style="margin:0; font-family:'Orbitron', sans-serif; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 80%;" title="${this.escapeHtml(this.state.currentPlaylistTitle || 'Up Next')}"><i data-lucide="list"></i> ${this.escapeHtml(this.state.currentPlaylistTitle || 'Up Next')}</h3>
-          <div style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; flex-shrink:0;">${this.state.currentPlaylistIndex + 1} / ${this.state.playlistQueue.length} Total</div>
-        </div>
         <div style="position: relative;">
           <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
           <input type="text" id="playlist-search-input" value="${this.escapeHtml(this.state.playlistSearchQuery || '')}" placeholder="Search playlist..." style="width: 100%; padding: 0.6rem 0.6rem 0.6rem 36px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text-primary); font-size: 0.9rem; transition: border-color 0.2s;" onkeyup="app.handlePlaylistSearch(event)">
         </div>
       </div>
-      <div style="padding: 1rem; display:flex; flex-direction:column; gap:0.5rem; max-height: 400px; overflow-y: auto;">
+      <div style="padding: 1rem; display:flex; flex-direction:column; gap:0.5rem; max-height: calc(100vh - 200px); overflow-y: auto;">
     `;
     
     if (paginatedItems.length === 0) {
@@ -1631,6 +1626,10 @@ class WatchOnRepeat {
       this.renderPlaylistUI();
       this.loadVideo(v.id, 'youtube');
     }
+  }
+
+  toggleAutoplay(enabled) {
+    this.state.autoplayEnabled = enabled;
   }
 
   async  loadVideo(id, platform = 'youtube') {
@@ -2512,10 +2511,23 @@ class WatchOnRepeat {
       
       // If we have a playlist AND the user isn't forcing an A/B loop, auto-advance!
       if (this.state.playlistQueue && this.state.playlistQueue.length > 0 && (!this.state.abLoop.enabled && !this.state.abLoop.start && !this.state.abLoop.end)) {
-        if (this.state.currentPlaylistIndex < this.state.playlistQueue.length - 1) {
-           this.elements.loopStateText.textContent = "Playing Next...";
-           this.playPlaylistItem(this.state.currentPlaylistIndex + 1);
-           return;
+        if (this.state.autoplayEnabled !== false) {
+          if (this.state.currentPlaylistIndex < this.state.playlistQueue.length - 1) {
+             this.elements.loopStateText.textContent = "Playing Next...";
+             this.playPlaylistItem(this.state.currentPlaylistIndex + 1);
+             return;
+          }
+        }
+      } else if (!this.state.playlistQueue || this.state.playlistQueue.length === 0) {
+        // If it's a single video (suggested loops mode) and autoplay is on
+        if (this.state.autoplayEnabled !== false && (!this.state.abLoop.enabled && !this.state.abLoop.start && !this.state.abLoop.end) && this.state.discoverData && this.state.discoverData.length > 0) {
+          // Play a random suggested loop
+          let suggestions = this.state.discoverData.filter(v => (v.videoId || v.id) !== this.state.currentVideo.id);
+          if (suggestions.length > 0) {
+            let nextVid = suggestions[Math.floor(Math.random() * suggestions.length)];
+            this.loadVideo(nextVid.videoId || nextVid.id, nextVid.platform);
+            return;
+          }
         }
       }
       
@@ -3253,9 +3265,23 @@ class WatchOnRepeat {
   }
 
   async renderUpNextQueue(currentVideoId) {
-    const section = document.getElementById('up-next-section');
-    const list = document.getElementById('up-next-list');
-    if (!section || !list) return;
+    const sidebarContainer = document.getElementById('up-next-sidebar-container');
+    let list = document.getElementById('up-next-list');
+    
+    // If playlist is active, hide up-next list
+    if (this.state.playlistQueue && this.state.playlistQueue.length > 0) {
+      if (list) list.style.display = 'none';
+      return;
+    }
+    
+    // Ensure we are showing suggested loops if no playlist
+    if (list) list.style.display = 'flex';
+    
+    // Clean up playlist container if it exists
+    const playlistContainer = document.getElementById('playlist-queue-container');
+    if (playlistContainer) playlistContainer.remove();
+    
+    if (!list) return;
 
     if (!this.state.discoverData) {
       let discoverVideos = [
@@ -3302,15 +3328,23 @@ class WatchOnRepeat {
     suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 6);
 
     if (suggestions.length === 0) {
-      section.style.display = 'none';
       return;
     }
 
-    section.style.display = 'block';
     list.innerHTML = '';
     
     suggestions.forEach(v => {
       const card = this.createVideoCard(v, false, null);
+      // Make sure cards in sidebar list are horizontal flex
+      card.style.display = 'flex';
+      card.style.flexDirection = 'row';
+      card.style.alignItems = 'center';
+      card.style.gap = '1rem';
+      const img = card.querySelector('.video-card-thumb');
+      if (img) {
+        img.style.width = '120px';
+        img.style.height = '68px';
+      }
       list.appendChild(card);
     });
   }
@@ -3358,54 +3392,55 @@ class WatchOnRepeat {
       this.state.discoverData = discoverVideos;
     }
 
-    this.elements.discoverList.innerHTML = '';
+    const section = document.getElementById('discover-section');
+    const discoverList = document.getElementById('discover-list');
+    if (!section || !discoverList) return;
     
-    const isMobile = window.innerWidth <= 768;
-    const itemsPerPage = isMobile ? 5 : 10;
+    discoverList.innerHTML = '';
+
+    const itemsPerPage = 8;
     const totalPages = Math.ceil(this.state.discoverData.length / itemsPerPage);
     const startIdx = (page - 1) * itemsPerPage;
-    const pageData = this.state.discoverData.slice(startIdx, startIdx + itemsPerPage);
-    
-    pageData.forEach((v, index) => {
-      const globalIndex = startIdx + index;
-      const isTrending = !!v.globalLoops;
-      // Do not show rank badge since videos are randomized
-      const card = this.createVideoCard(v, false, null);
-      this.elements.discoverList.appendChild(card);
+    const paginatedData = this.state.discoverData.slice(startIdx, startIdx + itemsPerPage);
+
+    paginatedData.forEach((v, index) => {
+      const rank = startIdx + index + 1;
+      const card = this.createVideoCard(v, false, rank);
+      discoverList.appendChild(card);
     });
-    
+
+    // Pagination for Discover Tab
     if (totalPages > 1) {
-      const paginationDiv = document.createElement('div');
-      paginationDiv.style.display = 'flex';
-      paginationDiv.style.justifyContent = 'space-between';
-      paginationDiv.style.marginTop = '16px';
-      paginationDiv.style.padding = '0 10px';
+      const pag = document.createElement('div');
+      pag.className = 'pagination';
+      pag.style = "grid-column: 1 / -1; display:flex; justify-content:space-between; margin-top:1rem;";
       
       const prevBtn = document.createElement('button');
       prevBtn.className = 'btn btn-secondary btn-sm';
       prevBtn.innerHTML = '<i data-lucide="chevron-left"></i> Prev';
       prevBtn.disabled = page === 1;
-      prevBtn.style.opacity = page === 1 ? '0.5' : '1';
-      prevBtn.onclick = () => this.renderDiscoverTab(page - 1);
-      
-      const pageInfo = document.createElement('span');
-      pageInfo.style.fontSize = '12px';
-      pageInfo.style.color = 'var(--text-muted)';
-      pageInfo.style.display = 'flex';
-      pageInfo.style.alignItems = 'center';
-      pageInfo.textContent = `Page ${page} of ${totalPages}`;
-      
+      prevBtn.onclick = () => {
+        this.renderDiscoverTab(page - 1);
+        section.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      const info = document.createElement('span');
+      info.textContent = `Page ${page} of ${totalPages}`;
+      info.style.color = "var(--text-muted)";
+
       const nextBtn = document.createElement('button');
       nextBtn.className = 'btn btn-secondary btn-sm';
       nextBtn.innerHTML = 'Next <i data-lucide="chevron-right"></i>';
       nextBtn.disabled = page === totalPages;
-      nextBtn.style.opacity = page === totalPages ? '0.5' : '1';
-      nextBtn.onclick = () => this.renderDiscoverTab(page + 1);
-      
-      paginationDiv.appendChild(prevBtn);
-      paginationDiv.appendChild(pageInfo);
-      paginationDiv.appendChild(nextBtn);
-      this.elements.discoverList.appendChild(paginationDiv);
+      nextBtn.onclick = () => {
+        this.renderDiscoverTab(page + 1);
+        section.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      pag.appendChild(prevBtn);
+      pag.appendChild(info);
+      pag.appendChild(nextBtn);
+      discoverList.appendChild(pag);
     }
     
     if (window.lucide) window.lucide.createIcons();
