@@ -93,10 +93,10 @@
           },
           {
             "@type": "Question",
-            "name": "Can I slow down a Twitch VOD?",
+            "name": "Why is the Playback Speed dropdown disabled for Twitch and some other platforms?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Unfortunately, Twitch's official embedded video player does not support custom playback speeds. While WatchOnRepeat can infinitely loop Twitch clips and VODs, third-party sites are restricted from altering the playback speed of Twitch videos."
+              "text": "The official Embedded Player APIs for Twitch, Facebook, SoundCloud, Mixcloud, and Loom do not currently support external playback speed controls. Because of these restrictions, third-party sites like ours cannot programmatically change the playback speed of media from those platforms. Playback speed controls are fully supported for YouTube, Vimeo, Dailymotion, Wistia, and your own uploaded local files."
             }
           },
           {
@@ -1090,11 +1090,11 @@
 
     <div class="faq-item">
       <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-        Can I slow down a Twitch VOD?
+        Why is the Playback Speed dropdown disabled for Twitch and some other platforms?
         <i data-lucide="chevron-down" class="faq-icon"></i>
       </button>
       <div class="faq-answer">
-        <p>Unfortunately, Twitch's official embedded video player does not support custom playback speeds. While WatchOnRepeat can infinitely loop Twitch clips and VODs, third-party sites are restricted from altering the playback speed of Twitch videos.</p>
+        <p>The official Embedded Player APIs for <strong>Twitch, Facebook, SoundCloud, Mixcloud, and Loom</strong> do not currently support external playback speed controls. Because of these restrictions, third-party sites like ours cannot programmatically change the playback speed of media from those platforms. Playback speed controls are fully supported for YouTube, Vimeo, Dailymotion, Wistia, and your own uploaded local files.</p>
       </div>
     </div>
 
