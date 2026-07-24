@@ -219,6 +219,7 @@ class WatchOnRepeat {
     this.state = {
       user: null,
       currentVideo: null, // { id, platform, title, duration }
+      isTheaterMode: false,
       personalLoops: 0,
       sessionTotalLoops: 0,
       currentGlobalLoops: 0,
@@ -420,7 +421,7 @@ class WatchOnRepeat {
             this.showToast("DB Insert Error: " + insertError.message, "alert-circle");
           }
         } else {
-          this.showToast("Account successfully synced to Database!", "check-circle");
+          this.showToast("Account successfully synced to Database", "check-circle");
         }
       }
     } else {
@@ -435,12 +436,28 @@ class WatchOnRepeat {
             videoId: d.video_id,
             platform: d.platform,
             title: d.title,
+            thumbnail: d.thumbnail || '',
             loopsCount: d.loops_count,
             lastPlayed: d.last_played,
             userId: user.id,
             timestamp: new Date(d.last_played).getTime()
           }));
           this.saveDb('history', history);
+          
+          // Sync playback progress
+          let progressDb = this.getDb('playback_progress');
+          data.forEach(d => {
+             if (d.last_timestamp > 0 && d.duration > 0) {
+                // Only overwrite if it's newer (or doesn't exist locally)
+                const existing = progressDb[d.video_id];
+                const cloudTime = new Date(d.last_played || 0).getTime();
+                if (!existing || cloudTime > (existing.ts || 0)) {
+                   progressDb[d.video_id] = { t: d.last_timestamp, d: d.duration, ts: cloudTime };
+                }
+             }
+          });
+          this.saveDb('playback_progress', progressDb);
+          
           this.updateStatsUI();
         }
       });
@@ -742,7 +759,7 @@ class WatchOnRepeat {
     // Handle OAuth Cancellation or errors gracefully
     if (window.location.hash.includes('error=access_denied')) {
       window.location.hash = '';
-      this.showToast("Login cancelled.", "info");
+      this.showToast("Login cancelled", "info");
       this.closeLoginModal();
     }
 
@@ -911,7 +928,7 @@ class WatchOnRepeat {
     if (!isPremium && hasProFeatures) {
       this.state.isReadOnlyShared = true;
       setTimeout(() => {
-        this.showToast("Viewing a Shared Pro Link (Read-Only Mode).", "lock", true, '<button class="btn btn-error btn-sm" onclick="app.openUpgradeModal()" style="padding: 2px 8px; font-size: 12px; height: auto;">Upgrade</button>');
+        this.showToast("Viewing a Shared Pro Link (Read-Only Mode).", "lock", true, '<button class="btn btn-error btn-sm" onclick="app.openUpgradeModal()" style="padding: 2px 8px; font-size: 12px; height: auto; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">UPGRADE</button>');
       }, 1500);
     }
   }
@@ -935,6 +952,13 @@ class WatchOnRepeat {
     // Reset title and stats for empty state
     if (this.elements.platformBadge) this.elements.platformBadge.innerHTML = '';
     if (this.elements.videoTitle) this.elements.videoTitle.textContent = "Ready to Loop";
+    
+    // Explicitly set sidebar to "Most Looped" on empty state
+    const tabLabel = document.getElementById('up-next-tab-label');
+    const headerLabel = document.getElementById('up-next-header-label');
+    if (tabLabel) tabLabel.textContent = 'Most Looped';
+    if (headerLabel) headerLabel.textContent = 'Most Looped';
+
     const loopDisplay = document.getElementById('personal-loop-count');
     const sessionDisplay = document.getElementById('loop-timer');
     if (loopDisplay) loopDisplay.textContent = '0';
@@ -974,7 +998,7 @@ class WatchOnRepeat {
       }
       
       if (!instance) {
-        this.showToast("Could not find this saved session.", "alert-circle");
+        this.showToast("Could not find this saved session", "alert-circle");
         this.loadHome();
         return;
       }
@@ -1010,14 +1034,14 @@ class WatchOnRepeat {
       
     } catch (e) {
       if (DEBUG_MODE) console.error("Error loading instance", e);
-      this.showToast("Failed to load instance.", "alert-circle");
+      this.showToast("Failed to load instance", "alert-circle");
       this.loadHome();
     }
   }
 
   async saveInstance() {
     if (!this.state.currentVideo) {
-      this.showToast("No video loaded.", "alert-circle");
+      this.showToast("No video loaded", "alert-circle");
       return;
     }
     if (this.state.isReadOnlyShared) {
@@ -1120,7 +1144,7 @@ class WatchOnRepeat {
     
     if (this.elements.loopNameInput) this.elements.loopNameInput.value = '';
     
-    this.showToast(`Session "${sessionTitle}" Saved Successfully!`, "check-circle");
+    this.showToast(`Session "${sessionTitle}" saved successfully`, "check-circle");
     
     if (this.state.activeTab === 'analytics') this.renderAnalyticsTab();
     if (this.state.activeTab === 'saved-loops') this.renderSavedLoopsTab();
@@ -1465,7 +1489,7 @@ class WatchOnRepeat {
       }
       
       if (!data.items || data.items.length === 0) {
-        this.showToast("Playlist is empty or private.", "alert-circle");
+        this.showToast("Playlist is empty or private", "alert-circle");
         return;
       }
       
@@ -1502,10 +1526,10 @@ class WatchOnRepeat {
       this.renderPlaylistUI();
       const firstVid = this.state.playlistQueue[this.state.currentPlaylistIndex];
       this.loadVideo(firstVid.id, 'youtube');
-      this.showToast(`Loaded ${this.state.playlistQueue.length} videos from playlist!`, "list");
+      this.showToast(`Loaded ${this.state.playlistQueue.length} videos from playlist`, "list");
     } catch (err) {
       console.error(err);
-      this.showToast("Failed to load playlist.", "alert-circle");
+      this.showToast("Failed to load playlist", "alert-circle");
     }
   }
 
@@ -1542,6 +1566,11 @@ class WatchOnRepeat {
     
     let html = `
       <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); background: var(--bg-card); z-index: 10;">
+        ${(this.state.playlistMode && this.state.playlistMode.isYoutube) || this.state.sharedPlaylist ? `
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+             <button class="btn btn-sm btn-primary" onclick="app.saveCurrentPlaylistToAccount()" style="flex: 1;"><i data-lucide="download" style="width:14px; height:14px; margin-right:6px;"></i> Save this Playlist</button>
+          </div>
+        ` : ''}
         <div style="position: relative;">
           <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
           <input type="text" id="playlist-search-input" value="${this.escapeHtml(this.state.playlistSearchQuery || '')}" placeholder="Search playlist..." style="width: 100%; padding: 0.6rem 0.6rem 0.6rem 36px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text-primary); font-size: 0.9rem; transition: border-color 0.2s;" onkeyup="app.handlePlaylistSearch(event)">
@@ -1555,10 +1584,14 @@ class WatchOnRepeat {
     } else {
       paginatedItems.forEach((v) => {
         const isActive = v.originalIndex === this.state.currentPlaylistIndex;
+        const progressHtml = this.getProgressBarHtml(v.id);
         html += `
           <div onclick="app.playPlaylistItem(${v.originalIndex})" class="playlist-item ${isActive ? 'active' : ''}" style="display:flex; gap:1rem; padding:0.5rem; border-radius:var(--radius-md); cursor:pointer; background: ${isActive ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isActive ? 'var(--primary-color)' : 'transparent'}; transition: background 0.2s;">
             <div style="display:flex; align-items:center; justify-content:center; min-width: 24px; font-size: 0.85rem; font-weight: bold; color: var(--text-muted);">${v.originalIndex + 1}</div>
-            <img src="${v.thumbnail}" style="width:100px; height:56px; object-fit:cover; border-radius:4px;">
+            <div style="position:relative; width:100px; height:56px; flex-shrink:0; border-radius:4px; overflow:hidden;">
+              <img src="${v.thumbnail}" style="width:100%; height:100%; object-fit:cover;">
+              ${progressHtml}
+            </div>
             <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
               <div style="font-size:0.9rem; font-weight:500; color: ${isActive ? 'var(--text-primary)' : 'var(--text-secondary)'}; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${v.title}</div>
               ${isActive ? '<div style="font-size:0.75rem; color:var(--primary-color); margin-top:4px;"><i data-lucide="play" style="width:12px; height:12px; display:inline;"></i> Playing</div>' : ''}
@@ -2010,7 +2043,7 @@ class WatchOnRepeat {
     this.saveLoopData();
     const banner = document.getElementById('shared-segments-banner');
     if (banner) banner.remove();
-    this.showToast("Shared session loops saved!", "check");
+    this.showToast("Shared session loops saved", "check");
   }
 
   saveLoopData() {
@@ -2173,6 +2206,29 @@ class WatchOnRepeat {
     if (this.elements.playerLoaded) {
       this.elements.playerLoaded.classList.remove('remove');
       this.elements.playerLoaded.classList.remove('hidden');
+    }
+    
+    // Auto-Resume playback if we have saved progress
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasUrlStart = !isNaN(parseFloat(urlParams.get('start')));
+    const hasSegments = !!urlParams.get('segments');
+    const isInstance = !!urlParams.get('instance');
+    
+    // Don't auto-resume if they are loading a shared clip/instance that explicitly sets timestamps
+    if (this.state.currentVideo && this.state.currentVideo.id && !hasUrlStart && !hasSegments && !isInstance) {
+      try {
+        const progressDb = this.getDb('playback_progress');
+        const saved = progressDb[this.state.currentVideo.id];
+        if (saved && saved.t > 0) {
+          // Seek to the saved time. We add a small delay to ensure the player is fully initialized
+          setTimeout(() => {
+            this.seekToTime(saved.t);
+            this.showToast("Resumed from where you left off", "play-circle");
+          }, 500);
+        }
+      } catch (e) {
+        console.error("Auto-resume error:", e);
+      }
     }
   }
 
@@ -2491,7 +2547,7 @@ class WatchOnRepeat {
             else if (event.data === 100) reason = "This video was deleted by the uploader, made private, or is geographically restricted.";
             else if (event.data === 101 || event.data === 150) reason = "The creator of this video has disabled embedding on external websites.";
 
-            this.showToast("Failed to load YouTube video.", "alert-circle");
+            this.showToast("Failed to load YouTube video", "alert-circle");
             
             const container = document.getElementById('youtube-container');
             if (container) {
@@ -3000,6 +3056,7 @@ class WatchOnRepeat {
         this.elements.loopTimer.textContent = `Session time: ${timeStr}`;
       }
       this.updateAnalyticsTime();
+      this.trackPlaybackProgress();
     }, 1000);
 
     // Start the A/B Looping recursive check
@@ -3017,6 +3074,60 @@ class WatchOnRepeat {
       clearTimeout(this.state.abLoop.timer);
       this.state.abLoop.timer = null;
     }
+  }
+
+  trackPlaybackProgress() {
+    if (!this.state.currentVideo || !this.state.isPlaying) return;
+    this.getCurrentTime().then(t => {
+      const d = this.state.currentVideoDuration || 0;
+      // Only track if we have valid time and duration, and it's not a local file (local files don't persist well by ID)
+      if (t > 0 && d > 0 && this.state.currentVideo.platform !== 'local') {
+        let progressDb = this.getDb('playback_progress');
+        // Clean up old entries if we have too many (>200) to prevent localStorage bloat
+        if (Object.keys(progressDb).length > 200) {
+           const sortedKeys = Object.keys(progressDb).sort((a,b) => progressDb[b].ts - progressDb[a].ts);
+           for (let i = 200; i < sortedKeys.length; i++) {
+              delete progressDb[sortedKeys[i]];
+           }
+        }
+        
+        let shouldSyncCloud = false;
+        
+        // Clear progress if within 3 seconds of the end, so it starts fresh next time
+        if (t < d - 3) {
+          const now = Date.now();
+          const existing = progressDb[this.state.currentVideo.id];
+          
+          progressDb[this.state.currentVideo.id] = { t: t, d: d, ts: now };
+          
+          // Sync to cloud every 15 seconds if user is logged in
+          if (this.state.user && window.supabaseClient && (!existing || (now - existing.ts > 15000))) {
+             shouldSyncCloud = true;
+          }
+        } else {
+          delete progressDb[this.state.currentVideo.id];
+          if (this.state.user && window.supabaseClient) {
+             shouldSyncCloud = true;
+             t = 0; // Reset cloud state
+          }
+        }
+        
+        this.saveDb('playback_progress', progressDb);
+        
+        if (shouldSyncCloud) {
+           supabaseClient.from('user_history').update({
+              last_timestamp: t,
+              duration: d
+           })
+           .eq('user_id', this.state.user.id)
+           .eq('video_id', this.state.currentVideo.id)
+           .eq('platform', this.state.currentVideo.platform)
+           .then(); // Fire and forget
+        }
+      }
+    }).catch(err => {
+      // Ignore errors if player is not fully initialized
+    });
   }
 
   // ==========================================
@@ -3129,18 +3240,30 @@ class WatchOnRepeat {
       }
 
       await this.renderHistoryTab();
-      this.showToast("Your history has been cleared.");
+      this.showToast("Your history has been cleared");
     } catch (e) {
       console.error("Error clearing history:", e);
-      this.showToast("An error occurred while clearing history.", "alert-circle");
+      this.showToast("An error occurred while clearing history", "alert-circle");
     } finally {
       this.setButtonLoading(btnEl, false);
     }
   }
 
+  toggleTheaterMode() {
+    this.state.isTheaterMode = !this.state.isTheaterMode;
+    if (this.state.isTheaterMode) {
+      document.body.classList.add('theater-mode');
+    } else {
+      document.body.classList.remove('theater-mode');
+    }
+    
+    // Optionally trigger a resize event to help the player readjust
+    window.dispatchEvent(new Event('resize'));
+  }
+
   toggleFavorite() {
     if (!this.state.user) {
-      this.showToast("Please sign in to favorite videos!", "lock");
+      this.showToast("Please sign in to favorite videos", "lock");
       this.openLoginModal();
       return;
     }
@@ -3177,7 +3300,7 @@ class WatchOnRepeat {
             .eq('video_id', video.id)
             .eq('platform', video.platform).then();
       }
-      this.showToast("Added to favorites!", "heart");
+      this.showToast("Added to favorites", "heart");
     }
 
     this.saveDb('favorites', favorites);
@@ -3295,14 +3418,21 @@ class WatchOnRepeat {
     const sidebarContainer = document.getElementById('up-next-sidebar-container');
     let list = document.getElementById('up-next-list');
     
+    const tabLabel = document.getElementById('up-next-tab-label');
+    const headerLabel = document.getElementById('up-next-header-label');
+    
     // If playlist is active, hide up-next list
     if (this.state.playlistQueue && this.state.playlistQueue.length > 0) {
       if (list) list.style.display = 'none';
+      if (tabLabel) tabLabel.textContent = 'Up Next';
+      if (headerLabel) headerLabel.textContent = 'Up Next';
       return;
     }
     
     // Ensure we are showing suggested loops if no playlist
     if (list) list.style.display = 'flex';
+    if (tabLabel) tabLabel.textContent = 'Most Looped';
+    if (headerLabel) headerLabel.textContent = 'Most Looped';
     
     // Clean up playlist container if it exists
     const playlistContainer = document.getElementById('playlist-queue-container');
@@ -3425,14 +3555,13 @@ class WatchOnRepeat {
     
     discoverList.innerHTML = '';
 
-    const itemsPerPage = 8;
+    const itemsPerPage = 10;
     const totalPages = Math.ceil(this.state.discoverData.length / itemsPerPage);
     const startIdx = (page - 1) * itemsPerPage;
     const paginatedData = this.state.discoverData.slice(startIdx, startIdx + itemsPerPage);
 
     paginatedData.forEach((v, index) => {
-      const rank = startIdx + index + 1;
-      const card = this.createVideoCard(v, false, rank);
+      const card = this.createVideoCard(v, false, null);
       discoverList.appendChild(card);
     });
 
@@ -3584,7 +3713,7 @@ class WatchOnRepeat {
       await this.renderFavoritesTab();
     } catch (e) {
       console.error("Error deleting all favorites:", e);
-      this.showToast("An error occurred.", "alert-circle");
+      this.showToast("An error occurred", "alert-circle");
     }
   }
 
@@ -3614,7 +3743,7 @@ class WatchOnRepeat {
       }
     } catch (e) {
       console.error("Error deleting favorite:", e);
-      this.showToast("An error occurred while deleting.", "alert-circle");
+      this.showToast("An error occurred while deleting", "alert-circle");
     }
   }
 
@@ -3709,6 +3838,19 @@ class WatchOnRepeat {
     if (window.lucide) window.lucide.createIcons();
   }
 
+  getProgressBarHtml(videoId) {
+    if (!videoId) return '';
+    try {
+      const db = this.getDb('playback_progress');
+      const data = db[videoId];
+      if (data && data.d > 0 && data.t > 0 && data.t < data.d - 3) {
+        const pct = Math.min(100, Math.max(0, (data.t / data.d) * 100));
+        return `<div style="position:absolute; bottom:0; left:0; right:0; height:4px; background:rgba(255,255,255,0.2); z-index:10;"><div style="height:100%; width:${pct}%; background:#ef4444;"></div></div>`;
+      }
+    } catch(e){}
+    return '';
+  }
+
   createVideoCard(video, isHistory = false, rank = null, showDeleteBtn = null) {
     const card = document.createElement('div');
     card.className = 'video-card';
@@ -3724,7 +3866,7 @@ class WatchOnRepeat {
 
     let subMeta = '';
     if (isHistory) {
-      subMeta = `<span>Loops: <strong>${video.loopsCount || 0}</strong></span> • <span>${this.formatTimeAgo(video.lastPlayed || video.timestamp)}</span>`;
+      subMeta = `<span>Loops: <strong>${video.loopsCount || 0}</strong></span>   <span>${this.formatTimeAgo(video.lastPlayed || video.timestamp)}</span>`;
     } else {
       subMeta = ''; // Removed loop count per request
     }
@@ -3738,10 +3880,15 @@ class WatchOnRepeat {
       deleteBtn = `<button class="btn-icon-delete" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); padding:4px;" onclick="event.stopPropagation(); app.deleteHistoryItem('${video.videoId || video.id}')" title="Delete from history"><i data-lucide="trash-2"></i></button>`;
     }
 
+    const progressHtml = this.getProgressBarHtml(video.videoId || video.id);
+
     card.title = video.title || '';
     card.style.position = 'relative'; // Ensure absolute positioning of delete button works
     card.innerHTML = `
-      <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" alt="${this.escapeHtml(video.title)}">
+      <div style="position:relative; flex-shrink:0; overflow:hidden; border-radius:8px;">
+        <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" style="display:block;" alt="${this.escapeHtml(video.title)}">
+        ${progressHtml}
+      </div>
       <div class="video-card-details" style="padding-right: 32px;">
         <h4 class="video-card-title">${rankPrefix}${this.escapeHtml(video.title)}</h4>
         <div class="video-card-meta">
@@ -5096,7 +5243,7 @@ class WatchOnRepeat {
   async generateShareableClip() {
     const video = this.state.currentVideo;
     if (!video) {
-      this.showToast("Load a video first!", "alert-circle");
+      this.showToast("Load a video first", "alert-circle");
       return;
     }
 
@@ -5109,7 +5256,7 @@ class WatchOnRepeat {
         menu.classList.remove('hidden');
         if (window.lucide) window.lucide.createIcons();
       } else {
-        app.showToast("Link copied to clipboard!", "check-circle");
+        app.showToast("Link copied to clipboard", "check-circle");
         navigator.clipboard.writeText(shareUrl).catch(e => console.error(e));
       }
       return;
@@ -5185,7 +5332,7 @@ class WatchOnRepeat {
       if (window.lucide) window.lucide.createIcons();
     } else {
       // Fallback
-      app.showToast("Link copied to clipboard!", "check-circle");
+      app.showToast("Link copied to clipboard", "check-circle");
       navigator.clipboard.writeText(shareUrl).catch(err => {
         console.error("Could not copy link", err);
       });
@@ -5226,7 +5373,7 @@ class WatchOnRepeat {
     if (input) {
       input.select();
       navigator.clipboard.writeText(input.value).then(() => {
-        this.showToast("Link copied to clipboard!", "clipboard-check");
+        this.showToast("Link copied to clipboard", "clipboard-check");
       });
     }
   }
@@ -5330,6 +5477,9 @@ class WatchOnRepeat {
         e.preventDefault();
         this.switchTab('notes');
         if (this.elements.noteInput) this.elements.noteInput.focus();
+      } else if (key === 't') {
+        e.preventDefault();
+        this.toggleTheaterMode();
       } 
       // Premium shortcuts
       else if (isPremium && key === s.shiftLeft) {
@@ -5418,7 +5568,7 @@ class WatchOnRepeat {
     if (error) {
       this.showToast(error.message, "alert-circle");
     } else {
-      this.showToast("Confirmation link sent to your new email!", "check-circle");
+      this.showToast("Confirmation link sent to your new email", "check-circle");
     }
   }
 
@@ -5429,12 +5579,12 @@ class WatchOnRepeat {
     if (!password) return;
     
     if (password.length < 6) {
-      this.showToast("Password must be at least 6 characters.", "alert-circle");
+      this.showToast("Password must be at least 6 characters", "alert-circle");
       return;
     }
     
     if (password !== confirm) {
-      this.showToast("Passwords do not match.", "alert-circle");
+      this.showToast("Passwords do not match", "alert-circle");
       return;
     }
     
@@ -5442,7 +5592,7 @@ class WatchOnRepeat {
     if (error) {
       this.showToast(error.message, "alert-circle");
     } else {
-      this.showToast("Password updated successfully!", "check-circle");
+      this.showToast("Password updated successfully", "check-circle");
       document.getElementById('settings-password-input').value = '';
       document.getElementById('settings-password-confirm').value = '';
     }
@@ -5465,7 +5615,7 @@ class WatchOnRepeat {
           localStorage.removeItem(key);
         }
       });
-      this.showToast("Cache cleared! Reloading...", "check-circle");
+      this.showToast("Cache cleared! Reloading", "check-circle");
       setTimeout(() => window.location.reload(), 1500);
     }
   }
@@ -5490,7 +5640,7 @@ class WatchOnRepeat {
         
         await supabaseClient.auth.signOut();
         this.setButtonLoading(btnEl, false);
-        this.showToast("Your account has been completely deleted.", "check-circle");
+        this.showToast("Your account has been completely deleted", "check-circle");
         setTimeout(() => window.location.reload(), 2000);
       } catch (e) {
         this.setButtonLoading(btnEl, false);
@@ -5828,7 +5978,10 @@ class WatchOnRepeat {
         const urlParams = `?v=${encodeURIComponent(seg.videoId)}&p=${seg.platform}&start=${seg.start}&end=${seg.end}`;
         segmentsHtml += `
           <div style="display: flex; align-items: center; gap: 8px;">
-            <input type="checkbox" class="saved-loop-item-checkbox" data-video-id="${videoGroup.platform}_${videoGroup.videoId}" value="${seg.id}" onchange="app.checkSavedLoopSelection()" style="cursor: pointer;">
+            <div class="toggle-switch">
+              <input type="checkbox" class="saved-loop-item-checkbox" data-video-id="${videoGroup.platform}_${videoGroup.videoId}" value="${seg.id}" onchange="app.checkSavedLoopSelection()" style="cursor: pointer;">
+              <span class="toggle-slider"></span>
+            </div>
             <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; color: white; transition: background 0.2s; cursor: pointer;" onclick="history.pushState(null, '', '${urlParams}'); app.handleRouting();" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
               <span style="font-weight: 500; font-size: 13px;">${this.escapeHtml(seg.name || 'Unnamed Loop')}</span>
               <span style="font-size: 12px; color: #888; font-family: monospace;">${this.formatTime(seg.start)} - ${this.formatTime(seg.end)}</span>
@@ -6096,7 +6249,7 @@ class WatchOnRepeat {
     
     try {
       await navigator.clipboard.writeText(url.href);
-      this.showToast("Session link copied to clipboard!", "link");
+      this.showToast("Session link copied to clipboard", "link");
     } catch (err) {
       this.showToast("Failed to copy link", "alert-triangle");
     }

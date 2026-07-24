@@ -195,7 +195,7 @@
         <form id="paste-form" onsubmit="app.handleSearchSubmit(event)">
           <div class="search-wrapper">
             <i data-lucide="link-2" class="search-icon"></i>
-            <input type="text" id="video-url-input" aria-label="Video URL" placeholder="Paste direct link or YouTube Playlist..." autocomplete="off">
+            <input type="text" id="video-url-input" aria-label="Video URL" placeholder="Paste direct link or YouTube playlist..." autocomplete="off">
             <button type="submit" class="search-btn">
               <span>Loop It</span>
               <i data-lucide="play"></i>
@@ -315,6 +315,9 @@
               <h1 id="video-title">Loading video title...</h1>
             </div>
             <div class="action-buttons">
+              <button id="theater-mode-btn" class="btn-icon" aria-label="Toggle Theater Mode" onclick="app.toggleTheaterMode()" title="Theater Mode (t)">
+                <i data-lucide="monitor"></i>
+              </button>
               <button id="favorite-btn" class="btn-icon" aria-label="Favorite Video" onclick="app.toggleFavorite()" title="Favorite Video">
                 <i data-lucide="heart"></i>
               </button>
@@ -343,7 +346,10 @@
                 </div>
                 <div style="margin-top: 6px; text-align: center;">
                   <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #aaa; cursor: pointer;">
-                    <input type="checkbox" id="toggle-note-markers" checked onchange="app.toggleNoteMarkers(event)">
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="toggle-note-markers" checked onchange="app.toggleNoteMarkers(event)">
+                      <span class="toggle-slider"></span>
+                    </div>
                     Show Note Markers
                   </label>
                 </div>
@@ -411,7 +417,10 @@
                       </span>
                     </span>
                     <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                      <input type="checkbox" id="auto-tempo-checkbox" onchange="app.toggleAutoTempo(event)">
+                      <div class="toggle-switch">
+                        <input type="checkbox" id="auto-tempo-checkbox" onchange="app.toggleAutoTempo(event)">
+                        <span class="toggle-slider"></span>
+                      </div>
                       <span class="text-xs font-bold text-gray-300">Tempo <i data-lucide="trending-up" style="display:inline; width:12px; height:12px;"></i></span>
                     </label>
                   </div>
@@ -446,7 +455,10 @@
               <div class="multi-segment-wrapper" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
                 <div style="display: flex; align-items: center; flex-wrap: wrap;">
                   <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" id="multi-segment-checkbox" onchange="app.toggleMultiSegment(event)">
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="multi-segment-checkbox" onchange="app.toggleMultiSegment(event)">
+                      <span class="toggle-slider"></span>
+                    </div>
                     <span class="text-sm font-bold text-white" style="display:flex; align-items:center;">
                       <i data-lucide="layers" style="width:14px; height:14px; display:inline-block; margin-right:4px;"></i> Premium/Pro Multiple Segments Controls
                     </span>
@@ -483,15 +495,9 @@
           <!-- Stats Dashboard moved to Analytics Tab -->
         </div>
 
+
         <div id="discover-section" class="player-card" style="margin-top: 1.5rem;">
-          <div class="video-info-bar" style="border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem; margin-bottom: 1rem;">
-            <h3 style="font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-              <i data-lucide="compass" style="color: var(--color-primary);"></i> Most Looped Videos
-            </h3>
-          </div>
-          <div class="video-grid" id="discover-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
-            <!-- Discover videos will be inserted here -->
-          </div>
+
           
           <!-- Bookmark Shortcut -->
           <div class="bookmarklet-box" style="margin-top: 2rem;">
@@ -512,7 +518,7 @@
           <!-- Sidebar Tabs Header -->
           <div class="sidebar-tabs">
             <button class="tab-btn active" id="tab-up-next-btn" onclick="app.showTab('up-next')">
-              <i data-lucide="list"></i> Up Next
+              <i data-lucide="list"></i> <span id="up-next-tab-label">Most Looped</span>
             </button>
             <button class="tab-btn" id="tab-favorites-btn" onclick="app.showTab('favorites')">
               <i data-lucide="heart"></i> Favorites
@@ -576,7 +582,7 @@
             <!-- Upgrade/Paywall Modal -->
   <div class="premium-unlock-takeover hidden" id="premium-unlock-modal" onclick="if(event.target === this) app.closeUpgradeModal()">
     <div class="premium-unlock-container">
-      <button class="modal-close-btn" onclick="app.closeUpgradeModal()">
+      <button class="modal-close-btn" onclick="app.closeUpgradeModal()" aria-label="Close Upgrade Modal">
         <i data-lucide="x"></i>
       </button>
       <div class="modal-header border-b pb-4 mb-6 border-gray-800">
@@ -600,7 +606,7 @@
               <li><i data-lucide="check" style="color: #10B981; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> Audio Recording (15 slots, 5min)</li>
             </ul>
             <div id="waitlist-container-Premium" style="margin-top: 24px;">
-              <button class="btn btn-outline w-full" onclick="app.showWaitlistInput('Premium')" style="justify-content: center;">Upgrade to Premium (Coming Soon)</button>
+              <button class="btn btn-outline w-full" onclick="app.showWaitlistInput('Premium')" style="justify-content: center; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">UPGRADE TO PREMIUM (COMING SOON)</button>
             </div>
             <div id="waitlist-form-Premium" class="hidden" style="margin-top: 24px; text-align: left;">
               <label class="text-sm text-gray-400 mb-2 block">Join the VIP waitlist for 50% off:</label>
@@ -626,7 +632,7 @@
               <li><i data-lucide="check" style="color: #ec4899; display: inline; width: 16px; height: 16px; margin-right: 8px;"></i> API & Data Export</li>
             </ul>
             <div id="waitlist-container-Pro" style="margin-top: 24px;">
-              <button class="btn btn-primary w-full" onclick="app.showWaitlistInput('Pro')" style="justify-content: center;">Upgrade to Pro (Coming Soon)</button>
+              <button class="btn btn-primary w-full" onclick="app.showWaitlistInput('Pro')" style="justify-content: center; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">UPGRADE TO PRO (COMING SOON)</button>
             </div>
             <div id="waitlist-form-Pro" class="hidden" style="margin-top: 24px; text-align: left;">
               <label class="text-sm text-gray-400 mb-2 block">Join the VIP waitlist for 50% off:</label>
@@ -657,7 +663,7 @@
         <div class="mt-4 pt-4 border-t border-gray-800">
           <div id="create-playlist-form" class="hidden">
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="new-playlist-name" placeholder="Playlist Name" style="flex: 1; padding: 8px; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white;">
+              <input type="text" id="new-playlist-name" placeholder="Playlist name" style="flex: 1; padding: 8px; background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px; color: white;">
               <button class="btn btn-primary btn-sm" onclick="app.createNewPlaylistFromModal()">Create</button>
             </div>
           </div>
@@ -772,7 +778,10 @@
                   <!-- Bulk Actions Toolbar -->
                   <div id="saved-loops-bulk-actions" class="hidden" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
-                      <input type="checkbox" id="saved-loops-select-all" onchange="app.toggleSelectAllSavedLoops(event)">
+                      <div class="toggle-switch">
+                        <input type="checkbox" id="saved-loops-select-all" onchange="app.toggleSelectAllSavedLoops(event)">
+                        <span class="toggle-slider"></span>
+                      </div>
                       <span style="font-size: 13px; font-weight: bold;">Select All</span>
                     </label>
                     <button class="btn btn-error btn-sm hidden" id="saved-loops-bulk-delete-btn" onclick="app.deleteSelectedSavedLoops()"><i data-lucide="trash-2"></i> Delete Selected</button>
@@ -861,12 +870,14 @@
             <!-- Up Next Tab -->
             <div id="tab-up-next" class="tab-panel active">
               <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <h3 style="margin-left: 12px; margin-bottom: 0;">Up Next</h3>
+                <h3 id="up-next-header-label" style="margin-left: 12px; margin-bottom: 0;">Most Looped</h3>
                 <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted);">
                   <span>Auto-play</span>
-                  <label class="switch" style="transform: scale(0.8); margin: 0;">
-                    <input type="checkbox" id="up-next-autoplay" onchange="app.toggleAutoplay(this.checked)" checked>
-                    <span class="slider round"></span>
+                  <label style="margin: 0; cursor: pointer; display: flex; align-items: center;">
+                    <div class="toggle-switch" style="transform: scale(0.8);">
+                      <input type="checkbox" id="up-next-autoplay" onchange="app.toggleAutoplay(this.checked)" checked>
+                      <span class="toggle-slider"></span>
+                    </div>
                   </label>
                 </div>
               </div>
@@ -921,7 +932,7 @@
             
             <div id="playlists-content" class="hidden">
               <div style="display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;">
-                <input type="text" id="new-playlist-input" class="search-input" placeholder="New Playlist Name..." style="flex: 1; min-width: 200px;">
+                <input type="text" id="new-playlist-input" class="search-input" placeholder="New playlist name..." style="flex: 1; min-width: 200px;">
                 <button class="btn btn-primary" onclick="app.createPlaylist()"><i data-lucide="plus"></i> Create</button>
                 <select id="playlist-sort-select" class="dropdown-select" onchange="app.renderPlaylistsTab()">
                   <option value="newest">Newest Created</option>
@@ -1043,6 +1054,60 @@
         </div>
       </div>
 
+    <!-- AdSense Content Requirement: FAQ Accordion -->
+  <section class="faq-accordion">
+    <h2>Frequently Asked Questions</h2>
+    
+    <div class="faq-item">
+      <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+        How do I loop a YouTube video or playlist?
+        <i data-lucide="chevron-down" class="faq-icon"></i>
+      </button>
+      <div class="faq-answer">
+        <p>To loop a YouTube video or a public YouTube playlist, simply paste the link into the search bar on WatchOnRepeat and hit Enter. The video or playlist will automatically load. For playlists, you can view the queue in the Up Next tab.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+        Can I loop a Facebook video?
+        <i data-lucide="chevron-down" class="faq-icon"></i>
+      </button>
+      <div class="faq-answer">
+        <p>Yes, you can easily loop Facebook videos and reels. Just copy the video URL from Facebook and paste it into the search bar at WatchOnRepeat. The tool will automatically extract the video and play it on repeat without interruptions.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+        Is there a way to loop only a specific part of a video?
+        <i data-lucide="chevron-down" class="faq-icon"></i>
+      </button>
+      <div class="faq-answer">
+        <p>Yes, WatchOnRepeat has a built-in A/B looper. Once your video is loaded, you can set a custom 'Start' and 'End' timestamp using the slider controls. The video will then continuously loop only that specific segment, which is perfect for practicing an instrument or studying a lecture.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+        Can I slow down a Twitch VOD?
+        <i data-lucide="chevron-down" class="faq-icon"></i>
+      </button>
+      <div class="faq-answer">
+        <p>Unfortunately, Twitch's official embedded video player does not support custom playback speeds. While WatchOnRepeat can infinitely loop Twitch clips and VODs, third-party sites are restricted from altering the playback speed of Twitch videos.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+        Does WatchOnRepeat work with local files?
+        <i data-lucide="chevron-down" class="faq-icon"></i>
+      </button>
+      <div class="faq-answer">
+        <p>Yes. Pro users can upload offline MP4, WebM, or OGG video files directly from their computer into the browser. The files are not uploaded to any external server, ensuring complete privacy while using the looping and speed control features.</p>
+      </div>
+    </div>
+  </section>
     </main>
 
     <!-- Right Gutter Ad Space -->
@@ -1103,14 +1168,17 @@
           <!-- 2. Sign Up View -->
           <div id="auth-signup-view" class="hidden">
             <form class="auth-form" onsubmit="app.handleEmailSignUp(event)" id="auth-signup-form">
-              <input type="email" id="signup-email" placeholder="Email Address" required>
+              <label for="signup-email" style="display:none;">Email Address</label>
+              <input type="email" id="signup-email" placeholder="Email address" required>
               <div style="position: relative;">
+                <label for="signup-password" style="display:none;">Password</label>
                 <input type="password" id="signup-password" placeholder="Password" required style="width: 100%;">
                 <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('signup-password')"></i>
               </div>
               <div style="font-size: 11px; color: #9ca3af; margin-top: -8px; margin-bottom: 12px; padding-left: 8px;">Minimum 6 characters, must contain letters and numbers.</div>
               <div style="position: relative;">
-                <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required style="width: 100%;">
+                <label for="signup-confirm-password" style="display:none;">Confirm Password</label>
+                <input type="password" id="signup-confirm-password" placeholder="Confirm password" required style="width: 100%;">
                 <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('signup-confirm-password')"></i>
               </div>
               
@@ -1124,8 +1192,10 @@
           <!-- 3. Log In View -->
           <div id="auth-login-view" class="hidden">
             <form class="auth-form" onsubmit="app.handleEmailLogin(event)" id="auth-email-form">
-              <input type="email" id="login-email" placeholder="Email Address" required>
+              <label for="login-email" style="display:none;">Email Address</label>
+              <input type="email" id="login-email" placeholder="Email address" required>
               <div style="position: relative;">
+                <label for="login-password" style="display:none;">Password</label>
                 <input type="password" id="login-password" placeholder="Password" required style="width: 100%;">
                 <i data-lucide="eye" class="password-toggle-icon" onclick="app.togglePasswordVisibility('login-password')"></i>
               </div>
@@ -1143,7 +1213,8 @@
           <div id="auth-reset-view" class="hidden">
             <form class="auth-form" onsubmit="app.handleResetPassword(event)" id="auth-reset-form">
               <p class="text-sm text-gray-400 mb-4" style="text-align:left;">Enter your email and we'll send you a link to reset your password.</p>
-              <input type="email" id="reset-email" placeholder="Email Address" required>
+              <label for="reset-email" style="display:none;">Email Address</label>
+              <input type="email" id="reset-email" placeholder="Email address" required>
               <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-bottom: 12px;">Send Reset Link</button>
               <button type="button" class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="app.switchAuthView('login')">Back to Login</button>
             </form>
@@ -1227,13 +1298,16 @@
         </div>
         <h3 class="text-xl font-bold" style="color: var(--text-bright);">Information</h3>
         <p id="info-modal-message" style="margin: 0; color: var(--text-primary); line-height: 1.6; font-size: 14px; text-align: center;"></p>
-        <button class="btn btn-primary w-full mt-2" onclick="app.closeInfoModal()">Got it</button>
+        <button class="btn btn-primary w-full mt-2" onclick="app.closeInfoModal()">Got It</button>
       </div>
     </div>
   </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
-  <footer class="site-footer">
+  
+  
+
+<footer class="site-footer">
     <div class="footer-seo-links">
       <strong>Guides & Use Cases:</strong>
       <a href="/youtube-looper.html" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">YouTube Looper & Repeater</a> | 
@@ -1243,7 +1317,7 @@
       <a href="/listenonrepeat-alternative.html" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">ListenOnRepeat Alternative</a>
     </div>
     <div class="footer-links" style="margin-top: 1rem; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; align-items: center;">
-      <a href="/listenonrepeat-alternative.html" style="background: var(--gradient-primary, linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)); color: white; padding: 5px 14px; border-radius: 9999px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); transition: transform 0.2s;"><i data-lucide="crown" style="width: 14px; height: 14px;"></i> Upgrade</a>
+      <a href="/listenonrepeat-alternative.html" style="background: var(--gradient-primary, linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)); color: white; padding: 5px 14px; border-radius: 9999px; text-decoration: none; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); transition: transform 0.2s;"><i data-lucide="crown" style="width: 14px; height: 14px;"></i> UPGRADE</a>
       <a href="https://buymeacoffee.com/watchonrepeat" target="_blank" style="background: rgba(255,255,255,0.05); color: #e2e8f0; padding: 5px 14px; border-radius: 9999px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,0.1); transition: background 0.2s;"><i data-lucide="heart" style="width: 14px; height: 14px; color: #fb7185;"></i> Donate</a>
       <a href="/faq.html" style="color: #94a3b8; text-decoration: none; font-weight: bold;">FAQ</a>
       <a href="/about.html" style="color: #94a3b8; text-decoration: none;">About Us</a>
@@ -1292,11 +1366,17 @@
       <div style="display:flex; align-items:center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <div style="display:flex; gap:16px;">
           <label style="display:flex; align-items:center; gap:8px; color:var(--text-muted); font-size:13px; cursor:pointer; user-select:none;">
-            <input type="checkbox" id="share-include-segments" checked onchange="app.generateShareableClip()" style="width:16px; height:16px; cursor:pointer;">
+            <div class="toggle-switch">
+              <input type="checkbox" id="share-include-segments" checked onchange="app.generateShareableClip()">
+              <span class="toggle-slider"></span>
+            </div>
             Segments
           </label>
           <label style="display:flex; align-items:center; gap:8px; color:var(--text-muted); font-size:13px; cursor:pointer; user-select:none;">
-            <input type="checkbox" id="share-include-notes" checked onchange="app.generateShareableClip()" style="width:16px; height:16px; cursor:pointer;">
+            <div class="toggle-switch">
+              <input type="checkbox" id="share-include-notes" checked onchange="app.generateShareableClip()">
+              <span class="toggle-slider"></span>
+            </div>
             Notes
           </label>
         </div>
@@ -1345,7 +1425,7 @@
         </div>
       </div>
       <div class="modal-footer" style="margin-top: 24px;">
-        <button class="btn btn-primary w-full" onclick="app.closeGlobalControlsModal()">Got it!</button>
+        <button class="btn btn-primary w-full" onclick="app.closeGlobalControlsModal()">Got It</button>
       </div>
     </div>
   </div>

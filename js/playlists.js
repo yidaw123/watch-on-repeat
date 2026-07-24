@@ -42,14 +42,16 @@ class PlaylistsMixin {
 
         const thumbUrl = v.thumbnail || this.getThumbnailUrl(v.platform, v.videoId || v.id);
         const isActive = this.state.currentVideo && (this.state.currentVideo.id === (v.videoId || v.id));
+        const progressHtml = this.getProgressBarHtml(v.videoId || v.id);
         if (isActive) card.classList.add('active');
 
         card.innerHTML = `
           <div class="yt-playlist-index">
             ${isActive ? '<i data-lucide="play" style="width:14px;height:14px;color:var(--color-primary)"></i>' : (index + 1)}
           </div>
-          <div class="yt-playlist-thumb-wrapper">
+          <div class="yt-playlist-thumb-wrapper" style="position:relative;">
             <img src="${this.escapeHtml(thumbUrl)}" class="yt-playlist-thumb" alt="${this.escapeHtml(v.title)}">
+            ${progressHtml}
           </div>
           <div class="yt-playlist-info">
             <div class="yt-playlist-title">${this.escapeHtml(v.title)}</div>
@@ -146,14 +148,16 @@ class PlaylistsMixin {
 
         const thumbUrl = v.thumbnail || this.getThumbnailUrl(v.platform, v.videoId || v.id);
         const isActive = this.state.currentVideo && (this.state.currentVideo.id === (v.videoId || v.id));
+        const progressHtml = this.getProgressBarHtml(v.videoId || v.id);
         if (isActive) card.classList.add('active');
 
         card.innerHTML = `
           <div class="yt-playlist-index">
             ${isActive ? '<i data-lucide="play" style="width:14px;height:14px;color:var(--color-primary)"></i>' : (index + 1)}
           </div>
-          <div class="yt-playlist-thumb-wrapper" onclick="app.playNativePlaylist(app.getDb('playlists').find(pl => pl.id === '${this.escapeHtml(p.id)}') || app.state.sharedPlaylist, ${index})" style="cursor:pointer;">
+          <div class="yt-playlist-thumb-wrapper" onclick="app.playNativePlaylist(app.getDb('playlists').find(pl => pl.id === '${this.escapeHtml(p.id)}') || app.state.sharedPlaylist, ${index})" style="cursor:pointer; position:relative;">
             <img src="${this.escapeHtml(thumbUrl)}" class="yt-playlist-thumb" alt="${this.escapeHtml(v.title)}">
+            ${progressHtml}
           </div>
           <div class="yt-playlist-info" onclick="app.playNativePlaylist(app.getDb('playlists').find(pl => pl.id === '${this.escapeHtml(p.id)}') || app.state.sharedPlaylist, ${index})" style="cursor:pointer;">
             <div class="yt-playlist-title">${this.escapeHtml(v.title)}</div>
@@ -484,6 +488,66 @@ class PlaylistsMixin {
     input.value = '';
     this.renderPlaylistsTab();
     this.showToast("Playlist created!", "check-circle");
+  }
+
+  saveCurrentPlaylistToAccount() {
+    if (!this.state.user) {
+      this.openLoginModal();
+      return;
+    }
+    
+    if (!this.state.playlistQueue || this.state.playlistQueue.length === 0) {
+      this.showToast("There are no videos to save.", "alert-circle");
+      return;
+    }
+
+    const playlists = this.getDb('playlists') || [];
+    const userPlaylists = playlists.filter(p => p.userId === this.state.user.id);
+    const tier = this.getUserTier();
+    
+    // Free limit: 5 playlists
+    if (tier === 'free' && userPlaylists.length >= 5) {
+      this.openUpgradeModal("Free users can create up to 5 playlists. Upgrade to Premium for unlimited playlists!");
+      return;
+    }
+
+    let defaultName = "Saved YouTube Playlist";
+    
+    const newPlaylist = {
+       id: this.generateId(),
+       userId: this.state.user.id,
+       name: defaultName,
+       isPublic: false,
+       createdAt: Date.now(),
+       videos: this.state.playlistQueue.map(v => ({
+           id: this.generateId(),
+           videoId: v.id,
+           platform: v.platform || 'youtube',
+           title: v.title || 'Unknown Video',
+           thumbnail: v.thumbnail || this.getThumbnailUrl(v.platform || 'youtube', v.id)
+       }))
+    };
+    
+    playlists.push(newPlaylist);
+    this.saveDb('playlists', playlists);
+    
+    // Sync to Supabase if logged in
+    if (window.supabaseClient) {
+       supabaseClient.from('user_playlists').insert({
+          id: newPlaylist.id,
+          user_id: newPlaylist.userId,
+          name: newPlaylist.name,
+          is_public: false,
+          videos: newPlaylist.videos
+       }).then(({error}) => {
+          if (error) console.error("Failed to save playlist to cloud", error);
+       });
+    }
+    
+    this.showToast("Playlist saved to Your Playlists!", "check-circle");
+    
+    // Switch to Playlists tab so they can see it
+    this.switchTab('playlists');
   }
 
   openPlaylistModal() {
