@@ -1883,7 +1883,17 @@ class WatchOnRepeat {
            }
            this.saveDb('notes', notes);
         }
-      }
+       }
+
+       // Backfill the title to global_stats if it was created as NULL
+       if (window.supabaseClient && meta.title && platform !== 'local') {
+          window.supabaseClient.from('global_stats')
+            .update({ video_title: meta.title })
+            .eq('video_id', id)
+            .eq('platform', platform)
+            .is('video_title', null)
+            .then();
+       }
 
       this.updateMediaSession(meta.title || videoTitle, platform, id, meta.thumbnail);
     });
