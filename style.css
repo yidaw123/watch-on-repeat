@@ -2630,7 +2630,8 @@ input[type="checkbox"]:focus {
   position: absolute;
   cursor: pointer;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   transition: .2s;
   border-radius: 20px;
 }
@@ -2640,15 +2641,18 @@ input[type="checkbox"]:focus {
   content: "";
   height: 16px;
   width: 16px;
-  left: 2px;
-  bottom: 2px;
+  left: 1px;
+  bottom: 1px;
   background-color: white;
   transition: .2s;
   border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background-color: var(--primary);
+  background-color: var(--color-purple);
+  border-color: var(--color-purple);
+  box-shadow: inset 0 0 0 1px var(--color-purple-glow);
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
