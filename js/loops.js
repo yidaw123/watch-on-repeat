@@ -484,6 +484,7 @@ class LoopsMixin {
     
     this.saveLoopData(); // Save the toggle state immediately
     if (this.updateTimelineUI) this.updateTimelineUI();
+    if (this.renderMultiSegments) this.renderMultiSegments();
   }
 
   addLoopSegment() {
@@ -513,8 +514,7 @@ class LoopsMixin {
   removeLoopSegment(index) {
     this.state.abLoop.multiSegments.splice(index, 1);
     if (this.state.abLoop.multiSegments.length === 0) {
-      const dur = this.state.currentVideoDuration || 0;
-      this.state.abLoop.multiSegments.push({ start: 0, end: dur, speed: 1.0 });
+      this.state.abLoop.multiSegments.push({ start: null, end: null, speed: 1.0 });
     }
     if (this.state.abLoop.currentSegmentIndex >= this.state.abLoop.multiSegments.length) {
       this.state.abLoop.currentSegmentIndex = 0;
@@ -532,9 +532,8 @@ class LoopsMixin {
       okText: 'Delete All'
     });
     if (!confirmed) return;
-    const dur = this.state.currentVideoDuration || 0;
     this.state.abLoop.multiSegments = [];
-    this.state.abLoop.multiSegments.push({ start: 0, end: dur, speed: 1.0 });
+    this.state.abLoop.multiSegments.push({ start: null, end: null, speed: 1.0 });
     this.state.abLoop.currentSegmentIndex = 0;
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
