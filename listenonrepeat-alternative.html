@@ -73,12 +73,13 @@
     .faq-item { margin-bottom: 1.5rem; }
     .faq-item h3 { font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text-primary); }
     .faq-item p { font-size: 1rem; color: var(--text-secondary); }
-    
-    .comparison-table { width: 100%; border-collapse: collapse; margin: 2rem 0; background: var(--bg-card); border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); }
+    .table-wrapper { overflow-x: auto; margin: 2rem 0; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); }
+    .comparison-table { width: 100%; border-collapse: collapse; overflow: hidden; }
     .comparison-table th, .comparison-table td { padding: 1rem; text-align: center; border-bottom: 1px solid var(--border-color); }
-    .comparison-table th { background: rgba(255, 255, 255, 0.05); font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--text-primary); }
-    .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; }
-    .comparison-table td { color: var(--text-secondary); }
+    .comparison-table th { background: rgba(255, 255, 255, 0.05); font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--text-primary); white-space: nowrap; padding: 1rem 1.5rem; }
+    .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; font-weight: 600; color: var(--text-bright); position: sticky; left: 0; background: var(--bg-card); z-index: 2; border-right: 1px solid var(--border-color); }
+    .comparison-table th:first-child { background: #1f2937; z-index: 3; }
+    .comparison-table td { color: var(--text-secondary); white-space: nowrap; }
     .check-icon { color: #10b981; }
     .x-icon { color: #ef4444; }
   </style>
@@ -115,8 +116,8 @@
         <h2>What WatchOnRepeat Offers</h2>
         <p>We built this platform to be a true upgrade for anyone who relies on video repetition for learning or practice.</p>
         
-        <div style="overflow-x:auto;">
-          <table class="comparison-table" style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 1rem;">
+        <div class="table-wrapper">
+          <table class="comparison-table">
             <thead>
               <tr style="border-bottom: 2px solid var(--border-color);">
                 <th style="padding: 12px;">Feature</th>
@@ -223,7 +224,7 @@
         
 <h2>How We Compare to Competitors</h2>
 <div class="table-wrapper">
-      <table>
+      <table class="comparison-table">
         <thead>
           <tr>
             <th>Features</th>
