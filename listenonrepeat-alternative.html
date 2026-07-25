@@ -73,13 +73,11 @@
     .faq-item { margin-bottom: 1.5rem; }
     .faq-item h3 { font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text-primary); }
     .faq-item p { font-size: 1rem; color: var(--text-secondary); }
-    .table-wrapper { overflow-x: auto; margin: 2rem 0; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); }
-    .comparison-table { width: 100%; border-collapse: collapse; overflow: hidden; }
-    .comparison-table th, .comparison-table td { padding: 1rem; text-align: center; border-bottom: 1px solid var(--border-color); }
-    .comparison-table th { background: rgba(255, 255, 255, 0.05); font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--text-primary); white-space: nowrap; padding: 1rem 1.5rem; }
-    .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; font-weight: 600; color: var(--text-bright); position: sticky; left: 0; background: var(--bg-card); z-index: 2; border-right: 1px solid var(--border-color); }
-    .comparison-table th:first-child { background: #1f2937; z-index: 3; }
-    .comparison-table td { color: var(--text-secondary); white-space: nowrap; }
+    .comparison-table { width: 100%; border-collapse: collapse; margin: 2rem 0; background: var(--bg-card); border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); }
+    .comparison-table th, .comparison-table td { padding: 0.75rem 0.5rem; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; }
+    .comparison-table th { background: rgba(255, 255, 255, 0.05); font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--text-primary); padding: 1rem 0.5rem; }
+    .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; padding-left: 1rem; }
+    .comparison-table td { color: var(--text-secondary); }
     .check-icon { color: #10b981; }
     .x-icon { color: #ef4444; }
   </style>
@@ -116,7 +114,7 @@
         <h2>What WatchOnRepeat Offers</h2>
         <p>We built this platform to be a true upgrade for anyone who relies on video repetition for learning or practice.</p>
         
-        <div class="table-wrapper">
+        <div>
           <table class="comparison-table">
             <thead>
               <tr style="border-bottom: 2px solid var(--border-color);">
@@ -223,17 +221,17 @@
         
         
 <h2>How We Compare to Competitors</h2>
-<div class="table-wrapper">
+<div>
       <table class="comparison-table">
         <thead>
           <tr>
             <th>Features</th>
             <th class="wor-column" style="font-size:1.1rem; color:var(--color-primary);">Watch On Repeat</th>
-            <th>LoopingTube.com</th>
+            <th>LoopingTube</th>
             <th>LoopTube.io</th>
             <th>Looper.tube</th>
             <th>LoopTube.xyz</th>
-            <th>YouTube Native</th>
+            <th>YouTube</th>
           </tr>
         </thead>
         <tbody>
@@ -265,7 +263,7 @@
             <td><i data-lucide="x" class="x-icon"></i></td>
           </tr>
           <tr>
-            <td>Cross-Device Cloud Sync</td>
+            <td>Cloud Sync</td>
             <td class="wor-column"><i data-lucide="check" class="check-icon"></i></td>
             <td><i data-lucide="check" class="check-icon"></i></td>
             <td><i data-lucide="x" class="x-icon"></i></td>
@@ -283,7 +281,7 @@
             <td><i data-lucide="x" class="x-icon"></i></td>
           </tr>
           <tr>
-            <td>Video History & Discovery</td>
+            <td>History & Discovery</td>
             <td class="wor-column"><i data-lucide="check" class="check-icon"></i></td>
             <td><i data-lucide="x" class="x-icon"></i></td>
             <td><i data-lucide="x" class="x-icon"></i></td>
@@ -292,7 +290,7 @@
             <td><i data-lucide="check" class="check-icon"></i></td>
           </tr>
           <tr>
-            <td>Gradual Tempo Ramp</td>
+            <td>Tempo Ramp</td>
             <td class="wor-column"><i data-lucide="check" class="check-icon"></i></td>
             <td><i data-lucide="check" class="check-icon"></i></td>
             <td><i data-lucide="x" class="x-icon"></i></td>
