@@ -455,6 +455,15 @@ class LoopsMixin {
       }
       
       if (!this.state.abLoop.multiSegments) this.state.abLoop.multiSegments = [];
+      
+      // Sanitize corrupted empty segments (0 to 0) from previous bug
+      this.state.abLoop.multiSegments.forEach(seg => {
+        if (seg.start === 0 && seg.end === 0) {
+          seg.start = null;
+          seg.end = null;
+        }
+      });
+      
       if (this.state.abLoop.multiSegments.length === 0) {
         this.addLoopSegment();
       }
@@ -600,6 +609,14 @@ class LoopsMixin {
     if (checkbox) checkbox.checked = !!isMultiActive;
 
     if (isMultiActive && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+      // Sanitize corrupted empty segments (0 to 0) from previous bug
+      this.state.abLoop.multiSegments.forEach(seg => {
+        if (seg.start === 0 && seg.end === 0) {
+          seg.start = null;
+          seg.end = null;
+        }
+      });
+      
       list.classList.remove('hidden');
       
       if (this.elements && this.elements.abStart) {

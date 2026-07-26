@@ -1817,6 +1817,9 @@ class WatchOnRepeat {
     this.destroyPlayers();
     this.elements.playerContainer.innerHTML = '';
     
+    // PRE-LOAD local storage data early so we have the start time for the iframe init
+    this.loadLoopData(id);
+    
     // Show Loaded State
     if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
     this.elements.playerLoaded.classList.remove('remove'); // make sure
@@ -2151,8 +2154,7 @@ class WatchOnRepeat {
       this.state.isViewingSharedSegments = true;
       this.state.sharedSegmentsToLoad = null; 
     } else if (data) {
-      const isPremium = this.getUserTier() !== 'free';
-      this.state.abLoop.multiSegments = isPremium ? (data.multiSegments || []) : [];
+      this.state.abLoop.multiSegments = data.multiSegments || [];
       this.state.isMultiSegment = data.isMultiSegment || false;
       
       if (this.state.isMultiSegment && this.state.abLoop.multiSegments.length > 0) {
@@ -2464,6 +2466,16 @@ class WatchOnRepeat {
     return { title, thumbnail };
   }
 
+  getInitialStartTime() {
+    if (this.state.isMultiSegment && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) {
+       const idx = this.state.abLoop.currentSegmentIndex || 0;
+       if (this.state.abLoop.multiSegments[idx] && this.state.abLoop.multiSegments[idx].start !== null) {
+          return this.state.abLoop.multiSegments[idx].start;
+       }
+    }
+    return this.state.abLoop.start || 0;
+  }
+
   // --- YouTube Iframe Controller ---
   initYouTubePlayer(id) {
     const playerDiv = document.createElement('div');
@@ -2516,6 +2528,9 @@ class WatchOnRepeat {
           'enablejsapi': 1,
           'playsinline': 1
         };
+        
+        const startT = this.getInitialStartTime();
+        if (startT > 0) pVars.start = Math.floor(startT);
         
         pVars.origin = window.location.origin;
 
