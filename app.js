@@ -2317,7 +2317,7 @@ class WatchOnRepeat {
     try {
       // 0. Dedicated Backend Fetch for protected platforms
       if (platform === 'twitch' || platform === 'facebook' || platform === 'soundcloud' || platform === 'wistia') {
-        const backendRes = await fetch(`/.netlify/functions/metadata?platform=${platform}&id=${encodeURIComponent(id)}`).catch(()=>null);
+        const backendRes = await fetch(`/metadata?platform=${platform}&id=${encodeURIComponent(id)}`).catch(()=>null);
         if (backendRes && backendRes.ok) {
            const data = await backendRes.json();
            if (data.title && !data.title.endsWith(" Video")) title = data.title; 
