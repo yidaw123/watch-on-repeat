@@ -3827,6 +3827,17 @@ class WatchOnRepeat {
       paginatedHistory.forEach(h => {
         const card = this.createVideoCard(h, true); // true indicates history item
         this.elements.historyList.appendChild(card);
+        
+        // Lazy load thumbnail if missing and not deterministic
+        if (!h.thumbnail && h.platform !== 'youtube' && h.platform !== 'local') {
+          setTimeout(async () => {
+            const meta = await this.fetchVideoMetadata(h.videoId, h.platform).catch(()=>null);
+            if (meta && meta.thumbnail) {
+              const img = card.querySelector('.video-card-thumb');
+              if (img) img.src = meta.thumbnail;
+            }
+          }, 0);
+        }
       });
       
       const paginationControls = this.renderPaginationControls('history', history.length, itemsPerPage, currentPage, () => this.renderHistoryTab());
