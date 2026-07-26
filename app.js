@@ -990,7 +990,7 @@ class WatchOnRepeat {
             id: data.id,
             videoId: data.video_id,
             platform: data.platform,
-            title: data.title,
+            title: data.video_title,
             settings: data.settings
           };
           localInstances[uuid] = instance;
@@ -6233,7 +6233,7 @@ class WatchOnRepeat {
       localStorage.setItem('wor_instances', JSON.stringify(localInstances));
       
       if (window.supabaseClient && this.state.user) {
-        window.supabaseClient.from('video_instances').update({ title: sess.title })
+        window.supabaseClient.from('video_instances').update({ video_title: sess.title })
           .eq('id', sessionId)
           .eq('user_id', this.state.user.id)
           .then(({ error }) => {
