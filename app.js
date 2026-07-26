@@ -3484,7 +3484,7 @@ class WatchOnRepeat {
           
           if (data && data.length > 0) {
             let shuffledData = data.sort(() => 0.5 - Math.random());
-            let selectedData = shuffledData.slice(0, 10);
+            let selectedData = shuffledData.slice(0, 15);
             
             const fetchPromises = selectedData.map(async (d) => {
               let title = d.title;
@@ -3508,7 +3508,7 @@ class WatchOnRepeat {
     }
 
     let suggestions = this.state.discoverData.filter(v => (v.videoId || v.id) !== currentVideoId);
-    suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 6);
+    suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 10);
 
     if (suggestions.length === 0) {
       return;
