@@ -565,6 +565,7 @@ class WatchOnRepeat {
     
     // Initial Render
     this.renderDiscoverTab();
+    this.renderUpNextQueue(null);
     this.updateUserUI();
     this.updateStatsUI();
   }
