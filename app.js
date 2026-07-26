@@ -3497,7 +3497,7 @@ class WatchOnRepeat {
             let selectedData = shuffledData.slice(0, 15);
             
             const fetchPromises = selectedData.map(async (d) => {
-              let title = d.title;
+              let title = d.video_title;
               if (!title) {
                 const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
                 title = meta.title;
@@ -3566,7 +3566,7 @@ class WatchOnRepeat {
           let selectedData = shuffledData.slice(0, 10);
           
           const fetchPromises = selectedData.map(async (d) => {
-            let title = d.title;
+            let title = d.video_title;
             if (!title) {
               const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
               title = meta.title;
@@ -3844,7 +3844,7 @@ class WatchOnRepeat {
       const { data } = await supabaseClient.from('global_stats').select('*').neq('platform', 'local').order('global_loops', { ascending: false }).limit(10);
       if (data) {
         const fetchPromises = data.map(async (d) => {
-          let title = d.title;
+          let title = d.video_title;
           if (!title) {
             const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
             title = meta.title;
