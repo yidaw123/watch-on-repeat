@@ -2315,9 +2315,19 @@ class WatchOnRepeat {
     let thumbnail = null;
 
     try {
+      // 0. Dedicated Backend Fetch for protected platforms
+      if (platform === 'twitch' || platform === 'facebook' || platform === 'soundcloud' || platform === 'wistia') {
+        const backendRes = await fetch(`/.netlify/functions/metadata?platform=${platform}&id=${encodeURIComponent(id)}`).catch(()=>null);
+        if (backendRes && backendRes.ok) {
+           const data = await backendRes.json();
+           if (data.title && !data.title.endsWith(" Video")) title = data.title; 
+           if (data.thumbnail) thumbnail = data.thumbnail;
+        }
+      }
+
       // 1. OEmbed endpoints for supported platforms
       let videoUrl = '';
-      if (platform === 'youtube') {
+      if (!title && platform === 'youtube') {
         videoUrl = `https://www.youtube.com/watch?v=${id}`;
         const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`).catch(()=>null);
         if (res && res.ok) {
@@ -2325,7 +2335,7 @@ class WatchOnRepeat {
           title = data.title;
           thumbnail = data.thumbnail_url;
         }
-      } else if (platform === 'vimeo') {
+      } else if (!title && platform === 'vimeo') {
         videoUrl = `https://vimeo.com/${id}`;
         const res = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
         if (res && res.ok) {
@@ -2333,7 +2343,7 @@ class WatchOnRepeat {
           title = data.title;
           thumbnail = data.thumbnail_url;
         }
-      } else if (platform === 'dailymotion') {
+      } else if (!title && platform === 'dailymotion') {
         videoUrl = `https://www.dailymotion.com/video/${id}`;
         const res = await fetch(`https://www.dailymotion.com/services/oembed?url=${encodeURIComponent(videoUrl)}`).catch(()=>null);
         if (res && res.ok) {
@@ -2341,7 +2351,7 @@ class WatchOnRepeat {
           title = data.title;
           thumbnail = data.thumbnail_url;
         }
-      } else if (platform === 'soundcloud') {
+      } else if (!title && platform === 'soundcloud') {
         videoUrl = `https://soundcloud.com/${id}`;
         const target = `https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(videoUrl)}`;
         const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(target)}`).catch(()=>null);
@@ -2350,7 +2360,7 @@ class WatchOnRepeat {
           title = data.title;
           thumbnail = data.thumbnail_url;
         }
-      } else if (platform === 'wistia') {
+      } else if (!title && platform === 'wistia') {
         const target = `https://fast.wistia.com/oembed?url=https://home.wistia.com/medias/${id}`;
         const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(target)}`).catch(()=>null);
         if (res && res.ok) {
@@ -2358,21 +2368,21 @@ class WatchOnRepeat {
           title = data.title;
           thumbnail = data.thumbnail_url;
         }
-      } else if (platform === 'mixcloud') {
+      } else if (!title && platform === 'mixcloud') {
         const res = await fetch(`https://www.mixcloud.com/oembed/?url=https://www.mixcloud.com/${id}&format=json`).catch(()=>null);
         if (res && res.ok) {
           const data = await res.json();
           title = data.title;
           thumbnail = data.image;
         }
-      } else if (platform === 'loom') {
+      } else if (!title && platform === 'loom') {
         const res = await fetch(`https://www.loom.com/v1/oembed?url=https://www.loom.com/share/${id}`).catch(()=>null);
         if (res && res.ok) {
           const data = await res.json();
           title = data.title;
           thumbnail = data.thumbnail_url;
         }
-      } else if (platform === 'facebook') {
+      } else if (!title && platform === 'facebook') {
         videoUrl = `https://www.facebook.com/facebook/videos/${id}`;
         // Facebook oembed requires auth now, we skip directly to OpenGraph fallback
       }
