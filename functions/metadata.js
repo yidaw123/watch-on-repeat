@@ -93,9 +93,15 @@ export async function onRequest(context) {
         if (fbRes.ok) {
           const html = await fbRes.text();
           const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
-          if (titleMatch && titleMatch[1]) title = titleMatch[1].replace(' | Facebook', '');
-          const thumbMatch = html.match(/<meta property="og:image" content="([^"]+)"/i);
+          if (titleMatch && titleMatch[1]) {
+            let t = titleMatch[1].replace(' | Facebook', '');
+            t = t.replace(/&#x27;/g, "'").replace(/&#039;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            title = t;
+          }
+          const thumbMatch = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i) || html.match(/<meta[^>]*name="twitter:image"[^>]*content="([^"]+)"/i);
           if (thumbMatch && thumbMatch[1]) thumbnail = thumbMatch[1];
+          // Sometimes FB uses encoded URLs for images
+          if (thumbnail) thumbnail = thumbnail.replace(/&amp;/g, '&');
         }
       }
     }
