@@ -726,8 +726,8 @@ class WatchOnRepeat {
     try {
       await window.supabaseClient.from('events').insert({
         user_id: this.state.user.id,
-        event_type: eventName,
-        event_data: eventData
+        event_name: eventName,
+        metadata: eventData
       });
     } catch (e) {
       if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.warn("Failed to log event:", e);
