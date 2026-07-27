@@ -165,10 +165,11 @@ class CascadingTimeInput {
       this.inputEl.value = this.format();
       return;
     }
-    let h = Math.floor(seconds / 3600);
-    let m = Math.floor((seconds % 3600) / 60);
-    let s = Math.floor(seconds % 60);
-    let ms = Math.floor((seconds % 1) * 1000);
+    let totalMs = Math.round(seconds * 1000);
+    let h = Math.floor(totalMs / 3600000);
+    let m = Math.floor((totalMs % 3600000) / 60000);
+    let s = Math.floor((totalMs % 60000) / 1000);
+    let ms = totalMs % 1000;
     
     let hStr = h.toString().padStart(2, '0');
     let mStr = m.toString().padStart(2, '0');
@@ -1721,6 +1722,11 @@ class WatchOnRepeat {
     this.state.loopSeconds = 0;
     this.state.currentVideoDuration = 0;
     this.state.historyLoaded = false;
+    
+    // Reset playback speed so it doesn't bleed over from previous videos
+    if (this.state.playbackRate !== 1) {
+      this.setPlaybackSpeed(1, true);
+    }
 
     if (window.supabaseClient) {
       const promises = [
@@ -4407,10 +4413,11 @@ class WatchOnRepeat {
       group.querySelector('.ts-ms').value = '';
       return;
     }
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    const ms = Math.floor((seconds % 1) * 1000);
+    let totalMs = Math.round(seconds * 1000);
+    const h = Math.floor(totalMs / 3600000);
+    const m = Math.floor((totalMs % 3600000) / 60000);
+    const s = Math.floor((totalMs % 60000) / 1000);
+    const ms = totalMs % 1000;
     
     group.querySelector('.ts-h').value = h > 0 ? h.toString().padStart(2, '0') : '';
     group.querySelector('.ts-m').value = m > 0 || h > 0 ? m.toString().padStart(2, '0') : '';
