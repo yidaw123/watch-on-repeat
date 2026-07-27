@@ -3828,17 +3828,6 @@ class WatchOnRepeat {
       paginatedHistory.forEach(h => {
         const card = this.createVideoCard(h, true); // true indicates history item
         this.elements.historyList.appendChild(card);
-        
-        // Lazy load thumbnail if missing and not deterministic
-        if (!h.thumbnail && h.platform !== 'youtube' && h.platform !== 'local') {
-          setTimeout(async () => {
-            const meta = await this.fetchVideoMetadata(h.videoId, h.platform).catch(()=>null);
-            if (meta && meta.thumbnail) {
-              const img = card.querySelector('.video-card-thumb');
-              if (img) img.src = meta.thumbnail;
-            }
-          }, 0);
-        }
       });
       
       const paginationControls = this.renderPaginationControls('history', history.length, itemsPerPage, currentPage, () => this.renderHistoryTab());
@@ -3930,15 +3919,16 @@ class WatchOnRepeat {
 
     const progressHtml = this.getProgressBarHtml(video.videoId || video.id);
 
-    card.title = video.title || '';
+    const titleText = video.title || video.video_title || 'Unknown Title';
+    card.title = titleText;
     card.style.position = 'relative'; // Ensure absolute positioning of delete button works
     card.innerHTML = `
       <div style="position:relative; flex-shrink:0; overflow:hidden; border-radius:8px;">
-        <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" style="display:block;" alt="${this.escapeHtml(video.title)}">
+        <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" style="display:block;" alt="${this.escapeHtml(titleText)}">
         ${progressHtml}
       </div>
       <div class="video-card-details" style="padding-right: 32px;">
-        <h4 class="video-card-title">${rankPrefix}${this.escapeHtml(video.title)}</h4>
+        <h4 class="video-card-title">${rankPrefix}${this.escapeHtml(titleText)}</h4>
         <div class="video-card-meta">
           <span class="badge">${video.platform}</span>
           ${subMeta}
@@ -3946,6 +3936,27 @@ class WatchOnRepeat {
       </div>
       ${deleteBtn}
     `;
+
+    // Lazy load thumbnail for dynamic platforms (Facebook, Twitch, etc.)
+    if (!video.thumbnail && video.platform !== 'youtube' && video.platform !== 'local' && video.platform !== 'vimeo' && video.platform !== 'dailymotion' && video.platform !== 'wistia') {
+      setTimeout(async () => {
+        const meta = await this.fetchVideoMetadata(video.videoId || video.id, video.platform);
+        if (meta && meta.thumbnail) {
+          const img = card.querySelector('.video-card-thumb');
+          if (img) img.src = meta.thumbnail;
+          // Cache the thumbnail on the video object so we don't refetch on re-renders
+          video.thumbnail = meta.thumbnail;
+          
+          // Also optionally fix the title if it was unknown
+          if ((!video.title && !video.video_title) && meta.title) {
+            video.title = meta.title;
+            const titleEl = card.querySelector('.video-card-title');
+            if (titleEl) titleEl.innerHTML = `${rankPrefix}${this.escapeHtml(meta.title)}`;
+            card.title = meta.title;
+          }
+        }
+      }, Math.random() * 800 + 200); // Random stagger between 200ms and 1000ms to prevent API bursts
+    }
 
     if (video.platform === 'youtube') {
       const img = card.querySelector('.video-card-thumb');
