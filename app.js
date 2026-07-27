@@ -5187,37 +5187,6 @@ class WatchOnRepeat {
     }
   }
 
-  toggleAutoTempo(event) {
-    if (this.getUserTier() === 'free') {
-      event.preventDefault();
-      event.target.checked = false;
-      this.openUpgradeModal("Upgrade to unlock Auto-Tempo and gradually increase your practice speed!");
-      return;
-    }
-    this.state.autoTempoEnabled = event.target.checked;
-    this.showToast(this.state.autoTempoEnabled ? "Gradual Tempo Enabled" : "Gradual Tempo Disabled");
-  }
-
-  toggleMultiSegment(event) {
-    if (this.getUserTier() === 'free') {
-      event.preventDefault();
-      event.target.checked = false;
-      this.openUpgradeModal("Upgrade to unlock Multiple Loop Segments and break down videos into parts!");
-      return;
-    }
-    this.state.isMultiSegment = event.target.checked;
-    
-    const list = document.getElementById('multi-segment-list');
-    if (list) {
-      if (this.state.isMultiSegment) {
-        list.classList.remove('hidden');
-        if (typeof this.renderMultiSegments === 'function') this.renderMultiSegments();
-      } else {
-        list.classList.add('hidden');
-      }
-    }
-  }
-
   changePlaybackSpeed(delta) {
     let currentSpeed = 1.0;
     
