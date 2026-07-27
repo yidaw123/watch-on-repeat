@@ -5264,6 +5264,15 @@ class WatchOnRepeat {
     rate = parseFloat(rate);
     this.state.playbackRate = rate;
     
+    // If in advanced multi-segment mode, ensure the dropdown syncs the speed to the active segment
+    if (this.state.isMultiSegment && this.state.abLoop && this.state.abLoop.multiSegments) {
+      const idx = this.state.abLoop.currentSegmentIndex || 0;
+      if (this.state.abLoop.multiSegments[idx]) {
+        this.state.abLoop.multiSegments[idx].speed = rate;
+        if (typeof this.renderMultiSegments === 'function') this.renderMultiSegments();
+      }
+    }
+    
     // Freeze gradual tempo if speed is manually changed
     if (!fromAutoTempo) {
       const tempoCheckbox = document.getElementById('auto-tempo-checkbox');
