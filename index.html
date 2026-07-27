@@ -374,8 +374,8 @@
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
                   <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Start Time Fine Tune</span>
                   <div style="display: flex; gap: 4px;">
-                    <button class="btn btn-secondary btn-sm" style="padding: 0 8px;" onclick="app.fineTuneLoop('start', -0.05)"><i data-lucide="minus" style="width:14px;height:14px;"></i></button>
-                    <button class="btn btn-secondary btn-sm" style="padding: 0 8px;" onclick="app.fineTuneLoop('start', 0.05)"><i data-lucide="plus" style="width:14px;height:14px;"></i></button>
+                    <button class="btn btn-secondary btn-sm" style="padding: 0 8px;" onclick="app.fineTuneLoop('start', -1)"><i data-lucide="minus" style="width:14px;height:14px;"></i></button>
+                    <button class="btn btn-secondary btn-sm" style="padding: 0 8px;" onclick="app.fineTuneLoop('start', 1)"><i data-lucide="plus" style="width:14px;height:14px;"></i></button>
                   </div>
                 </div>
                 
@@ -398,8 +398,8 @@
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
                   <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">End Time Fine Tune</span>
                   <div style="display: flex; gap: 4px;">
-                    <button class="btn btn-secondary btn-sm" style="padding: 0 8px;" onclick="app.fineTuneLoop('end', -0.05)"><i data-lucide="minus" style="width:14px;height:14px;"></i></button>
-                    <button class="btn btn-secondary btn-sm" style="padding: 0 8px;" onclick="app.fineTuneLoop('end', 0.05)"><i data-lucide="plus" style="width:14px;height:14px;"></i></button>
+                    <button class="btn btn-secondary btn-sm" style="padding: 0 8px;" onclick="app.fineTuneLoop('end', -1)"><i data-lucide="minus" style="width:14px;height:14px;"></i></button>
+                    <button class="btn btn-secondary btn-sm" style="padding: 0 8px;" onclick="app.fineTuneLoop('end', 1)"><i data-lucide="plus" style="width:14px;height:14px;"></i></button>
                   </div>
                 </div>
                 
@@ -448,7 +448,7 @@
                   </div>
                   <div style="display: flex; gap: 8px; align-items: center;">
                      <button id="record-btn" class="btn btn-error btn-sm" onclick="app.toggleRecording()"><i data-lucide="mic"></i> Record (30s Free)</button>
-                     <span onclick="app.showInfoModal('Recorded audio is only saved temporarily and will be lost if you close the session. Download it in the Recorded Audio tab on the right to keep it!')" style="cursor:help;" title="Recorded audio is only saved temporarily and will be lost if you close the session. Download it in the Recorded Audio tab on the right to keep it!"><i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted);"></i></span>
+                     <span onclick="app.showInfoModal('To strictly protect your privacy, recorded audio is never sent to our servers and is only saved temporarily on your device. It will be permanently lost if you close the session, so make sure to download it in the Recorded Audio tab to keep it!')" style="cursor:help;" title="To strictly protect your privacy, recorded audio is never sent to our servers and is only saved temporarily on your device. It will be permanently lost if you close the session, so make sure to download it in the Recorded Audio tab to keep it!"><i data-lucide="info" style="width: 14px; height: 14px; color: var(--text-muted);"></i></span>
                      <button id="play-recording-btn" class="btn btn-secondary btn-sm hidden" onclick="app.toggleRecordingPlayback()"><i data-lucide="play"></i> Play</button>
                      <a id="download-recording-btn" class="btn btn-secondary btn-sm hidden" download="recording.webm" style="text-decoration: none;"><i data-lucide="download"></i></a>
                      <button id="delete-recording-btn" class="btn-icon-delete hidden" onclick="app.deleteCurrentRecording()" title="Delete Recording"><i data-lucide="trash-2"></i></button>

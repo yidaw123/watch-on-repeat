@@ -225,16 +225,21 @@ class AudioRecorderMixin {
   updateRecordButtonUI() {
     const tier = this.getUserTier();
     const recordBtn = document.getElementById('record-btn');
+    const display = document.getElementById('recording-time-display');
+    
     if (recordBtn) {
       // Don't overwrite if it's currently recording (saying "Stop Recording")
       if (this.state.audio && this.state.audio.isRecording) return;
       
       if (tier === 'pro') {
         recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (10min)';
+        if (display) display.textContent = '00:00 / 10:00';
       } else if (tier === 'premium') {
         recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (5min)';
+        if (display) display.textContent = '00:00 / 05:00';
       } else {
         recordBtn.innerHTML = '<i data-lucide="mic"></i> Record (30s Free)';
+        if (display) display.textContent = '00:00 / 00:30';
       }
       recordBtn.classList.remove('btn-secondary');
       recordBtn.classList.add('btn-error');
