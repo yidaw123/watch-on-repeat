@@ -2233,6 +2233,11 @@ class WatchOnRepeat {
       this.elements.playerLoaded.classList.remove('hidden');
     }
     
+    // Apply saved playback speed now that the player iframe is ready
+    if (this.state.playbackRate && this.state.playbackRate !== 1) {
+      this.setPlaybackSpeed(this.state.playbackRate, true);
+    }
+    
     // Auto-Resume playback if we have saved progress
     const urlParams = new URLSearchParams(window.location.search);
     const hasUrlStart = !isNaN(parseFloat(urlParams.get('start')));
