@@ -1825,22 +1825,22 @@ class WatchOnRepeat {
     this.destroyPlayers();
     this.elements.playerContainer.innerHTML = '';
     
-    // PRE-LOAD local storage data early so we have the start time for the iframe init
-    this.loadLoopData(id);
-    
-    // Show Loaded State
-    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
-    this.elements.playerLoaded.classList.remove('remove'); // make sure
-    this.elements.playerLoaded.classList.remove('hidden');
-    
-    // Fetch video title (mocked/simulated or via iframe where possible)
+    // Set currentVideo BEFORE loadLoopData so the re-save at the end of
+    // loadLoopData writes under the new video's key, not the old one.
     let videoTitle = "Loading title...";
-    
     this.state.currentVideo = {
       id: id,
       platform: platform,
       title: videoTitle
     };
+    
+    // PRE-LOAD local storage data early so we have the start time for the iframe init
+    this.loadLoopData(id);
+
+    // Show Loaded State
+    if (this.elements.playerEmpty) this.elements.playerEmpty.classList.add('hidden');
+    this.elements.playerLoaded.classList.remove('remove'); // make sure
+    this.elements.playerLoaded.classList.remove('hidden');
 
     // Initialize the analytics session for this video
     this.state.analyticsSession.videoId = id;
