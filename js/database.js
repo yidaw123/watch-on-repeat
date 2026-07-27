@@ -100,7 +100,7 @@ class DatabaseMixin {
             id: inst.id,
             videoId: inst.video_id,
             platform: inst.platform,
-            title: inst.title,
+            title: inst.video_title,
             settings: inst.settings,
             userId: inst.user_id,
             createdAt: inst.created_at,
@@ -212,7 +212,7 @@ class DatabaseMixin {
               user_id: this.state.user.id,
               video_id: inst.videoId,
               platform: inst.platform,
-              title: inst.title,
+              video_title: inst.title,
               settings: inst.settings,
               updated_at: inst.updatedAt || new Date().toISOString()
             });

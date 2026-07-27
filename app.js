@@ -1728,7 +1728,7 @@ class WatchOnRepeat {
           .select('global_loops')
           .eq('video_id', id)
           .eq('platform', platform)
-          .single()
+          .maybeSingle()
           .then(({ data }) => {
             if (data) {
               this.state.currentGlobalLoops = data.global_loops || 0;
@@ -1746,7 +1746,7 @@ class WatchOnRepeat {
             .eq('user_id', this.state.user.id)
             .eq('video_id', id)
             .eq('platform', platform)
-            .single()
+            .maybeSingle()
             .then(({ data, error }) => {
               if (error && error.code !== 'PGRST116') {
                 if (DEBUG_MODE) console.error("Failed to fetch user history for video:", error);
