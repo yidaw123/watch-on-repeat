@@ -3937,25 +3937,31 @@ class WatchOnRepeat {
       ${deleteBtn}
     `;
 
-    // Lazy load thumbnail for dynamic platforms (Facebook, Twitch, etc.)
-    if (!video.thumbnail && video.platform !== 'youtube' && video.platform !== 'local' && video.platform !== 'vimeo' && video.platform !== 'dailymotion' && video.platform !== 'wistia') {
+    // Lazy load thumbnail for dynamic platforms or fetch missing/placeholder titles
+    const isMissingTitle = !video.title && !video.video_title;
+    const isPlaceholderTitle = titleText === 'Loading title...' || titleText === 'Unknown Title';
+    const isDynamicPlatformMissingThumb = !video.thumbnail && !['youtube', 'local', 'vimeo', 'dailymotion', 'wistia'].includes(video.platform);
+
+    if (isMissingTitle || isPlaceholderTitle || isDynamicPlatformMissingThumb) {
       setTimeout(async () => {
-        const meta = await this.fetchVideoMetadata(video.videoId || video.id, video.platform);
-        if (meta && meta.thumbnail) {
-          const img = card.querySelector('.video-card-thumb');
-          if (img) img.src = meta.thumbnail;
-          // Cache the thumbnail on the video object so we don't refetch on re-renders
-          video.thumbnail = meta.thumbnail;
+        const meta = await this.fetchVideoMetadata(video.videoId || video.id, video.platform).catch(()=>null);
+        if (meta) {
+          if (meta.thumbnail && isDynamicPlatformMissingThumb) {
+            const img = card.querySelector('.video-card-thumb');
+            if (img) img.src = meta.thumbnail;
+            video.thumbnail = meta.thumbnail;
+          }
           
-          // Also optionally fix the title if it was unknown
-          if ((!video.title && !video.video_title) && meta.title) {
+          if (meta.title && (isMissingTitle || isPlaceholderTitle)) {
             video.title = meta.title;
             const titleEl = card.querySelector('.video-card-title');
             if (titleEl) titleEl.innerHTML = `${rankPrefix}${this.escapeHtml(meta.title)}`;
             card.title = meta.title;
+            
+            // Optionally update database if needed, but doing it in UI is enough
           }
         }
-      }, Math.random() * 800 + 200); // Random stagger between 200ms and 1000ms to prevent API bursts
+      }, Math.random() * 800 + 200);
     }
 
     if (video.platform === 'youtube') {
