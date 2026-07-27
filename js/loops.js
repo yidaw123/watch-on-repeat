@@ -256,7 +256,7 @@ class LoopsMixin {
     if (validSegmentsCount === 0) {
       const start = this.state.abLoop.start || 0;
       const end = this.state.abLoop.end || this.state.currentVideoDuration || 0;
-      if (end > 0 && t >= end) {
+      if (end > 0 && t >= end - 0.05) {
         if (!this.state.abLoop.isLoopSeeking) {
           this.state.abLoop.isLoopSeeking = true;
           this.seekToTime(start);
@@ -306,7 +306,8 @@ class LoopsMixin {
     }
     
     // 2. Not in any segment. Did we just naturally finish the current segment?
-    if (seg.end > 0 && t >= seg.end && t < seg.end + 1.5) {
+    // Trigger slightly early (0.05s) to prevent audio stutter/blip past the end point
+    if (seg.end > 0 && t >= seg.end - 0.05 && t < seg.end + 1.5) {
       this.state.abLoop.lastLoopAdvance = now;
       this.advanceLoopSegment();
       return;
