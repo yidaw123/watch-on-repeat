@@ -217,6 +217,7 @@ class WatchOnRepeat {
   constructor() {
     // Database and State
     this.state = {
+      autoplayEnabled: false,
       user: null,
       currentVideo: null, // { id, platform, title, duration }
       isTheaterMode: false,
