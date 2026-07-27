@@ -842,13 +842,11 @@ h1, h2, h3, h4, .brand-name {
 
 /* Sidebar Tabs */
 .sidebar-tabs {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   background: rgba(15, 23, 42, 0.4);
   border-bottom: 1px solid var(--border-glass);
   padding: 0.25rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   gap: 4px;
 }
 
