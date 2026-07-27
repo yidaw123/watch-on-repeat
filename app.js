@@ -2085,7 +2085,8 @@ class WatchOnRepeat {
       end: this.state.abLoop.end,
       multiSegments: this.state.abLoop.multiSegments || [],
       enabled: this.state.abLoop.active,
-      isMultiSegment: this.state.isMultiSegment || false
+      isMultiSegment: this.state.isMultiSegment || false,
+      playbackRate: this.state.playbackRate || 1
     };
     
     localStorage.setItem('wor_saved_loops', JSON.stringify(savedLoops));
@@ -2143,6 +2144,10 @@ class WatchOnRepeat {
       }
       
       this.state.abLoop.active = data.enabled !== false;
+      
+      if (data.playbackRate && data.playbackRate !== 1) {
+        this.setPlaybackSpeed(data.playbackRate, true);
+      }
     }
 
     // Handle Multi-Segments (prioritize shared link over local save)
@@ -5289,7 +5294,10 @@ class WatchOnRepeat {
       if (p === 'wistia' && this.state.players.wistia) this.state.players.wistia.playbackRate(rate);
       if (p === 'html5' && this.state.players.html5) this.state.players.html5.playbackRate = rate;
       if (p === 'local' && this.state.players.local) this.state.players.local.setPlaybackRate(rate);
-      if (!hideToast) this.showToast(`Speed set to ${rate}x`);
+      if (!hideToast) {
+        this.showToast(`Speed set to ${rate}x`);
+        this.saveLoopData();
+      }
     } catch(e) {
       if (DEBUG_MODE) console.error("Error setting rate", e);
     }
