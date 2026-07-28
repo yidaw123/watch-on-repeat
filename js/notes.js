@@ -47,24 +47,40 @@ class NotesMixin {
     const notes = this.getDb('notes');
     const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     
-    // Enforce Notes Limit for Free tier
-    const isPremium = this.getUserTier() !== 'free';
-    if (!isPremium) {
-      // 2. Max 5 videos with notes
-      const uniqueVideos = Object.keys(notes).filter(k => k !== '__titles' && Array.isArray(notes[k]) && notes[k].length > 0);
-      const isNewVideo = !notes[vId] || notes[vId].length === 0;
-      
-      if (isNewVideo && uniqueVideos.length >= 5) {
-        this.openUpgradeModal("Free accounts can only add notes to 5 videos total. Upgrade to keep adding notes!");
-        return;
+    // Enforce Notes Limit based on tier
+    const tier = this.getUserTier();
+    
+    // Limits [max videos, max notes per video]
+    let maxVideos = 5;
+    let maxNotes = 3;
+    if (tier === 'premium') {
+      maxVideos = 10;
+      maxNotes = 10;
+    } else if (tier === 'pro') {
+      maxVideos = 20;
+      maxNotes = 15;
+    }
+    
+    const uniqueVideos = Object.keys(notes).filter(k => k !== '__titles' && Array.isArray(notes[k]) && notes[k].length > 0);
+    const isNewVideo = !notes[vId] || notes[vId].length === 0;
+    
+    if (isNewVideo && uniqueVideos.length >= maxVideos) {
+      if (tier === 'pro') {
+        this.showToast(`Pro limit reached: You can add notes to a maximum of ${maxVideos} videos.`, 'alert-circle');
+      } else {
+        this.openUpgradeModal(`${tier.charAt(0).toUpperCase() + tier.slice(1)} accounts can only add notes to ${maxVideos} videos total. Upgrade to keep adding notes!`);
       }
-      
-      // 1. Max 3 notes per video
-      const currentVideoNotes = notes[vId] || [];
-      if (currentVideoNotes.length >= 3) {
-        this.openUpgradeModal("Free accounts are limited to 3 notes per video. Upgrade for unlimited notes!");
-        return;
+      return;
+    }
+    
+    const currentVideoNotes = notes[vId] || [];
+    if (currentVideoNotes.length >= maxNotes) {
+      if (tier === 'pro') {
+        this.showToast(`Pro limit reached: You can add a maximum of ${maxNotes} notes per video.`, 'alert-circle');
+      } else {
+        this.openUpgradeModal(`${tier.charAt(0).toUpperCase() + tier.slice(1)} accounts are limited to ${maxNotes} notes per video. Upgrade to keep adding notes!`);
       }
+      return;
     }
 
     if (!notes[vId]) notes[vId] = [];
@@ -94,6 +110,22 @@ class NotesMixin {
       setTimeout(() => {
         this.showToast("Loving the features? Create a free account to save your loops, notes, and playlists so you never lose them!", "heart");
       }, 2000);
+    }
+  }
+
+  updateNoteCharCount(textarea) {
+    const max = 200;
+    if (textarea.value.length > max) {
+      textarea.value = textarea.value.substring(0, max);
+    }
+    const countDisplay = document.getElementById('note-char-count');
+    if (countDisplay) {
+      countDisplay.textContent = `${textarea.value.length} / ${max}`;
+      if (textarea.value.length >= max) {
+        countDisplay.style.color = '#ef4444'; // Red
+      } else {
+        countDisplay.style.color = 'var(--text-muted)';
+      }
     }
   }
 
