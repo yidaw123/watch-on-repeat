@@ -159,6 +159,17 @@ class DatabaseMixin {
     try {
       if (key === 'playlists') {
         const userPlaylists = data.filter(p => p.userId === this.state.user.id);
+        
+        // Clean up deleted playlists from Supabase
+        const { data: serverPlaylists } = await supabaseClient.from('playlists').select('id').eq('user_id', this.state.user.id);
+        if (serverPlaylists) {
+          const localIds = new Set(userPlaylists.map(p => p.id));
+          const toDelete = serverPlaylists.filter(p => !localIds.has(p.id)).map(p => p.id);
+          if (toDelete.length > 0) {
+            await supabaseClient.from('playlists').delete().eq('user_id', this.state.user.id).in('id', toDelete);
+          }
+        }
+
         for (const p of userPlaylists) {
           const { error } = await supabaseClient.from('playlists').upsert({
             id: p.id, user_id: p.userId, name: p.name, videos: p.videos, is_public: p.isPublic || false,
@@ -185,6 +196,17 @@ class DatabaseMixin {
                }
              });
           }
+          
+          // Clean up deleted notes from Supabase
+          const { data: serverNotes } = await supabaseClient.from('notes').select('id').eq('user_id', this.state.user.id);
+          if (serverNotes) {
+            const localIds = new Set(userNotes.map(n => n.id));
+            const toDelete = serverNotes.filter(n => !localIds.has(n.id)).map(n => n.id);
+            if (toDelete.length > 0) {
+              await supabaseClient.from('notes').delete().eq('user_id', this.state.user.id).in('id', toDelete);
+            }
+          }
+
           for (const note of userNotes) {
             const { error } = await supabaseClient.from('notes').upsert(note);
             if (error && (error.code === '42501' || error.message.includes('row-level security'))) {
@@ -218,6 +240,17 @@ class DatabaseMixin {
             });
           }
         }
+        
+        // Clean up deleted instances from Supabase
+        const { data: serverInstances } = await supabaseClient.from('video_instances').select('id').eq('user_id', this.state.user.id);
+        if (serverInstances) {
+          const localIds = new Set(instancesToPush.map(i => i.id));
+          const toDelete = serverInstances.filter(i => !localIds.has(i.id)).map(i => i.id);
+          if (toDelete.length > 0) {
+            await supabaseClient.from('video_instances').delete().eq('user_id', this.state.user.id).in('id', toDelete);
+          }
+        }
+
         for (const inst of instancesToPush) {
           const { error } = await supabaseClient.from('video_instances').upsert(inst);
           if (error) console.error("Instance upsert failed:", error);
