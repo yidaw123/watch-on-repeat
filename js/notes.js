@@ -54,7 +54,7 @@ class NotesMixin {
     let maxVideos = 5;
     let maxNotes = 3;
     if (tier === 'premium') {
-      maxVideos = 10;
+      maxVideos = 15;
       maxNotes = 10;
     } else if (tier === 'pro') {
       maxVideos = 20;
