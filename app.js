@@ -2959,6 +2959,9 @@ class WatchOnRepeat {
 
     // Batch analytics locally
     this.state.analyticsSession.loops++;
+    const analyticsDb = this.getDb('analytics');
+    analyticsDb.totalLoops = (analyticsDb.totalLoops || 0) + 1;
+    this.saveDb('analytics', analyticsDb);
 
     // Optimistic UI updates
     this.state.currentGlobalLoops++;
@@ -5892,6 +5895,7 @@ class WatchOnRepeat {
     db.totalTime = (db.totalTime || 0) + 1;
     if (!db.weeklyTime) db.weeklyTime = {};
     if (!db.segments) db.segments = {};
+    if (!db.platforms) db.platforms = {};
     
     const d = new Date();
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
@@ -5900,6 +5904,34 @@ class WatchOnRepeat {
     const weekStr = `${d.getUTCFullYear()}-W${weekNo}`;
     
     db.weeklyTime[weekStr] = (db.weeklyTime[weekStr] || 0) + 1;
+    
+    // Track Platforms
+    const p = this.state.currentPlatform;
+    if (p) db.platforms[p] = (db.platforms[p] || 0) + 1;
+    
+    // Track Streaks
+    const today = new Date().toISOString().split('T')[0];
+    if (!db.lastPracticed) {
+      db.lastPracticed = today;
+      db.currentStreak = 1;
+      db.bestStreak = 1;
+    } else if (db.lastPracticed !== today) {
+      const lastDate = new Date(db.lastPracticed);
+      const currDate = new Date(today);
+      const diffTime = Math.abs(currDate - lastDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        db.currentStreak = (db.currentStreak || 0) + 1;
+      } else {
+        db.currentStreak = 1;
+      }
+      db.lastPracticed = today;
+      if (db.currentStreak > (db.bestStreak || 0)) {
+        db.bestStreak = db.currentStreak;
+      }
+    }
+    
     this.saveDb('analytics', db);
   }
 
@@ -5924,6 +5956,17 @@ class WatchOnRepeat {
       };
     }
     db.segments[key].loops += 1;
+    
+    // Enforce tier limits for storage
+    const tier = this.getUserTier();
+    const limit = tier === 'pro' ? 150 : (tier === 'premium' ? 100 : 50);
+    const keys = Object.keys(db.segments);
+    if (keys.length > limit) {
+      const sortedKeys = keys.sort((a, b) => db.segments[b].loops - db.segments[a].loops);
+      const keysToRemove = sortedKeys.slice(limit);
+      keysToRemove.forEach(k => delete db.segments[k]);
+    }
+    
     this.saveDb('analytics', db);
   }
 

@@ -2076,7 +2076,8 @@ select option, .select-input option, .select-dropdown option {
 }
 
 .analytics-summary {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 1rem;
 }
 
