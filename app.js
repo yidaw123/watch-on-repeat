@@ -5824,9 +5824,9 @@ class WatchOnRepeat {
       keyBtn.className = 'btn btn-outline btn-sm font-mono';
       keyBtn.textContent = s[action.id] === ' ' ? 'Space' : s[action.id].toUpperCase();
       
-      if (!isPremium) {
+      if (action.premium && !isPremium) {
         keyBtn.disabled = true;
-        keyBtn.title = "Upgrade to Premium to change shortcuts";
+        keyBtn.title = "Upgrade to Premium to change this shortcut";
         keyBtn.style.opacity = '0.5';
         keyBtn.style.cursor = 'not-allowed';
       } else {
