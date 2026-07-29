@@ -941,7 +941,7 @@ class WatchOnRepeat {
     this.state.currentPlatform = null;
     this.stopTimer();
     
-    document.title = "Watch On Repeat | Loop YouTube Videos & Practice Tool";
+    document.title = "WatchOnRepeat | Loop YouTube Videos & Practice Tool";
 
     // Show the playerEmpty state overlay
     if (this.elements.playerEmpty) this.elements.playerEmpty.classList.remove('hidden');
@@ -1399,7 +1399,7 @@ class WatchOnRepeat {
     
     // Update the UI with file name instead of crashing
     if (this.elements.videoTitle) this.elements.videoTitle.textContent = file.name;
-    document.title = file.name + " | Watch On Repeat";
+    document.title = file.name + " | WatchOnRepeat";
     this.updatePlatformBadge('local');
     this.toggleLocalVideoRestrictions(true);
     
@@ -1856,7 +1856,7 @@ class WatchOnRepeat {
     this.fetchVideoMetadata(id, platform).then(meta => {
       if (meta && meta.title && !meta.title.includes("Cozy Coffee Shop")) {
         this.elements.videoTitle.textContent = meta.title;
-        document.title = meta.title + " | Watch On Repeat";
+        document.title = meta.title + " | WatchOnRepeat";
         this.state.currentVideo.title = meta.title;
         if (meta.thumbnail) {
           this.state.currentVideo.thumbnail = meta.thumbnail;
