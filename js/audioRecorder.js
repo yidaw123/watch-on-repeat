@@ -43,7 +43,7 @@ class AudioRecorderMixin {
     const maxVideos = tier === 'free' ? 2 : 5;
     
     const recs = this.state.audio.recordings || [];
-    const currentVideoId = this.state.currentVideoId;
+    const currentVideoId = this.state.currentVideo ? this.state.currentVideo.id : null;
     const currentPlatform = this.state.currentPlatform;
     
     if (!currentVideoId || !currentPlatform) {
@@ -120,9 +120,9 @@ class AudioRecorderMixin {
       // Save to recordings list and IndexedDB
       const timestamp = new Date().toLocaleTimeString();
       const name = `Recording at ${timestamp}`;
-      const videoId = this.state.currentVideoId;
+      const videoId = this.state.currentVideo ? this.state.currentVideo.id : null;
       const platform = this.state.currentPlatform;
-      const videoTitle = this.state.videoTitle || "Unknown Video";
+      const videoTitle = (this.state.currentVideo && this.state.currentVideo.title) ? this.state.currentVideo.title : "Unknown Video";
       const thumbnail = this.getThumbnailUrl(platform, videoId);
       
       let dbId = Date.now().toString(); // fallback
@@ -534,7 +534,8 @@ class AudioRecorderMixin {
     if (typeof this.switchTab === 'function') this.switchTab('main-view');
     
     // If a different video is currently loaded, load the corresponding one
-    if (videoId && platform && (this.state.currentVideoId !== videoId || this.state.currentPlatform !== platform)) {
+    const currentVideoId = this.state.currentVideo ? this.state.currentVideo.id : null;
+    if (videoId && platform && (currentVideoId !== videoId || this.state.currentPlatform !== platform)) {
       if (typeof this.loadVideo === 'function') {
         this.loadVideo(videoId, platform);
       }
