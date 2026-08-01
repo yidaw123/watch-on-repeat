@@ -4161,6 +4161,19 @@ class WatchOnRepeat {
     if (modal) modal.classList.add('hidden');
   }
 
+  openGlobalControlsModal() {
+    const modal = document.getElementById('global-controls-modal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  closeGlobalControlsModal() {
+    const modal = document.getElementById('global-controls-modal');
+    if (modal) modal.classList.add('hidden');
+  }
+
   showCustomConfirm(options) {
     return new Promise((resolve) => {
       const modal = document.getElementById('new-confirm-modal');
