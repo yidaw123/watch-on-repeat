@@ -199,7 +199,12 @@ class NotesMixin {
     const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     if (db[vId] && db[vId].length > 0) {
-      const confirmResult = await this.showConfirmDialog("Delete All Notes", "Are you sure you want to delete all notes for this video?");
+      const confirmResult = await this.showCustomConfirm({
+        title: "Delete All Notes",
+        message: "Are you sure you want to delete all notes for this video?",
+        isDestructive: true,
+        okText: "Delete All"
+      });
       if (!confirmResult) return;
       
       const notesToDelete = [...db[vId]];
