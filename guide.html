@@ -46,6 +46,10 @@
     }
   }
   </script>
+  <script type="application/ld+json">
+  { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [ { "@type": "Question", "name": "Can I loop only one small section of a song?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Our A/B looper allows you to loop a section down to the exact second (or exact millisecond for Premium and Pro users)." } }, { "@type": "Question", "name": "Can I save my loop points for my next practice session?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, if you create a free account, you can save your loops and load them up instantly the next day on any device." } }, { "@type": "Question", "name": "Is there a Premium or Pro tier for musicians?", "acceptedAnswer": { "@type": "Answer", "text": "Yes! Upgrading to Premium or Pro gives you a distraction-free interface without site ads. You also unlock exclusive functions like multiple segment loops, advanced loop control, customizable hotkeys, and more, allowing you to focus 100% on your music practice." } } ] }
+  </script>
+  
   <link href="style.css?v=10" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#4f46e5">
@@ -66,6 +70,10 @@
     .article-container strong { color: var(--text-primary); }
     .cta-button { display: inline-block; padding: 1rem 2.5rem; background: linear-gradient(135deg, var(--primary-color), #7c3aed); color: white; text-decoration: none; font-weight: bold; border-radius: 50px; font-size: 1.2rem; text-align: center; margin-top: 2rem; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
     .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6); color: white; }
+    .faq-section { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color); }
+    .faq-item { margin-bottom: 1.5rem; padding: 1.5rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); }
+    .faq-item h3 { font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+    .faq-item p { font-size: 1rem; color: var(--text-secondary); }
     
     .comparison-table { width: 100%; border-collapse: collapse; margin: 2rem 0; background: var(--bg-card); border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); }
     .comparison-table th, .comparison-table td { padding: 1rem; text-align: center; border-bottom: 1px solid var(--border-color); }
@@ -209,7 +217,6 @@
   <script>lucide.createIcons();</script>
 </body>
 </html>
-
 
 
 
