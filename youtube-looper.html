@@ -112,7 +112,7 @@
         <h2>Step 1: Paste Your Link</h2>
         <p>Simply copy the URL of a YouTube, Twitch, Facebook, Dailymotion, Vimeo, Mixcloud, Loom, Wistia, SoundCloud, or other supported video you want to watch. Paste it into the search bar at the top of our app and hit "Loop It". That's it! Your video will now play continuously, automatically restarting when it reaches the end.</p>
         
-        <h2>Pro-Tip: The URL Trick</h2>
+        <h2>Pro-Tip #1: The URL Trick</h2>
         <p>You can instantly loop any video without copying and pasting! Just go to your browser's address bar and replace <code>youtube</code>, <code>facebook</code>, <code>dailymotion</code>, or <code>vimeo</code> with <code>watchonrepeat</code>. <em>(For Twitch VODs, change <code>twitch.tv</code> to <code>watchonrepeat.com</code>)</em>.</p>
         <p style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid var(--primary-color);">
           <strong>Example:</strong><br>
@@ -129,8 +129,25 @@
           <li>The video will now automatically and endlessly repeat just that specific segment!</li>
         </ul>
         
-        <h2>Pro-Tip: The Bookmarklet</h2>
+        <h2>Pro-Tip #2: The Bookmarklet</h2>
         <p>Want to loop videos even faster? Drag our "Loop on WOR" bookmarklet from the app's sidebar directly to your browser's bookmarks bar. The next time you are on YouTube and want to repeat a video, click the bookmark, and it will instantly open here!</p>
+        
+        <div class="bookmarklet-box" style="margin-top: 2rem; margin-bottom: 2rem;">
+          <h4><i data-lucide="bookmark"></i> WatchOnRepeat Bookmark</h4>
+          <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Twitch, Facebook, Dailymotion, Vimeo, Mixcloud, Loom, Wistia, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
+          <a id="bookmarklet-btn-guide" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;" title="WatchOnRepeat">
+            <i data-lucide="repeat"></i>
+            <span>WatchOnRepeat</span>
+          </a>
+        </div>
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            const origin = window.location.origin;
+            const jsCode = `javascript:(function(){var url=window.location.href;if(url.indexOf('youtube.com')!==-1||url.indexOf('youtu.be')!==-1||url.indexOf('vimeo.com')!==-1||url.indexOf('dailymotion.com')!==-1){window.open('${origin}/?url='+encodeURIComponent(url),'_blank');}else{alert('Please click this bookmark shortcut while watching a YouTube, Vimeo, or Dailymotion video!');}})();`;
+            const btn = document.getElementById('bookmarklet-btn-guide');
+            if (btn) btn.setAttribute('href', jsCode);
+          });
+        </script>
         
         <h2>Looping for Sleep, Focus, & Ambience</h2>
         <p>Not every loop needs to be an active learning session. Many users utilize WatchOnRepeat to create a distraction-free environment for deep work or relaxation. Whether you want to loop a 10-hour crackling fireplace, continuous rain sounds for sleeping, or a Lofi hip-hop stream for studying, our infinite repeater ensures the background ambiance never stops and never gets interrupted by a sudden, jarring algorithm recommendation.</p>
