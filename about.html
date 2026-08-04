@@ -148,9 +148,25 @@
       <a href="mailto:ads@watchonrepeat.com" style="color: #60a5fa; text-decoration: none; font-weight: 500;">Advertise with Us</a>
     </div>
     <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 WatchOnRepeat. All rights reserved.</p>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const currentPath = window.location.pathname.replace(/\/$/, '').replace(/\.html$/, '') || '/';
+    document.querySelectorAll('.footer-seo-links a').forEach(link => {
+      let href = link.getAttribute('href');
+      if (href) {
+        href = href.replace(/\/$/, '').replace(/\.html$/, '') || '/';
+        if (currentPath === href || (currentPath === '/' && href === '/index')) {
+          link.style.color = 'var(--primary-color, #a855f7)';
+          link.style.fontWeight = 'bold';
+        }
+      }
+    });
+  });
+</script>
 </footer>
   </div>
   <script>lucide.createIcons();</script>
 </body>
 </html>
+
 
