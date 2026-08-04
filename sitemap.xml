@@ -6,48 +6,52 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://watchonrepeat.com/youtube-looper.html</loc>
+    <loc>https://watchonrepeat.com/youtube-looper</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://watchonrepeat.com/music-practice.html</loc>
+    <loc>https://watchonrepeat.com/music-practice</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://watchonrepeat.com/language-learning.html</loc>
+    <loc>https://watchonrepeat.com/language-learning</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://watchonrepeat.com/youtube-study-tool.html</loc>
+    <loc>https://watchonrepeat.com/youtube-study-tool</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://watchonrepeat.com/listenonrepeat-alternative.html</loc>
+    <loc>https://watchonrepeat.com/listenonrepeat-alternative</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-
   <url>
-    <loc>https://watchonrepeat.com/about.html</loc>
+    <loc>https://watchonrepeat.com/guide</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://watchonrepeat.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://watchonrepeat.com/privacy.html</loc>
+    <loc>https://watchonrepeat.com/privacy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://watchonrepeat.com/terms.html</loc>
+    <loc>https://watchonrepeat.com/terms</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://watchonrepeat.com/contact.html</loc>
+    <loc>https://watchonrepeat.com/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
