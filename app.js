@@ -3409,13 +3409,13 @@ class WatchOnRepeat {
     if (tabSavedSessionsBtn) tabSavedSessionsBtn.classList.toggle('active', tabId === 'saved-sessions');
 
     const panels = {
-      'up-next': this.elements.tabUpNext,
-      'favorites': this.elements.tabFavorites,
-      'playlists': this.elements.tabPlaylists || document.getElementById('tab-playlists'),
-      'history': this.elements.tabHistory,
-      'saved-loops': this.elements.tabSavedLoops || document.getElementById('tab-saved-loops'),
-      'notes': this.elements.tabNotes,
-      'analytics': this.elements.tabAnalytics || document.getElementById('tab-analytics'),
+      'up-next': document.getElementById('tab-up-next'),
+      'favorites': document.getElementById('tab-favorites'),
+      'playlists': document.getElementById('tab-playlists'),
+      'history': document.getElementById('tab-history'),
+      'saved-loops': document.getElementById('tab-saved-loops'),
+      'notes': document.getElementById('tab-notes'),
+      'analytics': document.getElementById('tab-analytics'),
       'recorded-audio': document.getElementById('tab-recorded-audio'),
       'saved-sessions': document.getElementById('tab-saved-sessions')
     };
