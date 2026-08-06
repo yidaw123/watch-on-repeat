@@ -2940,3 +2940,8 @@ input[type="checkbox"]:focus {
   .advanced-loop-controls { gap: 2px !important; padding: 6px !important; }
 }
 @media (max-width: 768px) { .pricing-grid { grid-template-columns: 1fr !important; } }
+
+/* Full width grid span for lower sections */
+.stats-row, .seo-about-section, .faq-accordion {
+  grid-column: 1 / -1;
+}
