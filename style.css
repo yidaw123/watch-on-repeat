@@ -835,11 +835,11 @@ h1, h2, h3, h4, .brand-name {
   background: var(--bg-glass);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  height: 100%;
+  flex: 1;
 }
 
 /* Sidebar Tabs */
@@ -2946,5 +2946,6 @@ input[type="checkbox"]:focus {
 .stats-row, .seo-about-section, .faq-accordion {
   grid-column: 1 / -1;
 }
+
 
 
