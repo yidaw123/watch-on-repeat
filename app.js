@@ -3454,6 +3454,29 @@ class WatchOnRepeat {
     }
   }
 
+  renderPlaylistsTab() {
+    const authReq = document.getElementById('playlists-auth-required');
+    const content = document.getElementById('playlists-content');
+    const emptyState = document.getElementById('playlists-empty');
+    const badge = document.getElementById('playlists-count-badge');
+    
+    if (!this.state.user) {
+      if (authReq) authReq.classList.remove('hidden');
+      if (content) content.classList.add('hidden');
+      if (emptyState) emptyState.classList.add('hidden');
+      if (badge) badge.textContent = '0';
+      return;
+    }
+
+    if (authReq) authReq.classList.add('hidden');
+    
+    // Playlists logic is partially implemented, but no playlists-list parsing logic is in app.js
+    // Default to empty state for now to prevent crashes or blank tabs
+    if (content) content.classList.add('hidden');
+    if (emptyState) emptyState.classList.remove('hidden');
+    if (badge) badge.textContent = '0';
+  }
+
   showTab(tabId) {
     this.switchTab(tabId);
     // Open user dropdown if menu is open

@@ -822,12 +822,12 @@
                   </div>
                   <div class="empty-state-list hidden" id="saved-loops-empty">
                     <i data-lucide="bookmark"></i>
-                    <p>No saved loops yet. Save segments to quickly access them later!</p>
+                    <p>Your saved loops will appear here.</p>
                   </div>
                 </div>
 
             <!-- Recorded Audio Tab -->
-            <div id="tab-recorded-audio" class="tab-panel hidden">
+            <div id="tab-recorded-audio" class="tab-panel">
               <div class="tab-header">
                 <h3>Recorded Audio</h3>
                 <span class="badge" id="recorded-audio-count">0</span>
@@ -837,9 +837,7 @@
               </div>
               <div class="empty-state-list" id="recorded-audio-empty">
                 <i data-lucide="mic"></i>
-                <p>Your recorded audio and corresponding video will be saved here locally on this browser.<br><br><span style="font-size:0.85em; opacity:0.8;">Note: Voice recordings are stored in this browser's local storage. They will persist across sessions, but clearing your browser data will delete them. They do not sync across devices.</span></p>
-              </div>
-            </div>
+                <p>Your recorded audio will appear here locally on this browser.</p>
               </div>
             </div>
 
@@ -877,7 +875,7 @@
                   <!-- Notes loaded here -->
                   <div class="empty-state-list" id="notes-empty">
                     <i data-lucide="file-text"></i>
-                    <p>No notes for this video yet. Add one to remember a specific timestamp!</p>
+                    <p>Your saved notes will appear here.</p>
                   </div>
                 </div>
                 
@@ -942,12 +940,12 @@
               </div>
               <div class="empty-state-list hidden" id="favorites-empty">
                 <i data-lucide="heart-off"></i>
-                <p>No favorites saved yet.</p>
+                <p>Your saved favorites will appear here.</p>
               </div>
             </div>
 
           <!-- Playlists Tab -->
-          <div id="tab-playlists" class="tab-panel hidden">
+          <div id="tab-playlists" class="tab-panel">
             <div class="tab-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
               <h2 style="margin-bottom: 0; min-width: max-content;">Your Playlists <span class="badge" id="playlists-count-badge">0</span></h2>
               <input type="text" class="search-input tab-search-input" data-target="playlists-list" placeholder="Search playlists..." style="flex: 1; min-width: 150px; max-width: 100%;" onkeyup="app.filterTabList(this)">
@@ -958,6 +956,11 @@
               <h3>Sign in required</h3>
               <p>Create and manage your playlists.</p>
               <button class="btn btn-primary" onclick="app.openLoginModal()" style="margin-top:16px;">Sign In</button>
+            </div>
+            
+            <div class="empty-state-list hidden" id="playlists-empty">
+              <i data-lucide="list-video"></i>
+              <p>Your saved playlists will appear here.</p>
             </div>
             
             <div id="playlists-content" class="hidden">
@@ -978,7 +981,7 @@
           </div>
 
             <!-- Saved Sessions Tab -->
-            <div id="tab-saved-sessions" class="tab-panel hidden">
+            <div id="tab-saved-sessions" class="tab-panel">
               <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 12px;">
                 <h3 style="margin-bottom: 0; white-space: nowrap;">Saved Sessions</h3>
                 <div style="display: flex; gap: 8px; align-items: center;">
@@ -995,7 +998,7 @@
               </div>
               <div class="empty-state-list hidden" id="saved-sessions-empty">
                 <i data-lucide="package"></i>
-                <p>No saved sessions yet. Save your current loops and settings as a session below the player.</p>
+                <p>Your saved sessions will appear here.</p>
               </div>
             </div>
 
@@ -1018,7 +1021,7 @@
               </div>
               <div class="empty-state-list hidden" id="history-empty">
                 <i data-lucide="clock"></i>
-                <p>Your history is currently empty.</p>
+                <p>Your viewing history will appear here.</p>
               </div>
             </div>
 
