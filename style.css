@@ -828,6 +828,7 @@ h1, h2, h3, h4, .brand-name {
 .sidebar-column {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .sidebar-card {
@@ -838,7 +839,7 @@ h1, h2, h3, h4, .brand-name {
   flex-direction: column;
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  flex: 1;
+  height: 100%;
 }
 
 /* Sidebar Tabs */
@@ -894,7 +895,6 @@ h1, h2, h3, h4, .brand-name {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  overflow-x: hidden;
   overflow-y: auto;
 }
 
@@ -2946,3 +2946,5 @@ input[type="checkbox"]:focus {
 .stats-row, .seo-about-section, .faq-accordion {
   grid-column: 1 / -1;
 }
+
+
