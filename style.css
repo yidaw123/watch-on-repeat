@@ -1357,14 +1357,6 @@ h1, h2, h3, h4, .brand-name {
   #up-next-section {
     order: 4;
   }
-    
-  .seo-about-section {
-    order: 5;
-  }
-    
-  .faq-accordion {
-    order: 6;
-  }
   
   .search-container {
     margin: 0 1rem;
@@ -2953,6 +2945,14 @@ input[type="checkbox"]:focus {
 /* Full width grid span for lower sections */
 .stats-row, .seo-about-section, .faq-accordion {
   grid-column: 1 / -1;
+}
+
+.seo-about-section {
+  order: 100;
+}
+
+.faq-accordion {
+  order: 101;
 }
 
 
