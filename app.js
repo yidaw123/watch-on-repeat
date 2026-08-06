@@ -6523,6 +6523,32 @@ class WatchOnRepeat {
     this.elements.analyticsTotalTime.textContent = formatH(db.totalTime || 0);
     this.elements.analyticsWeeklyTime.textContent = formatH(db.weeklyTime[weekStr] || 0);
     
+    const totalLoopsEl = document.getElementById('analytics-total-loops');
+    const uniqueVidsEl = document.getElementById('analytics-unique-videos');
+    const currentStreakEl = document.getElementById('analytics-current-streak');
+    const bestStreakEl = document.getElementById('analytics-best-streak');
+
+    if (totalLoopsEl && uniqueVidsEl) {
+      if (this.state.user) {
+        const history = this.getDb('history');
+        const userHistory = history.filter(h => h.userId === this.state.user.id);
+        const video = this.state.currentVideo;
+        const pastHistory = userHistory.filter(h => !video || h.videoId !== video.id);
+        const historyLoops = pastHistory.reduce((sum, h) => sum + (h.loopsCount || 0), 0);
+        const finalTotalLoops = historyLoops + (this.state.currentLifetimeLoops || 0);
+        
+        totalLoopsEl.textContent = this.formatNumber(finalTotalLoops);
+        uniqueVidsEl.textContent = this.formatNumber(userHistory.length);
+      } else {
+        totalLoopsEl.textContent = '0';
+        uniqueVidsEl.textContent = '0';
+      }
+    }
+
+    if (currentStreakEl) currentStreakEl.innerHTML = `${db.currentStreak || 0} <span style="font-size: 0.6em">days</span>`;
+    if (bestStreakEl) bestStreakEl.innerHTML = `${db.bestStreak || 0} <span style="font-size: 0.6em">days</span>`;
+
+    
     const fakeKeywords = ["Chill Beats", "Synthwave Session", "Ambient Relaxation", "Nature Sounds", "Epic Orchestral", "Developer Focus", "Cozy Coffee Shop", "Live Music Session", "lofi hip hop radio", "Twitch Stream:", "Movie Buff Builds", "Joyner Lucas - Monsters"];
     
     let hasFake = false;
