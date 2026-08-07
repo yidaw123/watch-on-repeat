@@ -3448,7 +3448,11 @@ class WatchOnRepeat {
     }
   }
 
-  renderSavedNotesTab() {
+  renderNotes() {
+      if (this.notesManager) this.renderSavedNotesTab();
+    }
+
+    renderSavedNotesTab() {
     if (this.notesManager) {
       this.notesManager.renderActiveNotesSummary(this.getDb('notes'), this.state.currentVideo ? this.state.currentVideo.id : null);
     }
