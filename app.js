@@ -3131,65 +3131,6 @@ class WatchOnRepeat {
 
   trackPlaybackProgress() {
     if (!this.state.currentVideo || !this.state.isPlaying) return;
-    
-    // Execute pending auto-resume once playback starts
-    if (this.state.pendingResumeTime && this.state.pendingResumeTime > 0) {
-      this.seekToTime(this.state.pendingResumeTime);
-      this.showToast("Resumed from where you left off", "play-circle");
-      this.state.pendingResumeTime = null;
-      return;
-    }
-    
-    this.getCurrentTime().then(t => {
-      const d = this.state.currentVideoDuration || 0;
-      // Only track if we have valid time and duration, and it's not a local file (local files don't persist well by ID)
-      if (t > 0 && d > 0 && this.state.currentVideo.platform !== 'local') {
-        let progressDb = this.getDb('playback_progress');
-        // Clean up old entries if we have too many (>200) to prevent localStorage bloat
-        if (Object.keys(progressDb).length > 200) {
-           const sortedKeys = Object.keys(progressDb).sort((a,b) => progressDb[b].ts - progressDb[a].ts);
-           for (let i = 200; i < sortedKeys.length; i++) {
-              delete progressDb[sortedKeys[i]];
-           }
-        }
-        
-        let shouldSyncCloud = false;
-        
-        // Clear progress if within 3 seconds of the end, so it starts fresh next time
-        if (t < d - 3) {
-          const now = Date.now();
-          const existing = progressDb[this.state.currentVideo.id];
-          
-          progressDb[this.state.currentVideo.id] = { t: t, d: d, ts: now };
-          
-          // Sync to cloud every 15 seconds if user is logged in
-          if (this.state.user && window.supabaseClient && (!existing || (now - existing.ts > 15000))) {
-             shouldSyncCloud = true;
-          }
-        } else {
-          delete progressDb[this.state.currentVideo.id];
-          if (this.state.user && window.supabaseClient) {
-             shouldSyncCloud = true;
-             t = 0; // Reset cloud state
-          }
-        }
-        
-        this.saveDb('playback_progress', progressDb);
-        
-        if (shouldSyncCloud) {
-           supabaseClient.from('user_history').update({
-              last_timestamp: t,
-              duration: d
-           })
-           .eq('user_id', this.state.user.id)
-           .eq('video_id', this.state.currentVideo.id)
-           .eq('platform', this.state.currentVideo.platform)
-           .then(); // Fire and forget
-        }
-      }
-    }).catch(err => {
-      // Ignore errors if player is not fully initialized
-    });
   }
 
   // ==========================================
@@ -3928,15 +3869,6 @@ class WatchOnRepeat {
   }
 
   getProgressBarHtml(videoId) {
-    if (!videoId) return '';
-    try {
-      const db = this.getDb('playback_progress');
-      const data = db[videoId];
-      if (data && data.d > 0 && data.t > 0 && data.t < data.d - 3) {
-        const pct = Math.min(100, Math.max(0, (data.t / data.d) * 100));
-        return `<div style="position:absolute; bottom:0; left:0; right:0; height:4px; background:rgba(255,255,255,0.2); z-index:10;"><div style="height:100%; width:${pct}%; background:#ef4444;"></div></div>`;
-      }
-    } catch(e){}
     return '';
   }
 
