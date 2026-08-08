@@ -2980,3 +2980,35 @@ input[type="checkbox"]:focus {
   max-width: 250px;
   line-height: 1.4;
 }
+
+/* Theater Mode */
+body.theater-mode .main-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  padding: 0;
+  gap: 1.5rem;
+}
+
+body.theater-mode .player-card {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  padding: 1rem 2rem;
+}
+
+body.theater-mode .sidebar-column {
+  width: 100%;
+  max-width: 1450px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+@media (max-width: 768px) {
+  body.theater-mode .player-card {
+    padding: 0.5rem;
+  }
+  body.theater-mode .sidebar-column {
+    padding: 0 0.5rem;
+  }
+}
