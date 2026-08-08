@@ -2250,11 +2250,8 @@ class WatchOnRepeat {
         const progressDb = this.getDb('playback_progress');
         const saved = progressDb[this.state.currentVideo.id];
         if (saved && saved.t > 0) {
-          // Seek to the saved time. We add a small delay to ensure the player is fully initialized
-          setTimeout(() => {
-            this.seekToTime(saved.t);
-            this.showToast("Resumed from where you left off", "play-circle");
-          }, 500);
+          // Defer seeking until the video actually starts playing to ensure the player API accepts the command
+          this.state.pendingResumeTime = saved.t;
         }
       } catch (e) {
         console.error("Auto-resume error:", e);
@@ -3134,6 +3131,15 @@ class WatchOnRepeat {
 
   trackPlaybackProgress() {
     if (!this.state.currentVideo || !this.state.isPlaying) return;
+    
+    // Execute pending auto-resume once playback starts
+    if (this.state.pendingResumeTime && this.state.pendingResumeTime > 0) {
+      this.seekToTime(this.state.pendingResumeTime);
+      this.showToast("Resumed from where you left off", "play-circle");
+      this.state.pendingResumeTime = null;
+      return;
+    }
+    
     this.getCurrentTime().then(t => {
       const d = this.state.currentVideoDuration || 0;
       // Only track if we have valid time and duration, and it's not a local file (local files don't persist well by ID)
@@ -6723,3 +6729,4 @@ window.addEventListener('beforeinstallprompt', (e) => {
     };
   }
 });
+
