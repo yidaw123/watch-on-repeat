@@ -193,11 +193,47 @@
     
     <!-- Top Navigation Bar -->
     <header class="navbar">
-      
-      <a href="/" class="brand" id="brand-logo" onclick="event.preventDefault(); app.loadHome();">
-        <img src="/logo.svg" alt="WatchOnRepeat Logo" class="brand-icon" style="background: none; object-fit: cover; border-radius: var(--radius-md);">
-        <span class="brand-name">Watch<span>On</span>Repeat</span>
-      </a>
+      <div class="navbar-top">
+        <a href="/" class="brand" id="brand-logo" onclick="event.preventDefault(); app.loadHome();">
+          <img src="/logo.svg" alt="WatchOnRepeat Logo" class="brand-icon" style="background: none; object-fit: cover; border-radius: var(--radius-md);">
+          <span class="brand-name">Watch<span>On</span>Repeat</span>
+        </a>
+
+        <!-- User Auth Section -->
+        <div class="auth-section" style="display: flex; align-items: center; gap: 12px;">
+          <a href="/guide" style="color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius-sm); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
+            <i data-lucide="book-open" style="width: 16px; height: 16px; color: var(--color-purple);"></i>
+            <span>Guides</span>
+          </a>
+          <div id="auth-logged-out">
+            <button class="btn btn-primary" onclick="app.openLoginModal()">
+              <i data-lucide="log-in"></i>
+              <span>Sign In</span>
+            </button>
+          </div>
+          <div id="auth-logged-in" class="hidden">
+            <div class="user-profile" onclick="app.toggleUserMenu(event)">
+              <img id="user-avatar" src="" alt="User Avatar">
+              <span id="user-name">User</span>
+              <i data-lucide="chevron-down" class="chevron-icon"></i>
+              
+              <div id="user-menu" class="dropdown-menu hidden">
+                <div class="dropdown-header">
+                  <p class="dropdown-email" id="user-email">user@example.com</p>
+                </div>
+                <hr>
+                <a href="#" onclick="app.showTab('favorites')"><i data-lucide="heart"></i> My Favorites</a>
+                <a href="#" onclick="app.showTab('history')"><i data-lucide="history"></i> Loop History</a>
+                <a href="#" onclick="app.openSettingsModal()"><i data-lucide="settings"></i> Account Settings</a>
+                <a href="#" onclick="app.openShortcutsModal()"><i data-lucide="keyboard"></i> Keyboard Shortcuts</a>
+                <hr>
+                <a href="#" onclick="app.handleLogout()"><i data-lucide="log-out"></i> Sign Out</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Center Search/URL Input Bar -->
       <div class="search-container">
         <!-- Row 1: Direct Link Paste -->
@@ -239,39 +275,7 @@
 
       </div>
 
-      <!-- User Auth Section -->
-      <div class="auth-section" style="display: flex; align-items: center; gap: 12px;">
-        <a href="/guide" style="color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius-sm); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
-          <i data-lucide="book-open" style="width: 16px; height: 16px; color: var(--color-purple);"></i>
-          <span>Guides</span>
-        </a>
-        <div id="auth-logged-out">
-          <button class="btn btn-primary" onclick="app.openLoginModal()">
-            <i data-lucide="log-in"></i>
-            <span>Sign In</span>
-          </button>
-        </div>
-        <div id="auth-logged-in" class="hidden">
-          <div class="user-profile" onclick="app.toggleUserMenu(event)">
-            <img id="user-avatar" src="" alt="User Avatar">
-            <span id="user-name">User</span>
-            <i data-lucide="chevron-down" class="chevron-icon"></i>
-            
-            <div id="user-menu" class="dropdown-menu hidden">
-              <div class="dropdown-header">
-                <p class="dropdown-email" id="user-email">user@example.com</p>
-              </div>
-              <hr>
-              <a href="#" onclick="app.showTab('favorites')"><i data-lucide="heart"></i> My Favorites</a>
-              <a href="#" onclick="app.showTab('history')"><i data-lucide="history"></i> Loop History</a>
-              <a href="#" onclick="app.openSettingsModal()"><i data-lucide="settings"></i> Account Settings</a>
-              <a href="#" onclick="app.openShortcutsModal()"><i data-lucide="keyboard"></i> Keyboard Shortcuts</a>
-              <hr>
-              <a href="#" onclick="app.handleLogout()"><i data-lucide="log-out"></i> Sign Out</a>
-            </div>
-          </div>
-        </div>
-      </div>
+
     </header>
 
     <!-- Main Content Area Wrapper -->
