@@ -1569,7 +1569,7 @@ class WatchOnRepeat {
     
     let html = `
       <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); background: var(--bg-card); z-index: 10;">
-        ${(this.state.playlistMode && this.state.playlistMode.isYoutube) || this.state.sharedPlaylist ? `
+        ${this.state.sharedPlaylist || (this.state.playlistQueue && this.state.playlistQueue.length > 0 && (!this.state.playlistMode || !this.state.playlistMode.active)) ? `
           <div style="display: flex; gap: 8px; margin-bottom: 12px;">
              <button class="btn btn-sm btn-primary" onclick="app.saveCurrentPlaylistToAccount()" style="flex: 1;"><i data-lucide="download" style="width:14px; height:14px; margin-right:6px;"></i> Save this Playlist</button>
           </div>

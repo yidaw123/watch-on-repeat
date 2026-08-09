@@ -511,7 +511,7 @@ class PlaylistsMixin {
       return;
     }
 
-    let defaultName = "Saved YouTube Playlist";
+    let defaultName = this.state.currentPlaylistTitle || "Saved YouTube Playlist";
     
     const newPlaylist = {
        id: this.generateId(),
