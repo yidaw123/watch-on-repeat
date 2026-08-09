@@ -514,13 +514,13 @@ class PlaylistsMixin {
     let defaultName = this.state.currentPlaylistTitle || "Saved YouTube Playlist";
     
     const newPlaylist = {
-       id: this.generateId(),
+       id: crypto.randomUUID(),
        userId: this.state.user.id,
        name: defaultName,
        isPublic: false,
        createdAt: Date.now(),
        videos: this.state.playlistQueue.map(v => ({
-           id: this.generateId(),
+           id: crypto.randomUUID(),
            videoId: v.id,
            platform: v.platform || 'youtube',
            title: v.title || 'Unknown Video',
