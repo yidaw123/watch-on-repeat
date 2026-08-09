@@ -1569,11 +1569,6 @@ class WatchOnRepeat {
     
     let html = `
       <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); background: var(--bg-card); z-index: 10;">
-        ${this.state.sharedPlaylist || (this.state.playlistQueue && this.state.playlistQueue.length > 0 && (!this.state.playlistMode || !this.state.playlistMode.active)) ? `
-          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-             <button class="btn btn-sm btn-primary" onclick="app.saveCurrentPlaylistToAccount()" style="flex: 1;"><i data-lucide="download" style="width:14px; height:14px; margin-right:6px;"></i> Save this Playlist</button>
-          </div>
-        ` : ''}
         <div style="position: relative;">
           <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
           <input type="text" id="playlist-search-input" value="${this.escapeHtml(this.state.playlistSearchQuery || '')}" placeholder="Search playlist..." style="width: 100%; padding: 0.6rem 0.6rem 0.6rem 36px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text-primary); font-size: 0.9rem; transition: border-color 0.2s;" onkeyup="app.handlePlaylistSearch(event)">
@@ -1641,6 +1636,16 @@ class WatchOnRepeat {
           activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       }, 100);
+    }
+    
+    // Toggle Save Playlist button visibility
+    const savePlaylistBtn = document.getElementById('save-playlist-btn');
+    if (savePlaylistBtn) {
+      if (this.state.sharedPlaylist || (this.state.playlistQueue && this.state.playlistQueue.length > 0 && (!this.state.playlistMode || !this.state.playlistMode.active))) {
+        savePlaylistBtn.style.display = 'inline-flex';
+      } else {
+        savePlaylistBtn.style.display = 'none';
+      }
     }
   }
 
