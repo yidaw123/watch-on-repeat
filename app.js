@@ -2637,32 +2637,9 @@ class WatchOnRepeat {
       this.state.isPlaying = false;
     }
     
-    // YT.PlayerState.ENDED is 0
     if (event.data === YT.PlayerState.ENDED) {
       this.elements.loopStateText.textContent = "Restarting...";
       this.elements.loopStateText.className = "stat-value text-muted";
-      
-      // If we have a playlist AND the user isn't forcing an A/B loop, auto-advance!
-      if (this.state.playlistQueue && this.state.playlistQueue.length > 0 && (!this.state.abLoop.enabled && !this.state.abLoop.start && !this.state.abLoop.end)) {
-        if (this.state.autoplayEnabled !== false) {
-          if (this.state.currentPlaylistIndex < this.state.playlistQueue.length - 1) {
-             this.elements.loopStateText.textContent = "Playing Next...";
-             this.playPlaylistItem(this.state.currentPlaylistIndex + 1);
-             return;
-          }
-        }
-      } else if (!this.state.playlistQueue || this.state.playlistQueue.length === 0) {
-        // If it's a single video (suggested loops mode) and autoplay is on
-        if (this.state.autoplayEnabled !== false && (!this.state.abLoop.enabled && !this.state.abLoop.start && !this.state.abLoop.end) && this.state.discoverData && this.state.discoverData.length > 0) {
-          // Play a random suggested loop
-          let suggestions = this.state.discoverData.filter(v => (v.videoId || v.id) !== this.state.currentVideo.id);
-          if (suggestions.length > 0) {
-            let nextVid = suggestions[Math.floor(Math.random() * suggestions.length)];
-            this.loadVideo(nextVid.videoId || nextVid.id, nextVid.platform);
-            return;
-          }
-        }
-      }
       
       if (typeof this.advanceLoopSegment === 'function') {
         this.advanceLoopSegment();
@@ -3009,8 +2986,10 @@ class WatchOnRepeat {
       }
     }
 
+    // 1. Custom Playlist Mode
     if (this.state.playlistMode && this.state.playlistMode.active) {
-      if (this.state.playlistMode.loopVideo) return false;
+      // Autoplay toggle overrides manual loop toggle
+      if (this.state.playlistMode.loopVideo && !this.state.autoplayEnabled) return false;
       const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
       if (p && p.videos && p.videos.length > 0) {
         this.state.playlistMode.currentIndex++;
@@ -3025,6 +3004,31 @@ class WatchOnRepeat {
         }
       }
     }
+
+    // 2. Up Next Queue (YouTube Playlists)
+    if (this.state.playlistQueue && this.state.playlistQueue.length > 0 && (!this.state.abLoop.enabled && !this.state.abLoop.start && !this.state.abLoop.end)) {
+      if (this.state.autoplayEnabled) {
+        if (this.state.currentPlaylistIndex < this.state.playlistQueue.length - 1) {
+           this.elements.loopStateText.textContent = "Playing Next...";
+           this.playPlaylistItem(this.state.currentPlaylistIndex + 1);
+           return true;
+        }
+      }
+    }
+
+    // 3. Suggested Loops Mode (Single video mode)
+    if ((!this.state.playlistQueue || this.state.playlistQueue.length === 0) &&
+        (!this.state.playlistMode || !this.state.playlistMode.active)) {
+      if (this.state.autoplayEnabled && (!this.state.abLoop.enabled && !this.state.abLoop.start && !this.state.abLoop.end) && this.state.discoverData && this.state.discoverData.length > 0) {
+        let suggestions = this.state.discoverData.filter(v => (v.videoId || v.id) !== this.state.currentVideo.id);
+        if (suggestions.length > 0) {
+          let nextVid = suggestions[Math.floor(Math.random() * suggestions.length)];
+          this.loadVideo(nextVid.videoId || nextVid.id, nextVid.platform);
+          return true;
+        }
+      }
+    }
+    
     return false;
   }
 
