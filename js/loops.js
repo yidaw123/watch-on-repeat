@@ -267,7 +267,7 @@ class LoopsMixin {
     const seg = segments[currentSegIndex];
     
     const now = Date.now();
-    if (this.state.abLoop.lastLoopAdvance && now - this.state.abLoop.lastLoopAdvance < 500) {
+    if (this.state.abLoop.lastLoopAdvance && now - this.state.abLoop.lastLoopAdvance < 100) {
       return;
     }
     

@@ -1404,8 +1404,12 @@ class WatchOnRepeat {
     });
 
     videoEl.addEventListener('ended', () => {
-      if (this.incrementLoops()) return;
-      this.seekToTime(this.state.abLoop.start || 0);
+      if (typeof this.advanceLoopSegment === 'function') {
+        if (this.advanceLoopSegment()) return;
+      } else {
+        if (this.incrementLoops()) return;
+        this.seekToTime(this.state.abLoop.start || 0);
+      }
       videoEl.play();
     });
 
@@ -3022,6 +3026,7 @@ class WatchOnRepeat {
         } else {
           this.state.playlistMode.active = false;
           this.showToast("Playlist finished playing", "check");
+          return false;
         }
       }
     }

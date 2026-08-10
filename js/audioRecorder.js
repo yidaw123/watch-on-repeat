@@ -39,7 +39,7 @@ class AudioRecorderMixin {
     }
     
     const tier = this.getUserTier();
-    const maxRecsPerVideo = tier === 'free' ? 1 : 15;
+    const maxRecsPerVideo = tier === 'free' ? 5 : 15;
     const maxVideos = tier === 'free' ? 2 : 15;
     
     const recs = this.state.audio.recordings || [];
@@ -55,7 +55,7 @@ class AudioRecorderMixin {
     
     if (recsForThisVideo.length >= maxRecsPerVideo) {
       const msg = `You can only have up to ${maxRecsPerVideo} recording${maxRecsPerVideo > 1 ? 's' : ''} per video on the ${tier} tier.`;
-      if (tier === 'pro') this.showToast(msg, "alert-circle");
+      if (tier === 'pro' || tier === 'premium') this.showToast(msg, "alert-circle");
       else this.openUpgradeModal(msg);
       return;
     }
@@ -63,7 +63,7 @@ class AudioRecorderMixin {
     const uniqueVideos = new Set(recs.map(r => r.platform + ":" + r.videoId));
     if (!uniqueVideos.has(currentPlatform + ":" + currentVideoId) && uniqueVideos.size >= maxVideos) {
       const msg = `You have reached the maximum limit of ${maxVideos} videos with recordings for the ${tier} tier.`;
-      if (tier === 'pro') this.showToast(msg, "alert-circle");
+      if (tier === 'pro' || tier === 'premium') this.showToast(msg, "alert-circle");
       else this.openUpgradeModal(msg);
       return;
     }
@@ -106,10 +106,10 @@ class AudioRecorderMixin {
     };
     
     this.state.audio.recorder.onstop = async () => {
-      const blob = new Blob(this.state.audio.chunks, { type: 'audio/webm' });
-      if (this.state.audio.blobUrl) {
-        URL.revokeObjectURL(this.state.audio.blobUrl);
-      }
+      const blob = new Blob(this.state.audio.chunks, { type: this.state.audio.recorder.mimeType || 'audio/webm' });
+      
+      // Removed revokeObjectURL to prevent breaking previous recordings
+      
       this.state.audio.blobUrl = URL.createObjectURL(blob);
       
       if (this.state.audio.audioEl) {
@@ -308,6 +308,8 @@ class AudioRecorderMixin {
     this.state.audio.dataArray = new Uint8Array(bufferLength);
     
     const canvas = document.getElementById('recording-canvas');
+    if (!canvas) return; // Added null guard
+    
     const ctx = canvas.getContext('2d');
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;

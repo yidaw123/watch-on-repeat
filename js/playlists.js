@@ -93,10 +93,6 @@ class PlaylistsMixin {
                   <option value="alpha">Alphabetical</option>
                 </select>
               </div>
-              <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; user-select:none; font-weight: 500;">
-                <input type="checkbox" id="playlist-loop-toggle" style="width: 18px; height: 18px; cursor: pointer; accent-color: #60a5fa;"> 
-                <span>Loop Video</span>
-              </label>
             </div>
           </div>
           <h2 style="margin-bottom:16px; display:flex; align-items:center; gap:8px;">
@@ -309,9 +305,7 @@ class PlaylistsMixin {
   }
 
   playPlaylist(id) {
-    const loopToggle = document.getElementById('playlist-loop-toggle');
-    const isLooping = loopToggle ? loopToggle.checked : false;
-    this.state.playlistMode = { active: true, id: id, currentIndex: 0, loopVideo: isLooping };
+    this.state.playlistMode = { active: true, id: id, currentIndex: 0 };
     const p = this.getDb('playlists').find(pl => pl.id === id);
     if (!p || !p.videos || p.videos.length === 0) {
       this.showToast("Playlist is empty", "alert-circle");
