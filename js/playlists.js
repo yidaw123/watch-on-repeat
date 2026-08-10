@@ -68,7 +68,7 @@ class PlaylistsMixin {
     const createRow = content.querySelector('div[style*="margin-bottom: 24px"]');
 
     if (this.state.viewingPlaylistId) {
-      const p = this.getDb('playlists').find(pl => pl.id === this.state.viewingPlaylistId && pl.userId === this.state.user.id);
+      const p = this.getDb('playlists').find(pl => pl.id === this.state.viewingPlaylistId && pl.userId === this.state.user?.id);
       if (!p) {
         this.state.viewingPlaylistId = null;
         return this.renderPlaylistsTab();
@@ -138,7 +138,7 @@ class PlaylistsMixin {
           e.preventDefault();
           if (this.state.draggedIndex === null || this.state.draggedIndex === index) return;
           const playlists = this.getDb('playlists');
-          const pl = playlists.find(pll => pll.id === p.id && pll.userId === this.state.user.id);
+          const pl = playlists.find(pll => pll.id === p.id && pll.userId === this.state.user?.id);
           const moved = pl.videos.splice(this.state.draggedIndex, 1)[0];
           pl.videos.splice(index, 0, moved);
           pl.updatedAt = new Date().toISOString();
@@ -295,7 +295,7 @@ class PlaylistsMixin {
   sortPlaylist(id, criteria) {
     if (!criteria) return;
     const playlists = this.getDb('playlists');
-    const p = playlists.find(pl => pl.id === id && pl.userId === this.state.user.id);
+    const p = playlists.find(pl => pl.id === id && pl.userId === this.state.user?.id);
     if (!p || !p.videos) return;
     
     if (criteria === 'date') {
@@ -324,7 +324,7 @@ class PlaylistsMixin {
 
   async renamePlaylist(id) {
     const playlists = this.getDb('playlists');
-    const p = playlists.find(pl => pl.id === id && pl.userId === this.state.user.id);
+    const p = playlists.find(pl => pl.id === id && pl.userId === this.state.user?.id);
     if (!p) return;
     
     const newName = await window.app.showCustomPrompt({
@@ -362,7 +362,7 @@ class PlaylistsMixin {
     });
     if (!confirmed) return;
     const playlists = this.getDb('playlists');
-    const filtered = playlists.filter(p => !(p.id === id && p.userId === this.state.user.id));
+    const filtered = playlists.filter(p => !(p.id === id && p.userId === this.state.user?.id));
     this.saveDb('playlists', filtered);
     
     // Explicitly delete from Supabase so it's not orphaned
@@ -383,7 +383,7 @@ class PlaylistsMixin {
 
   removeVideoFromPlaylist(playlistId, videoId) {
     const playlists = this.getDb('playlists');
-    const p = playlists.find(pl => pl.id === playlistId && pl.userId === this.state.user.id);
+    const p = playlists.find(pl => pl.id === playlistId && pl.userId === this.state.user?.id);
     if (!p || !p.videos) return;
     p.videos = p.videos.filter(v => (v.videoId || v.id) !== videoId);
     p.updatedAt = new Date().toISOString();
@@ -399,7 +399,7 @@ class PlaylistsMixin {
       return;
     }
     const playlists = this.getDb('playlists');
-    const index = playlists.findIndex(p => p.id === id && p.userId === this.state.user.id);
+    const index = playlists.findIndex(p => p.id === id && p.userId === this.state.user?.id);
     if (index !== -1) {
       playlists[index].isPublic = isPublic;
       playlists[index].updatedAt = new Date().toISOString();
@@ -513,14 +513,16 @@ class PlaylistsMixin {
 
     let defaultName = this.state.currentPlaylistTitle || "Saved YouTube Playlist";
     
+    const generateSafeId = () => (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
     const newPlaylist = {
-       id: crypto.randomUUID(),
+       id: generateSafeId(),
        userId: this.state.user.id,
        name: defaultName,
        isPublic: false,
        createdAt: Date.now(),
        videos: this.state.playlistQueue.map(v => ({
-           id: crypto.randomUUID(),
+           id: generateSafeId(),
            videoId: v.id,
            platform: v.platform || 'youtube',
            title: v.title || 'Unknown Video',
@@ -531,18 +533,7 @@ class PlaylistsMixin {
     playlists.push(newPlaylist);
     this.saveDb('playlists', playlists);
     
-    // Sync to Supabase if logged in
-    if (window.supabaseClient) {
-       supabaseClient.from('user_playlists').insert({
-          id: newPlaylist.id,
-          user_id: newPlaylist.userId,
-          name: newPlaylist.name,
-          is_public: false,
-          videos: newPlaylist.videos
-       }).then(({error}) => {
-          if (error) console.error("Failed to save playlist to cloud", error);
-       });
-    }
+    // Supabase sync is handled by this.saveDb()
     
     this.showToast("Playlist saved to Your Playlists!", "check-circle");
     

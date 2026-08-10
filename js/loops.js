@@ -12,7 +12,6 @@ class LoopsMixin {
   fineTuneLoop(point, amount, segIndex = null) {
     
     let target = this.state.abLoop;
-    let isMulti = false;
     if (segIndex !== null && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments[segIndex]) {
       const startEl = document.getElementById(`multi-start-${segIndex}`);
       const endEl = document.getElementById(`multi-end-${segIndex}`);
@@ -53,19 +52,15 @@ class LoopsMixin {
       newStart = Math.max(0, newStart + amount);
       if (newStart >= newEnd) newStart = newEnd - 0.1;
       target.start = newStart;
-      if (!isMulti) {
-        this.elements.abStart.value = this.formatTime(newStart);
-        this.seekToTime(newStart);
-      }
+      this.elements.abStart.value = this.formatTime(newStart);
+      this.seekToTime(newStart);
     } else {
       let maxTime = this.state.currentVideoDuration || newEnd;
       newEnd = Math.min(maxTime, newEnd + amount);
       if (newEnd <= newStart) newEnd = newStart + 0.1;
       target.end = newEnd;
-      if (!isMulti) {
-        this.elements.abEnd.value = this.formatTime(newEnd);
-        this.seekToTime(newEnd - 0.5);
-      }
+      this.elements.abEnd.value = this.formatTime(newEnd);
+      this.seekToTime(newEnd - 0.5);
     }
     
     if (this.updateTimelineUI) this.updateTimelineUI();
@@ -74,7 +69,6 @@ class LoopsMixin {
   shiftLoop(direction, segIndex = null) {
     
     let target = this.state.abLoop;
-    let isMulti = false;
     if (segIndex !== null && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments[segIndex]) {
       const startEl = document.getElementById(`multi-start-${segIndex}`);
       const endEl = document.getElementById(`multi-end-${segIndex}`);
@@ -129,13 +123,9 @@ class LoopsMixin {
     target.start = newStart;
     target.end = newEnd;
     
-    if (isMulti) {
-      this.renderMultiSegments();
-    } else {
-      this.elements.abStart.value = this.formatTime(newStart);
-      this.elements.abEnd.value = this.formatTime(newEnd);
-      this.seekToTime(newStart);
-    }
+    this.elements.abStart.value = this.formatTime(newStart);
+    this.elements.abEnd.value = this.formatTime(newEnd);
+    this.seekToTime(newStart);
     
     if (this.updateTimelineUI) this.updateTimelineUI();
   }
@@ -143,7 +133,6 @@ class LoopsMixin {
   scaleLoop(multiplier, segIndex = null) {
     
     let target = this.state.abLoop;
-    let isMulti = false;
     if (segIndex !== null && this.state.abLoop.multiSegments && this.state.abLoop.multiSegments[segIndex]) {
       const startEl = document.getElementById(`multi-start-${segIndex}`);
       const endEl = document.getElementById(`multi-end-${segIndex}`);
@@ -185,11 +174,7 @@ class LoopsMixin {
     
     target.end = newEnd;
     
-    if (isMulti) {
-      this.renderMultiSegments();
-    } else {
-      this.elements.abEnd.value = this.formatTime(newEnd);
-    }
+    this.elements.abEnd.value = this.formatTime(newEnd);
     
     if (this.updateTimelineUI) this.updateTimelineUI();
   }
@@ -259,8 +244,8 @@ class LoopsMixin {
       if (end > 0 && t >= end - 0.05) {
         if (!this.state.abLoop.isLoopSeeking) {
           this.state.abLoop.isLoopSeeking = true;
+          if (this.incrementLoops()) return;
           this.seekToTime(start);
-          this.incrementLoops();
           setTimeout(() => { this.state.abLoop.isLoopSeeking = false; }, 1500);
         }
       } else if (t < start - 0.5) {
@@ -316,7 +301,7 @@ class LoopsMixin {
     // 2.5. Natural loop jump (YouTube's native loop=1 skipped the t >= seg.end check)
     if (seg.end > 0 && prevT > seg.end - 2.0 && t < (seg.start !== null ? seg.start : 0) + 2.0) {
       this.state.abLoop.lastLoopAdvance = now;
-      this.advanceLoopSegment();
+      if (this.advanceLoopSegment()) return;
       return;
     }
     
@@ -348,9 +333,9 @@ class LoopsMixin {
 
   advanceLoopSegment() {
     if (!this.state.isMultiSegment || !this.state.abLoop.multiSegments || this.state.abLoop.multiSegments.length === 0) {
-      if (this.incrementLoops()) return;
+      if (this.incrementLoops()) return true;
       this.seekToTime(this.state.abLoop.start || 0);
-      return;
+      return false;
     }
     
     const segments = this.state.abLoop.multiSegments;
@@ -364,7 +349,7 @@ class LoopsMixin {
     if (nextIndex >= segments.length) {
       nextIndex = segments.findIndex(s => s.start !== null && s.end !== null);
       
-      if (this.incrementLoops()) return;
+      if (this.incrementLoops()) return true;
     }
     
     this.state.abLoop.currentSegmentIndex = nextIndex;
@@ -377,6 +362,7 @@ class LoopsMixin {
     }
     
     if (this.updateTimelineUI) this.updateTimelineUI();
+    return false;
   }
 
   jumpToLoopSegment(direction) {

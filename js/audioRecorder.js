@@ -39,8 +39,8 @@ class AudioRecorderMixin {
     }
     
     const tier = this.getUserTier();
-    const maxRecsPerVideo = tier === 'free' ? 1 : 3;
-    const maxVideos = tier === 'free' ? 2 : 5;
+    const maxRecsPerVideo = tier === 'free' ? 1 : 15;
+    const maxVideos = tier === 'free' ? 2 : 15;
     
     const recs = this.state.audio.recordings || [];
     const currentVideoId = this.state.currentVideo ? this.state.currentVideo.id : null;
@@ -69,11 +69,14 @@ class AudioRecorderMixin {
     }
     
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Media devices not supported in this context (requires HTTPS).");
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.startRecording(stream);
     } catch (err) {
       console.error("Microphone access denied or error:", err);
-      if (typeof this.showToast === 'function') this.showToast("Microphone access required to record.", "alert-circle");
+      if (typeof this.showToast === 'function') this.showToast("Microphone access denied or not supported (requires HTTPS).", "alert-circle");
     }
   }
 

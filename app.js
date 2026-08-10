@@ -570,6 +570,21 @@ class WatchOnRepeat {
     this.renderUpNextQueue(null);
     this.updateUserUI();
     this.updateStatsUI();
+    this.checkCookieConsent();
+  }
+
+  checkCookieConsent() {
+    const consent = localStorage.getItem('wor_cookie_consent');
+    if (!consent) {
+      const banner = document.getElementById('cookie-consent-banner');
+      if (banner) banner.classList.remove('hidden');
+    }
+  }
+
+  acceptCookies() {
+    localStorage.setItem('wor_cookie_consent', 'true');
+    const banner = document.getElementById('cookie-consent-banner');
+    if (banner) banner.classList.add('hidden');
   }
 
   cacheElements() {
@@ -1389,7 +1404,7 @@ class WatchOnRepeat {
     });
 
     videoEl.addEventListener('ended', () => {
-      this.incrementLoops();
+      if (this.incrementLoops()) return;
       this.seekToTime(this.state.abLoop.start || 0);
       videoEl.play();
     });
@@ -2647,14 +2662,16 @@ class WatchOnRepeat {
       this.elements.loopStateText.className = "stat-value text-muted";
       
       if (typeof this.advanceLoopSegment === 'function') {
-        this.advanceLoopSegment();
+        if (this.advanceLoopSegment()) return;
       } else {
         if (this.incrementLoops()) return;
         this.seekToTime(this.state.abLoop.start || 0);
       }
       
       // Re-play video
-      this.state.players.youtube.playVideo();
+      if (this.state.players.youtube) {
+        this.state.players.youtube.playVideo();
+      }
       
       setTimeout(() => {
         this.elements.loopStateText.textContent = "Looping";
@@ -2993,8 +3010,7 @@ class WatchOnRepeat {
 
     // 1. Custom Playlist Mode
     if (this.state.playlistMode && this.state.playlistMode.active) {
-      // Autoplay toggle overrides manual loop toggle
-      if (this.state.playlistMode.loopVideo && !this.state.autoplayEnabled) return false;
+      if (!this.state.autoplayEnabled) return false;
       const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
       if (p && p.videos && p.videos.length > 0) {
         this.state.playlistMode.currentIndex++;
@@ -3011,7 +3027,7 @@ class WatchOnRepeat {
     }
 
     // 2. Up Next Queue (YouTube Playlists)
-    if (this.state.playlistQueue && this.state.playlistQueue.length > 0 && (!this.state.abLoop.enabled && !this.state.abLoop.start && !this.state.abLoop.end)) {
+    if (this.state.playlistQueue && this.state.playlistQueue.length > 0) {
       if (this.state.autoplayEnabled) {
         if (this.state.currentPlaylistIndex < this.state.playlistQueue.length - 1) {
            this.elements.loopStateText.textContent = "Playing Next...";
@@ -3024,7 +3040,7 @@ class WatchOnRepeat {
     // 3. Suggested Loops Mode (Single video mode)
     if ((!this.state.playlistQueue || this.state.playlistQueue.length === 0) &&
         (!this.state.playlistMode || !this.state.playlistMode.active)) {
-      if (this.state.autoplayEnabled && (!this.state.abLoop.enabled && !this.state.abLoop.start && !this.state.abLoop.end) && this.state.discoverData && this.state.discoverData.length > 0) {
+      if (this.state.autoplayEnabled && this.state.discoverData && this.state.discoverData.length > 0) {
         let suggestions = this.state.discoverData.filter(v => (v.videoId || v.id) !== this.state.currentVideo.id);
         if (suggestions.length > 0) {
           let nextVid = suggestions[Math.floor(Math.random() * suggestions.length)];
