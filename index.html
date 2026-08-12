@@ -901,6 +901,12 @@
               <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <h3 id="up-next-header-label" style="margin-left: 12px; margin-bottom: 0;">Most Looped</h3>
                 <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted);">
+                  <button id="prev-video-btn" class="btn-icon" aria-label="Previous Video" onclick="app.playPreviousVideo()" title="Previous Video" style="display: none; padding: 4px;">
+                    <i data-lucide="skip-back" style="width: 16px; height: 16px;"></i>
+                  </button>
+                  <button id="next-video-btn" class="btn-icon" aria-label="Next Video" onclick="app.playNextVideo()" title="Next Video" style="display: none; padding: 4px; margin-right: 8px;">
+                    <i data-lucide="skip-forward" style="width: 16px; height: 16px;"></i>
+                  </button>
                   <span>Auto-play</span>
                   <label style="margin: 0; cursor: pointer; display: flex; align-items: center;">
                     <div class="toggle-switch" style="transform: scale(0.8);">

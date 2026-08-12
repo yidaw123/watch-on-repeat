@@ -1710,6 +1710,7 @@ class WatchOnRepeat {
   }
 
   async  loadVideo(id, platform = 'youtube') {
+    if (typeof this.updatePlaylistSkipButtons === 'function') this.updatePlaylistSkipButtons();
     this.flushAnalytics();
     this.toggleLocalVideoRestrictions(false);
     
@@ -2928,6 +2929,84 @@ class WatchOnRepeat {
   // ==========================================
   // LOOP TRACKING & UPDATING
   // ==========================================
+
+  updatePlaylistSkipButtons() {
+    const prevBtn = document.getElementById('prev-video-btn');
+    const nextBtn = document.getElementById('next-video-btn');
+    if (!prevBtn || !nextBtn) return;
+    
+    let isPlaylist = false;
+    if (this.state.playlistMode && this.state.playlistMode.active) isPlaylist = true;
+    if (this.state.playlistQueue && this.state.playlistQueue.length > 0) isPlaylist = true;
+    
+    if (isPlaylist) {
+      prevBtn.style.display = 'inline-flex';
+      nextBtn.style.display = 'inline-flex';
+    } else {
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+    }
+  }
+
+  playNextVideo() {
+    if (this.state.playlistMode && this.state.playlistMode.active) {
+      const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
+      if (p && p.videos && p.videos.length > 0) {
+        if (this.state.playlistMode.currentIndex < p.videos.length - 1) {
+          this.state.playlistMode.currentIndex++;
+          const nextV = p.videos[this.state.playlistMode.currentIndex];
+          this.showToast(`Skipped to: ${this.escapeHtml(nextV.title)}`, 'play');
+          this.loadVideo(nextV.videoId || nextV.id, nextV.platform);
+          return true;
+        } else {
+          this.showToast("Already at the end of the playlist", "alert-circle");
+          return false;
+        }
+      }
+    }
+
+    if (this.state.playlistQueue && this.state.playlistQueue.length > 0) {
+      if (this.state.currentPlaylistIndex < this.state.playlistQueue.length - 1) {
+         this.playPlaylistItem(this.state.currentPlaylistIndex + 1);
+         return true;
+      } else {
+         this.showToast("Already at the end of the queue", "alert-circle");
+         return false;
+      }
+    }
+    
+    return false;
+  }
+
+  playPreviousVideo() {
+    if (this.state.playlistMode && this.state.playlistMode.active) {
+      const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
+      if (p && p.videos && p.videos.length > 0) {
+        if (this.state.playlistMode.currentIndex > 0) {
+          this.state.playlistMode.currentIndex--;
+          const prevV = p.videos[this.state.playlistMode.currentIndex];
+          this.showToast(`Skipped back to: ${this.escapeHtml(prevV.title)}`, 'play');
+          this.loadVideo(prevV.videoId || prevV.id, prevV.platform);
+          return true;
+        } else {
+          this.showToast("Already at the start of the playlist", "alert-circle");
+          return false;
+        }
+      }
+    }
+
+    if (this.state.playlistQueue && this.state.playlistQueue.length > 0) {
+      if (this.state.currentPlaylistIndex > 0) {
+         this.playPlaylistItem(this.state.currentPlaylistIndex - 1);
+         return true;
+      } else {
+         this.showToast("Already at the start of the queue", "alert-circle");
+         return false;
+      }
+    }
+    
+    return false;
+  }
 
   incrementLoops() {
     const video = this.state.currentVideo;
