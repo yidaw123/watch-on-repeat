@@ -1627,6 +1627,7 @@ class WatchOnRepeat {
           <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 4px;">
             Page 
             <input type="number" min="1" max="${totalPages}" value="${currentPage}" 
+                   class="pagination-input"
                    onchange="app.setPlaylistPage(parseInt(this.value))" 
                    style="width: 40px; padding: 2px 4px; border-radius: 4px; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 0.85rem;" />
             of ${totalPages}

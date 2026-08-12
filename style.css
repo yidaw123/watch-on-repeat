@@ -2802,6 +2802,7 @@ input[type="checkbox"]:focus {
 }
 .pagination-input[type=number] {
   -moz-appearance: textfield;
+  color-scheme: dark;
 }
 
 /* Ad Sidebars */
