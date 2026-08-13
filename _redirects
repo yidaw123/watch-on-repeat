@@ -1,1 +1,12 @@
-/* /index.html 200
+/guide          /guide.html         200
+/about          /about.html         200
+/privacy        /privacy.html       200
+/terms          /terms.html         200
+/music-practice /music-practice.html 200
+/language-learning /language-learning.html 200
+/youtube-looper /youtube-looper.html 200
+/youtube-study-tool /youtube-study-tool.html 200
+/listenonrepeat-alternative /listenonrepeat-alternative.html 200
+/contact        /contact.html       200
+/contact-success /contact-success.html 200
+/*              /index.html         200
