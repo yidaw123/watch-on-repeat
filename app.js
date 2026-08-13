@@ -976,6 +976,14 @@ class WatchOnRepeat {
     const headerLabel = document.getElementById('up-next-header-label');
     if (tabLabel) tabLabel.textContent = 'Most Looped';
     if (headerLabel) headerLabel.textContent = 'Most Looped';
+    
+    // Clean up playlist state and UI so it doesn't persist over the discover tab
+    this.state.playlistQueue = [];
+    if (this.state.playlistMode) this.state.playlistMode.active = false;
+    const playlistContainer = document.getElementById('playlist-queue-container');
+    if (playlistContainer) playlistContainer.remove();
+    const upNextList = document.getElementById('up-next-list');
+    if (upNextList) upNextList.style.display = 'flex';
 
     const loopDisplay = document.getElementById('personal-loop-count');
     const sessionDisplay = document.getElementById('loop-timer');
