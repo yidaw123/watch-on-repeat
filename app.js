@@ -1571,7 +1571,8 @@ class WatchOnRepeat {
     
     // Filter items
     const query = (this.state.playlistSearchQuery || '').toLowerCase();
-    let filteredItems = this.state.playlistQueue.map((item, originalIndex) => ({...item, originalIndex}));
+    const queue = this.state.playlistQueue || [];
+    let filteredItems = queue.map((item, originalIndex) => ({...item, originalIndex}));
     if (query) {
       filteredItems = filteredItems.filter(v => v.title.toLowerCase().includes(query));
     }
@@ -1876,12 +1877,12 @@ class WatchOnRepeat {
     this.state.analyticsSession.startTime = Date.now();
 
     // Update UI Elements immediately
-    this.elements.videoTitle.textContent = videoTitle;
+    if (this.elements.videoTitle) this.elements.videoTitle.textContent = videoTitle;
     
     // Always fetch fresh title and thumbnail in background
     this.fetchVideoMetadata(id, platform).then(meta => {
       if (meta && meta.title && !meta.title.includes("Cozy Coffee Shop")) {
-        this.elements.videoTitle.textContent = meta.title;
+        if (this.elements.videoTitle) this.elements.videoTitle.textContent = meta.title;
         document.title = meta.title + " | WatchOnRepeat";
         this.state.currentVideo.title = meta.title;
         if (meta.thumbnail) {
@@ -3097,8 +3098,8 @@ class WatchOnRepeat {
       if (!this.state.autoplayEnabled) return false;
       const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
       if (p && p.videos && p.videos.length > 0) {
-        this.state.playlistMode.currentIndex++;
-        if (this.state.playlistMode.currentIndex < p.videos.length) {
+        if (this.state.playlistMode.currentIndex + 1 < p.videos.length) {
+          this.state.playlistMode.currentIndex++;
           const nextV = p.videos[this.state.playlistMode.currentIndex];
           this.showToast(`Up next: ${this.escapeHtml(nextV.title)}`, 'play');
           this.loadVideo(nextV.videoId || nextV.id, nextV.platform);

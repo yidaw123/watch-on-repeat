@@ -222,7 +222,7 @@ class LoopsMixin {
     } finally {
       this.state.abLoop.isChecking = false;
       if (this.state.abLoop.active) {
-        this.state.abLoop.timer = setTimeout(() => this.checkABLoop(), 15);
+        this.state.abLoop.timer = setTimeout(() => this.checkABLoop(), 50);
       }
     }
   }

@@ -329,7 +329,9 @@ class PlaylistsMixin {
     });
     
     if (newName !== null && newName.trim() !== '') {
-      p.name = newName.trim();
+      let trimmedName = newName.trim();
+      if (trimmedName.length > 100) trimmedName = trimmedName.substring(0, 100);
+      p.name = trimmedName;
       p.updatedAt = new Date().toISOString();
       this.saveDb('playlists', playlists);
       
