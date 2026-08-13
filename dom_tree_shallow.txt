@@ -1,0 +1,76 @@
+<div class="sidebar-card">
+  <div class="sidebar-tabs">
+    <button id="tab-up-next-btn" class="tab-btn active">
+    </button>
+    <button id="tab-favorites-btn" class="tab-btn">
+    </button>
+    <button id="tab-playlists-btn" class="tab-btn">
+    </button>
+    <button id="tab-saved-loops-btn" class="tab-btn">
+    </button>
+    <button id="tab-notes-btn" class="tab-btn">
+    </button>
+    <button id="tab-saved-sessions-btn" class="tab-btn">
+    </button>
+    <button id="tab-history-btn" class="tab-btn">
+    </button>
+    <button id="tab-recorded-audio-btn" class="tab-btn">
+    </button>
+    <button id="tab-analytics-btn" class="tab-btn">
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div id="tab-analytics" class="tab-panel">
+    </div>
+    <div id="premium-unlock-modal" class="premium-unlock-takeover hidden">
+    </div>
+    <div id="playlist-modal" class="modal-overlay hidden">
+    </div>
+    <div id="settings-modal" class="modal-overlay hidden">
+    </div>
+    <div id="shortcuts-modal" class="modal-overlay hidden">
+    </div>
+    <div id="shortcut-recorder-modal" class="modal-overlay hidden">
+    </div>
+    <div id="tab-saved-loops" class="tab-panel">
+    </div>
+  </aside>
+  <div id="stats-dashboard-container">
+    <div class="stats-dashboard">
+    </div>
+  </div>
+  <section class="seo-about-section">
+    <h2>
+    </h2>
+    <p>
+    </p>
+    <p>
+    </p>
+  </section>
+  <section class="faq-accordion">
+    <h2>
+    </h2>
+    <div class="faq-item">
+    </div>
+    <div class="faq-item">
+    </div>
+    <div class="faq-item">
+    </div>
+    <div class="faq-item">
+    </div>
+    <div class="faq-item">
+    </div>
+    <div class="faq-item">
+    </div>
+    <div class="faq-item">
+    </div>
+    <div class="faq-item">
+    </div>
+    <div class="faq-item">
+    </div>
+    <div class="faq-item">
+    </div>
+    <div class="faq-item">
+    </div>
+  </section>
+</main>
