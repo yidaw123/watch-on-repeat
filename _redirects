@@ -1,3 +1,3 @@
-# Netlify Pretty URLs handles /guide -> guide.html automatically.
+# Cloudflare Pages serves /guide -> guide.html automatically.
 # The catch-all below only fires when no matching file exists.
 /*              /index.html         200
