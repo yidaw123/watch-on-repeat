@@ -2566,7 +2566,8 @@ class WatchOnRepeat {
         seekTo: (t) => { mockCurrentTime = t; },
         setPlaybackRate: () => {},
         getCurrentTime: () => mockCurrentTime,
-        getDuration: () => mockDuration
+        getDuration: () => mockDuration,
+        destroy: () => { clearInterval(mockInterval); }
       };
       
       // Force UI to recognize it's playing
@@ -4017,7 +4018,7 @@ class WatchOnRepeat {
     let deleteBtn = '';
     if (showDeleteBtn === null) showDeleteBtn = isHistory;
     if (showDeleteBtn) {
-      deleteBtn = `<button class="btn-icon-delete" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); padding:4px;" onclick="event.stopPropagation(); app.deleteHistoryItem('${video.videoId || video.id}')" title="Delete from history"><i data-lucide="trash-2"></i></button>`;
+      deleteBtn = `<button class="btn-icon-delete" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); padding:4px;" onclick="event.stopPropagation(); app.deleteHistoryItem('${this.escapeHtml(video.videoId || video.id)}')" title="Delete from history"><i data-lucide="trash-2"></i></button>`;
     }
 
     const progressHtml = this.getProgressBarHtml(video.videoId || video.id);
