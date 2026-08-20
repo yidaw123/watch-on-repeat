@@ -44,6 +44,11 @@ class NotesMixin {
       time = await this.getCurrentTime();
     }
     
+    // Clamp time to video duration to prevent UI markers flying off the timeline
+    if (this.state.currentVideoDuration > 0 && time > this.state.currentVideoDuration) {
+      time = this.state.currentVideoDuration;
+    }
+    
     const notes = this.getDb('notes');
     const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     
