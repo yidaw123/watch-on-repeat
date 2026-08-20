@@ -47,6 +47,9 @@ class NotesMixin {
     // Clamp time to video duration to prevent UI markers flying off the timeline
     if (this.state.currentVideoDuration > 0 && time > this.state.currentVideoDuration) {
       time = this.state.currentVideoDuration;
+      if (typeof this.showToast === 'function') {
+        this.showToast("Note timestamp exceeded video length and was adjusted to the end.", "alert-circle");
+      }
     }
     
     const notes = this.getDb('notes');
