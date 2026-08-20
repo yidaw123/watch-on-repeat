@@ -47,8 +47,19 @@ class NotesMixin {
     // Clamp time to video duration to prevent UI markers flying off the timeline
     if (this.state.currentVideoDuration > 0 && time > this.state.currentVideoDuration) {
       time = this.state.currentVideoDuration;
+      console.log("Note time clamped. Duration:", this.state.currentVideoDuration);
       if (typeof this.showToast === 'function') {
-        this.showToast("Note timestamp exceeded video length and was adjusted to the end.", "alert-circle");
+        this.showToast("Your notes is outside of video play time and was adjusted to the ending time.", "alert-circle");
+      }
+      
+      // Visually update the input field so the user sees it got clamped
+      if (isManual) {
+        const manualInput = document.getElementById('manual-note-time');
+        if (manualInput && manualInput._cascadingTime) {
+          manualInput._cascadingTime.setValue(time);
+        } else if (manualInput) {
+          manualInput.value = this.formatTime(time);
+        }
       }
     }
     
