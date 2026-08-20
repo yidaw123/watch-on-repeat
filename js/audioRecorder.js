@@ -433,6 +433,29 @@ class AudioRecorderMixin {
     }
   }
 
+  async deleteAllRecordingsForVideo(videoId, platform) {
+    if (!window.AudioDB || !this.state.audio || !this.state.audio.recordings) return;
+    
+    if (!confirm("Are you sure you want to delete all recordings for this video?")) return;
+    
+    const recsToDelete = this.state.audio.recordings.filter(r => r.videoId === videoId && r.platform === platform);
+    if (recsToDelete.length === 0) return;
+    
+    try {
+      for (const rec of recsToDelete) {
+        if (rec.blobUrl && rec.blobUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(rec.blobUrl);
+        }
+        await window.AudioDB.deleteRecording(rec.id);
+      }
+      this.state.audio.recordings = this.state.audio.recordings.filter(r => !(r.videoId === videoId && r.platform === platform));
+      this.renderRecordedAudioTab();
+    } catch (err) {
+      console.error("Failed to delete recordings", err);
+      alert("Failed to delete recordings.");
+    }
+  }
+
   syncRecordingWithVideo() {
     if (this.state.audio && this.state.audio.audioEl && this.state.audio.blobUrl && this.state.audio.wantsSync) {
       this.state.audio.audioEl.currentTime = 0;
@@ -498,6 +521,9 @@ class AudioRecorderMixin {
                 ${group.platform}
               </span>
             </div>
+            <button type="button" class="btn-icon-delete" style="color: #ef4444;" onclick="event.stopPropagation(); app.deleteAllRecordingsForVideo('${group.videoId}', '${group.platform}')" title="Delete all recordings for this video">
+              <i data-lucide="trash-2"></i>
+            </button>
           </div>
           <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
       `;
