@@ -465,38 +465,38 @@ class AudioRecorderMixin {
     let html = '';
     Object.values(grouped).forEach(group => {
       html += `
-        <div class="mb-4 bg-[#1a1f2e] border border-[var(--border-color)] rounded-lg overflow-hidden">
-          <div class="flex items-center gap-3 p-3 cursor-pointer hover:bg-[rgba(255,255,255,0.02)] transition-colors border-b border-[var(--border-color)]" onclick="app.loadVideo('${group.videoId}', '${group.platform}')">
-            ${group.thumbnail ? `<img src="${group.thumbnail}" class="w-16 h-10 object-cover rounded shadow-sm" alt="Thumbnail">` : `<div class="w-16 h-10 bg-gray-800 rounded flex items-center justify-center"><i data-lucide="video" class="text-gray-500 w-5 h-5"></i></div>`}
-            <div class="flex-1 min-w-0">
-              <div class="text-sm font-semibold text-white truncate" title="${group.videoTitle}">${group.videoTitle}</div>
-              <div class="text-xs text-gray-400 mt-0.5 capitalize flex items-center gap-1">
-                <i data-lucide="${group.platform === 'youtube' ? 'youtube' : group.platform === 'twitch' ? 'twitch' : group.platform === 'vimeo' ? 'video' : 'play-circle'}" class="w-3 h-3"></i>
+        <div style="display: flex; flex-direction: column; background: var(--surface-color); border: 1px solid #333; border-radius: 8px; overflow: hidden; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333; cursor: pointer;" onclick="app.loadVideo('${group.videoId}', '${group.platform}')">
+            ${group.thumbnail ? `<img src="${group.thumbnail}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" alt="Thumbnail">` : `<div style="width: 80px; height: 45px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center;"><i data-lucide="video" style="color: #666;"></i></div>`}
+            <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+              <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white;" title="${group.videoTitle}">${group.videoTitle}</span>
+              <span style="font-size: 11px; color: #888; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+                <i data-lucide="${group.platform === 'youtube' ? 'youtube' : group.platform === 'twitch' ? 'twitch' : group.platform === 'vimeo' ? 'video' : 'play-circle'}" style="width: 12px; height: 12px;"></i>
                 ${group.platform}
-              </div>
+              </span>
             </div>
           </div>
-          <div class="p-2 flex flex-col gap-2">
+          <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
       `;
       
       group.recordings.forEach(rec => {
         const mins = Math.floor(rec.duration / 60).toString().padStart(2, '0');
         const secs = (rec.duration % 60).toString().padStart(2, '0');
         html += `
-          <div class="p-2 rounded bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] flex justify-between items-center group/item hover:border-[rgba(255,255,255,0.1)] transition-colors">
-            <div>
-              <div class="text-sm font-medium text-gray-200">${rec.name}</div>
-              <div class="text-xs text-gray-400 mt-0.5"><i data-lucide="clock" class="inline w-3 h-3 mr-1 mb-0.5"></i>${mins}:${secs}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
+            <div style="display: flex; flex-direction: column; flex: 1;">
+              <span style="font-weight: 500; font-size: 13px; color: white;">${rec.name}</span>
+              <span style="font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; margin-top: 2px;"><i data-lucide="clock" style="width: 12px; height: 12px;"></i>${mins}:${secs}</span>
             </div>
-            <div class="flex gap-1.5 opacity-80 group-hover/item:opacity-100 transition-opacity">
-              <button class="btn btn-secondary btn-sm h-8 px-2" onclick="app.playSpecificRecording('${rec.blobUrl}', '${group.videoId}', '${group.platform}')" title="Play">
-                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+            <div style="display: flex; gap: 4px;">
+              <button type="button" class="btn-icon-delete" style="color: var(--text-primary);" onclick="app.playSpecificRecording('${rec.blobUrl}', '${group.videoId}', '${group.platform}')" title="Play">
+                <i data-lucide="play"></i>
               </button>
-              <a href="${rec.blobUrl}" download="${rec.name}.webm" class="btn btn-primary btn-sm h-8 px-2" title="Download">
-                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <a href="${rec.blobUrl}" download="${rec.name}.webm" class="btn-icon-delete" style="color: var(--text-primary);" title="Download">
+                <i data-lucide="download"></i>
               </a>
-              <button class="btn btn-error btn-sm h-8 px-2" onclick="app.deleteCurrentRecording('${rec.blobUrl}')" title="Delete">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <button type="button" class="btn-icon-delete" onclick="app.deleteCurrentRecording('${rec.blobUrl}')" title="Delete">
+                <i data-lucide="trash-2"></i>
               </button>
             </div>
           </div>
