@@ -415,6 +415,24 @@ class AudioRecorderMixin {
     }
   }
 
+  async renameRecordedAudio(id) {
+    if (!window.AudioDB || !this.state.audio) return;
+    const rec = this.state.audio.recordings.find(r => r.id === id);
+    if (!rec) return;
+    
+    const newName = prompt("Enter new name for this recording:", rec.name);
+    if (!newName || newName.trim() === '' || newName === rec.name) return;
+    
+    try {
+      await window.AudioDB.renameRecording(id, newName.trim());
+      rec.name = newName.trim();
+      this.renderRecordedAudioTab();
+    } catch (err) {
+      console.error("Failed to rename recording", err);
+      alert("Failed to rename recording.");
+    }
+  }
+
   syncRecordingWithVideo() {
     if (this.state.audio && this.state.audio.audioEl && this.state.audio.blobUrl && this.state.audio.wantsSync) {
       this.state.audio.audioEl.currentTime = 0;
@@ -487,15 +505,22 @@ class AudioRecorderMixin {
       group.recordings.forEach(rec => {
         const mins = Math.floor(rec.duration / 60).toString().padStart(2, '0');
         const secs = (rec.duration % 60).toString().padStart(2, '0');
+        const dateStr = rec.createdAt ? new Date(rec.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
         html += `
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
             <div style="display: flex; flex-direction: column; flex: 1;">
               <span style="font-weight: 500; font-size: 13px; color: white;">${rec.name}</span>
-              <span style="font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; margin-top: 2px;"><i data-lucide="clock" style="width: 12px; height: 12px;"></i>${mins}:${secs}</span>
+              <span style="font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>${mins}:${secs}
+                ${dateStr ? `<span style="margin-left: 6px; padding-left: 6px; border-left: 1px solid #444;">${dateStr}</span>` : ''}
+              </span>
             </div>
             <div style="display: flex; gap: 4px;">
               <button type="button" class="btn-icon-delete" style="color: var(--text-primary);" onclick="app.playSpecificRecording('${rec.blobUrl}', '${group.videoId}', '${group.platform}')" title="Play">
                 <i data-lucide="play"></i>
+              </button>
+              <button type="button" class="btn-icon-delete" style="color: var(--text-muted);" onclick="app.renameRecordedAudio(${rec.id})" title="Rename">
+                <i data-lucide="edit-3"></i>
               </button>
               <a href="${rec.blobUrl}" download="${rec.name}.webm" class="btn-icon-delete" style="color: var(--text-primary);" title="Download">
                 <i data-lucide="download"></i>

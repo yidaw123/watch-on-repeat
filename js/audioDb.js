@@ -99,6 +99,25 @@ class AudioDB {
       request.onerror = (event) => reject(event.target.error);
     });
   }
+
+  async renameRecording(id, newName) {
+    await this.initPromise;
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction([this.storeName], 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.get(id);
+      
+      request.onsuccess = (event) => {
+        const record = event.target.result;
+        if (!record) return reject("Record not found");
+        record.name = newName;
+        const updateRequest = store.put(record);
+        updateRequest.onsuccess = () => resolve();
+        updateRequest.onerror = (e) => reject(e.target.error);
+      };
+      request.onerror = (event) => reject(event.target.error);
+    });
+  }
 }
 
 window.AudioDB = new AudioDB();
