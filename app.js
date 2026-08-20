@@ -1613,7 +1613,7 @@ class WatchOnRepeat {
         const isActive = v.originalIndex === this.state.currentPlaylistIndex;
         const progressHtml = this.getProgressBarHtml(v.id);
         html += `
-          <div onclick="app.playPlaylistItem(${v.originalIndex})" class="playlist-item ${isActive ? 'active' : ''}" style="display:flex; gap:1rem; padding:0.5rem; border-radius:var(--radius-md); cursor:pointer; background: ${isActive ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isActive ? 'var(--primary-color)' : 'transparent'}; transition: background 0.2s;">
+          <a href="${window.location.pathname}?v=${encodeURIComponent(v.id)}&p=${encodeURIComponent(v.platform || 'youtube')}" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); app.playPlaylistItem(${v.originalIndex}); }" class="playlist-item ${isActive ? 'active' : ''}" style="display:flex; gap:1rem; padding:0.5rem; border-radius:var(--radius-md); cursor:pointer; text-decoration: none; background: ${isActive ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isActive ? 'var(--primary-color)' : 'transparent'}; transition: background 0.2s;">
             <div style="display:flex; align-items:center; justify-content:center; min-width: 24px; font-size: 0.85rem; font-weight: bold; color: var(--text-muted);">${v.originalIndex + 1}</div>
             <div style="position:relative; width:100px; height:56px; flex-shrink:0; border-radius:4px; overflow:hidden;">
               <img src="${v.thumbnail}" style="width:100%; height:100%; object-fit:cover;">
@@ -1623,7 +1623,7 @@ class WatchOnRepeat {
               <div style="font-size:0.9rem; font-weight:500; color: ${isActive ? 'var(--text-primary)' : 'var(--text-secondary)'}; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${this.escapeHtml(v.title)}</div>
               ${isActive ? '<div style="font-size:0.75rem; color:var(--primary-color); margin-top:4px;"><i data-lucide="play" style="width:12px; height:12px; display:inline;"></i> Playing</div>' : ''}
             </div>
-          </div>
+          </a>
         `;
       });
     }
@@ -3996,8 +3996,13 @@ class WatchOnRepeat {
   }
 
   createVideoCard(video, isHistory = false, rank = null, showDeleteBtn = null) {
-    const card = document.createElement('div');
+    const card = document.createElement('a');
     card.className = 'video-card';
+    card.style.textDecoration = 'none';
+    card.style.color = 'inherit';
+    
+    const vidId = video.videoId || video.id;
+    card.href = `${window.location.pathname}?v=${encodeURIComponent(vidId)}&p=${encodeURIComponent(video.platform)}`;
     
     // Resolve thumbnail
     let thumbUrl = video.thumbnail || this.getThumbnailUrl(video.platform, video.videoId || video.id);
@@ -4095,7 +4100,11 @@ class WatchOnRepeat {
       }
     }
 
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
+      // Allow ctrl/cmd/shift/middle click to work natively
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+      
+      e.preventDefault();
       const vidId = video.videoId || video.id;
       
       // Update URL
@@ -6197,7 +6206,7 @@ class WatchOnRepeat {
       
       let headerHtml = `
         <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333;">
-          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer;" onclick="app.loadVideo('${this.escapeHtml(videoGroup.videoId)}', '${this.escapeHtml(videoGroup.platform)}')">
+          <a href="${window.location.pathname}?v=${encodeURIComponent(videoGroup.videoId)}&p=${encodeURIComponent(videoGroup.platform)}" style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer; text-decoration: none; color: inherit;" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); app.loadVideo('${this.escapeHtml(videoGroup.videoId)}', '${this.escapeHtml(videoGroup.platform)}'); }">
             <img src="${this.escapeHtml(thumbUrl)}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
             <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
               <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;">
@@ -6205,7 +6214,7 @@ class WatchOnRepeat {
               </span>
               <span style="font-size: 11px; color: #888; text-transform: uppercase;">${videoGroup.platform}</span>
             </div>
-          </div>
+          </a>
           <button type="button" class="btn-icon-delete" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${videoIdsString}', false)" title="Delete all loops for this video"><i data-lucide="trash-2"></i></button>
         </div>
         <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">

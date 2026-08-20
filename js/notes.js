@@ -404,9 +404,9 @@ class NotesMixin {
 
       div.innerHTML = `
         <div style="display: flex; align-items: center; gap: 12px; flex: 1; overflow: hidden;">
-          <img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0; cursor: pointer;" alt="thumbnail" onclick="app.loadVideo('${this.escapeHtml(videoId)}', '${this.escapeHtml(platform)}'); window.scrollTo({top: 0, behavior: 'smooth'});">
+          <a href="${appUrl}" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); app.loadVideo('${this.escapeHtml(videoId)}', '${this.escapeHtml(platform)}'); window.scrollTo({top: 0, behavior: 'smooth'}); }"><img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0; cursor: pointer;" alt="thumbnail"></a>
           <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            <a href="${appUrl}" onclick="event.preventDefault(); app.loadVideo('${this.escapeHtml(videoId)}', '${this.escapeHtml(platform)}'); window.scrollTo({top: 0, behavior: 'smooth'});" style="color: var(--primary-color); display: block; overflow: hidden; text-overflow: ellipsis; font-weight: 500; text-decoration: none;">${this.escapeHtml(title)}</a>
+            <a href="${appUrl}" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); app.loadVideo('${this.escapeHtml(videoId)}', '${this.escapeHtml(platform)}'); window.scrollTo({top: 0, behavior: 'smooth'}); }" style="color: var(--primary-color); display: block; overflow: hidden; text-overflow: ellipsis; font-weight: 500; text-decoration: none;">${this.escapeHtml(title)}</a>
             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${noteCount} saved note${noteCount !== 1 ? 's' : ''}</div>
           </div>
         </div>

@@ -512,7 +512,7 @@ class AudioRecorderMixin {
     Object.values(grouped).forEach(group => {
       html += `
         <div style="display: flex; flex-direction: column; background: var(--surface-color); border: 1px solid #333; border-radius: 8px; overflow: hidden; margin-bottom: 8px;">
-          <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333; cursor: pointer;" onclick="app.loadVideo('${group.videoId}', '${group.platform}')">
+          <a href="${window.location.pathname}?v=${encodeURIComponent(group.videoId)}&p=${encodeURIComponent(group.platform)}" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333; cursor: pointer; text-decoration: none; color: inherit;" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); app.loadVideo('${group.videoId}', '${group.platform}'); }">
             ${group.thumbnail ? `<img src="${group.thumbnail}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #000;" alt="Thumbnail">` : `<div style="width: 80px; height: 45px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center;"><i data-lucide="video" style="color: #666;"></i></div>`}
             <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
               <span style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white;" title="${group.videoTitle}">${group.videoTitle}</span>
@@ -521,10 +521,10 @@ class AudioRecorderMixin {
                 ${group.platform}
               </span>
             </div>
-            <button type="button" class="btn-icon-delete" style="color: #ef4444;" onclick="event.stopPropagation(); app.deleteAllRecordingsForVideo('${group.videoId}', '${group.platform}')" title="Delete all recordings for this video">
+            <button type="button" class="btn-icon-delete" style="color: #ef4444;" onclick="event.preventDefault(); event.stopPropagation(); app.deleteAllRecordingsForVideo('${group.videoId}', '${group.platform}')" title="Delete all recordings for this video">
               <i data-lucide="trash-2"></i>
             </button>
-          </div>
+          </a>
           <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
       `;
       
