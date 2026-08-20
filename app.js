@@ -570,6 +570,7 @@ class WatchOnRepeat {
     this.renderUpNextQueue(null);
     this.updateUserUI();
     this.updateStatsUI();
+    if (typeof this.initAudioRecorder === 'function') this.initAudioRecorder();
     this.checkCookieConsent();
   }
 
@@ -3512,6 +3513,8 @@ class WatchOnRepeat {
       this.renderTrendsTab();
     } else if (tabId === 'analytics') {
       this.renderAnalyticsTab();
+    } else if (tabId === 'recorded-audio') {
+      if (typeof this.renderRecordedAudioTab === 'function') this.renderRecordedAudioTab();
     }
   }
 

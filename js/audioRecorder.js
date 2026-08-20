@@ -431,7 +431,12 @@ class AudioRecorderMixin {
     const badge = document.getElementById('recorded-audio-count');
     if (!container) return;
     
-    if (!this.state.audio || !this.state.audio.recordings || this.state.audio.recordings.length === 0) {
+    if (!this.state.audio) {
+      this.initAudioRecorder();
+      return;
+    }
+    
+    if (!this.state.audio.recordings || this.state.audio.recordings.length === 0) {
       container.innerHTML = '';
       if (emptyState) emptyState.classList.remove('hidden');
       if (badge) badge.textContent = '0';
