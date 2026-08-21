@@ -191,6 +191,26 @@
           <span class="brand-name">Watch<span>On</span>Repeat</span>
         </a>
 
+        <!-- Center Search/URL Input Bar -->
+        <div class="search-container" style="flex: 1; max-width: 800px; margin: 0 24px;">
+          <form id="paste-form" onsubmit="app.handleSearchSubmit(event)">
+            <div class="search-wrapper">
+              <i data-lucide="link-2" class="search-icon"></i>
+              <input type="text" id="video-url-input" aria-label="Video URL" placeholder="Paste direct link or YouTube playlist..." autocomplete="off">
+              <button type="submit" class="search-btn">
+                <span>Loop It</span>
+                <i data-lucide="play"></i>
+              </button>
+              <button type="button" class="search-btn upload-btn" style="background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 6px; padding: 0 16px; flex-shrink: 0; transition: all 0.2s ease;" onclick="app.triggerLocalVideo()" title="Upload Your Own File (Pro)">
+                <i data-lucide="folder-open"></i>
+                <span class="hide-mobile upload-btn-text" style="font-weight: 500; font-size: 14px; transition: color 0.2s ease;">Upload Your Own File</span>
+                <span style="font-size: 12px; color: #fbbf24; font-weight: 700;">Upgrade</span>
+              </button>
+              <input type="file" id="local-video-input" accept="video/mp4,video/webm,video/ogg" class="hidden" onchange="app.loadLocalVideo(event)">
+            </div>
+          </form>
+        </div>
+
         <!-- User Auth Section -->
         <div class="auth-section" style="display: flex; align-items: center; gap: 12px;">
           <a href="/guide" style="color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius-sm); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
@@ -225,50 +245,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Center Search/URL Input Bar -->
-      <div class="search-container">
-        <h1 style="text-align: center; color: var(--text-muted); font-size: 1rem; font-weight: 500; margin-bottom: 16px; margin-top: 16px;">WatchOnRepeat - YouTube Video Looper & Practice Tool</h1>
-        <!-- Row 1: Direct Link Paste -->
-        <form id="paste-form" onsubmit="app.handleSearchSubmit(event)">
-          <div class="search-wrapper">
-            <i data-lucide="link-2" class="search-icon"></i>
-            <input type="text" id="video-url-input" aria-label="Video URL" placeholder="Paste direct link or YouTube playlist..." autocomplete="off">
-            <button type="submit" class="search-btn">
-              <span>Loop It</span>
-              <i data-lucide="play"></i>
-            </button>
-            <button type="button" class="search-btn upload-btn" style="background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 6px; padding: 0 16px; flex-shrink: 0; transition: all 0.2s ease;" onclick="app.triggerLocalVideo()" title="Upload Your Own File (Pro)">
-              <i data-lucide="folder-open"></i>
-              <span class="hide-mobile upload-btn-text" style="font-weight: 500; font-size: 14px; transition: color 0.2s ease;">Upload Your Own File</span>
-              <span style="font-size: 12px; color: #fbbf24; font-weight: 700;">Upgrade</span>
-            </button>
-            <input type="file" id="local-video-input" accept="video/mp4,video/webm,video/ogg" class="hidden" onchange="app.loadLocalVideo(event)">
-          </div>
-        </form>
-        
-        <!-- Pro Tip for URL Shortcuts -->
-        <div class="pro-tip-container" style="margin-top: 12px; position: relative; width: 100%; max-width: 950px; margin-left: auto; margin-right: auto;">
-          <button id="minimized-pro-tip-btn" onclick="document.getElementById('url-shortcut-tip').style.display='flex'; this.style.display='none';" style="background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.4); color: #d8b4fe; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0 auto;">
-            <i data-lucide="lightbulb" style="width: 14px; height: 14px; color: #fbbf24;"></i> Pro Tip
-          </button>
-          
-          <div class="pro-tip" id="url-shortcut-tip" style="padding: 10px 14px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; font-size: 14px; color: #d8b4fe; display: none; align-items: flex-start; gap: 8px; text-align: left; transition: all 0.3s ease;">
-            <i data-lucide="lightbulb" class="pro-tip-icon" style="width: 16px; height: 16px; flex-shrink: 0; margin-top: 3px; color: #fbbf24;"></i>
-            <div style="flex: 1; line-height: 1.5;">
-              <strong>Pro Tip:</strong> Skip the copy-pasting! Just swap the domain (like <code style="background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 4px; color: #fff;">youtube.com</code> or <code style="background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 4px; color: #fff;">facebook.com</code>) to <code style="background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 4px; color: #fff;">watchonrepeat.com</code> in any video's URL to instantly loop it here.
-              <span class="pro-tip-extra" style="opacity: 0.9; margin-left: 4px;">(e.g. <code style="background: rgba(0,0,0,0.2); padding: 1px 3px; border-radius: 4px;">youtube.com/watch?v=...</code> ➔ <code style="background: rgba(0,0,0,0.2); padding: 1px 3px; border-radius: 4px;">watchonrepeat.com/watch?v=...</code>) Works for Twitch, Dailymotion, Vimeo, and many more!</span>
-            </div>
-            <button onclick="document.getElementById('url-shortcut-tip').style.display='none'; document.getElementById('minimized-pro-tip-btn').style.display='inline-flex';" style="background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'" title="Minimize">
-              <i data-lucide="x" style="width: 14px; height: 14px;"></i>
-            </button>
-          </div>
-        </div>
-        
-
-      </div>
-
-
     </header>
 
     <!-- Main Content Area Wrapper -->
