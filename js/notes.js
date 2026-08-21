@@ -47,10 +47,10 @@ class NotesMixin {
     // Clamp time to video duration to prevent UI markers flying off the timeline
     if (this.state.currentVideoDuration > 0 && time > this.state.currentVideoDuration) {
       time = this.state.currentVideoDuration;
-      console.log("Note time clamped. Duration:", this.state.currentVideoDuration);
-      if (typeof this.showToast === 'function') {
-        this.showToast("Your notes is outside of video play time and was adjusted to the ending time.", "alert-circle");
-      }
+      
+      // Use native alert so it's a guaranteed popup
+      alert("Your notes is outside of video play time and was adjusted to the ending time.");
+      
       
       // Visually update the input field so the user sees it got clamped
       if (isManual) {
