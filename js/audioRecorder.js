@@ -416,27 +416,39 @@ class AudioRecorderMixin {
   }
 
   async renameRecordedAudio(id) {
-    if (!window.AudioDB || !this.state.audio) return;
+    if (!window.AudioDB || !this.state.audio || !this.state.audio.recordings) return;
     const rec = this.state.audio.recordings.find(r => r.id === id);
     if (!rec) return;
+
+    const newName = await app.showCustomPrompt({
+      title: 'Rename Recording',
+      message: 'Enter new name for this recording:',
+      defaultValue: rec.name,
+      okText: 'Save'
+    });
     
-    const newName = prompt("Enter new name for this recording:", rec.name);
-    if (!newName || newName.trim() === '' || newName === rec.name) return;
-    
-    try {
-      await window.AudioDB.renameRecording(id, newName.trim());
-      rec.name = newName.trim();
-      this.renderRecordedAudioTab();
-    } catch (err) {
-      console.error("Failed to rename recording", err);
-      alert("Failed to rename recording.");
+    if (newName && newName.trim() !== '') {
+      try {
+        await window.AudioDB.renameRecording(id, newName.trim());
+        rec.name = newName.trim();
+        this.renderRecordedAudioTab();
+      } catch (err) {
+        console.error("Failed to rename recording", err);
+        app.showToast("Failed to rename recording", "alert-circle");
+      }
     }
   }
 
   async deleteAllRecordingsForVideo(videoId, platform) {
     if (!window.AudioDB || !this.state.audio || !this.state.audio.recordings) return;
     
-    if (!confirm("Are you sure you want to delete all recordings for this video?")) return;
+    const confirmed = await app.showCustomConfirm({
+      title: 'Delete All Recordings',
+      message: 'Are you sure you want to delete all recordings for this video?',
+      isDestructive: true,
+      okText: 'Delete'
+    });
+    if (!confirmed) return;
     
     const recsToDelete = this.state.audio.recordings.filter(r => r.videoId === videoId && r.platform === platform);
     if (recsToDelete.length === 0) return;
@@ -450,9 +462,10 @@ class AudioRecorderMixin {
       }
       this.state.audio.recordings = this.state.audio.recordings.filter(r => !(r.videoId === videoId && r.platform === platform));
       this.renderRecordedAudioTab();
+      app.showToast(`Deleted ${recsToDelete.length} recording${recsToDelete.length > 1 ? 's' : ''}`, "trash-2");
     } catch (err) {
       console.error("Failed to delete recordings", err);
-      alert("Failed to delete recordings.");
+      app.showToast("Failed to delete recordings", "alert-circle");
     }
   }
 
