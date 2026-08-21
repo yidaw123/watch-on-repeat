@@ -1336,6 +1336,10 @@ h1, h2, h3, h4, .brand-name {
   display: none !important;
 }
 
+.show-mobile-flex {
+  display: none !important;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 1250px) {
   .main-container {
@@ -1416,6 +1420,24 @@ h1, h2, h3, h4, .brand-name {
   
   .search-btn span {
     display: none;
+  }
+  
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  .show-mobile-flex {
+    display: flex !important;
+  }
+  
+  .auth-section {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+  
+  .brand {
+    width: 100%;
   }
   .search-btn {
     padding: 0.6rem 1rem;
