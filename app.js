@@ -4316,6 +4316,12 @@ class WatchOnRepeat {
         okBtn.disabled = false;
         inputEl.oninput = null;
       }
+      
+      if (options.hideCancel) {
+        cancelBtn.style.display = 'none';
+      } else {
+        cancelBtn.style.display = 'inline-flex';
+      }
 
       modal.classList.remove('hidden');
       if (options.requireWord) {

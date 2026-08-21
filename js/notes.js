@@ -48,8 +48,16 @@ class NotesMixin {
     if (this.state.currentVideoDuration > 0 && time > this.state.currentVideoDuration) {
       time = this.state.currentVideoDuration;
       
-      // Use native alert so it's a guaranteed popup
-      alert("Your notes is outside of video play time and was adjusted to the ending time.");
+      if (typeof this.showCustomConfirm === 'function') {
+        await this.showCustomConfirm({
+          title: 'Time Adjusted',
+          message: 'Your notes is outside of video play time and was adjusted to the ending time.',
+          okText: 'OK',
+          hideCancel: true
+        });
+      } else {
+        alert("Your notes is outside of video play time and was adjusted to the ending time.");
+      }
       
       
       // Visually update the input field so the user sees it got clamped
