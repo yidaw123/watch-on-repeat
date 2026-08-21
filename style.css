@@ -150,8 +150,6 @@ h1, h2, h3, h4, .brand-name {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: 1450px;
-  margin: 0 auto;
 }
 
 .brand {
@@ -198,7 +196,7 @@ h1, h2, h3, h4, .brand-name {
 /* Search Container */
   .search-container {
     flex: 1;
-    max-width: none;
+    max-width: 1386px;
     margin: 0 24px;
     position: relative;
     width: 100%;
