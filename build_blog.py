@@ -1,12 +1,14 @@
 import os
 import re
 
-# We will rewrite articles 1 and 2, and delete 3.
+# Create blog dir if it doesn't exist
+os.makedirs('blog', exist_ok=True)
 
 # Read template from youtube-looper.html
 with open('youtube-looper.html', 'r', encoding='utf-8') as f:
     template = f.read()
 
+# Find split points
 head_split = template.find('</head>')
 main_split = template.find('<main class="main-content" style="padding-top: 2rem;">')
 footer_split = template.find('<footer class="site-footer"')
@@ -14,6 +16,10 @@ footer_split = template.find('<footer class="site-footer"')
 head_top = template[:head_split]
 head_bottom = template[head_split:main_split]
 footer_bottom = template[footer_split:]
+
+# Fix asset paths in the head_bottom (CSS, logo)
+head_bottom = head_bottom.replace('href="style.css', 'href="/style.css')
+head_bottom = head_bottom.replace('src="logo.svg"', 'src="/logo.svg"')
 
 articles = [
     {
@@ -42,23 +48,35 @@ articles = [
             <li>Click <strong>"Loop"</strong> from the menu.</li>
           </ol>
           <p>It works, but there's a catch. If you don't have YouTube Premium, an ad will often interrupt the video right as it restarts. Nothing ruins a deep focus session quite like a loud car commercial suddenly blasting in your ears.</p>
-          <p>On mobile phones, it's a bit more hidden. You have to tap the gear icon in the top right corner of the video, open the extra settings menu, and toggle "Loop video" on. Again, it works in a pinch, but the ad problem remains.</p>
+          
+          <h2>Looping on Mobile: iOS and Android</h2>
+          <p>If you're trying to loop a video on your phone, things get a little more complicated. The YouTube mobile app does have a loop feature, but it's buried in the menus.</p>
+          <ol>
+            <li>Tap the video to bring up the on-screen controls.</li>
+            <li>Tap the gear icon (Settings) in the top right corner.</li>
+            <li>Select <strong>"Additional settings"</strong>.</li>
+            <li>Toggle the <strong>"Loop video"</strong> switch to on.</li>
+          </ol>
+          <p>Again, this works well enough if you have YouTube Premium. But free users quickly run into another massive hurdle: background play. If you lock your phone screen or switch to another app, the video stops playing immediately. For people trying to listen to white noise while they sleep or a podcast while they commute, this makes the native mobile app incredibly frustrating to use.</p>
+          <p>The classic workaround used to be opening YouTube in Safari or Chrome, requesting the desktop site, and then locking your phone. However, YouTube frequently patches these browser workarounds, making them unreliable at best.</p>
 
           <h2>The Better Way: Using a Dedicated Looper</h2>
-          <p>If you loop videos often, using a dedicated site like WatchOnRepeat just makes more sense. We built it because we were tired of the native player's limitations.</p>
+          <p>If you loop videos often, using a dedicated site like WatchOnRepeat just makes more sense. We built it because we were tired of the native player's limitations, especially the background play issues and the clunky mobile experience.</p>
           <p>It's incredibly simple to use. When you're watching a video on YouTube, just click your address bar, change "youtube.com" to "watchonrepeat.com", and hit enter. The video will load up in our player and automatically start looping forever.</p>
           
           <h3>Why use a separate site?</h3>
           <p>Aside from stripping away the comments and sidebar distractions, the main reason people use a dedicated tool is for <strong>A/B looping</strong>.</p>
           <p>Say you're trying to learn a guitar riff, or maybe you're trying to nail the pronunciation of a phrase in a foreign language. You don't need the whole 15-minute video to repeat. You just need a specific 4-second chunk to play over and over again until you get it right.</p>
           <p>With a tool like ours, you just click "Set A" where you want it to start, and "Set B" where you want it to end. The player will continuously bounce between those two timestamps.</p>
+          <p>Furthermore, because WatchOnRepeat runs as a progressive web app in your browser, it handles background audio much more gracefully on mobile devices compared to the heavily restricted native app.</p>
 
           <h2>What About Browser Extensions?</h2>
           <p>You can find dozens of Chrome extensions that loop videos. Some of them are great, but there are a few reasons we generally avoid them.</p>
           <p>First, YouTube updates its site code constantly. When they do, these extensions usually break and you have to wait for the developer to patch them. Second, most browser extensions require permission to "read and change all your data on the websites you visit." That's a massive privacy risk just to repeat a video.</p>
+          <p>By using a dedicated looping website, you keep your browser free of bloated extensions and avoid giving random developers access to your browsing history.</p>
 
           <h2>Final Thoughts</h2>
-          <p>If you just need a video repeated once in a blue moon, right-clicking the YouTube player is fine. But if you rely on background tracks for focus, or if you're a musician trying to learn parts by ear, skip the hassle and use a dedicated looping site. It will save you a lot of clicking around.</p>
+          <p>If you just need a video repeated once in a blue moon while sitting at your laptop, right-clicking the YouTube player is fine. But if you rely on background tracks for focus, if you need to lock your phone screen while listening, or if you're a musician trying to learn parts by ear, skip the hassle. A dedicated looping site will save you a lot of clicking around and give you the uninterrupted experience you're actually looking for.</p>
         </section>
       </div>
 """
@@ -82,9 +100,9 @@ articles = [
 
           <h2>What Changed?</h2>
           <p>The beauty of a video looper is that it's a utility. You want to open it, play your video, and leave it running in the background. You don't really want a social network.</p>
-          <p>Over the years, the original site added a lot of bloat—chat rooms, music discovery feeds, and heavy ads. Eventually, they put features like A/B looping (repeating a specific section of a video) behind a paywall. For musicians who relied on that feature to practice, it was the final straw.</p>
+          <p>Over the years, the original site added a lot of bloat—chat rooms, music discovery feeds, and heavy ads. Eventually, they put features like A/B looping (repeating a specific section of a video) behind a paywall. For musicians who relied on that feature to practice, it was a frustrating shift.</p>
 
-          <h2>The Best True Alternative: WatchOnRepeat</h2>
+          <h2>A Free Alternative: WatchOnRepeat</h2>
           <p>We built WatchOnRepeat to be exactly what the old site used to be: fast, lightweight, and completely free to use. There are no paywalls for core features.</p>
           
           <p>Here is what makes it a solid replacement:</p>
@@ -100,7 +118,7 @@ articles = [
           <p>The main drawback with these older alternatives is that their interfaces haven't been updated in years. They can be clunky on mobile devices and often lack quality-of-life features like keyboard shortcuts or dark mode.</p>
 
           <h2>Wrapping Up</h2>
-          <p>It's always a bummer when a classic internet tool gets bogged down with paywalls and bloat. Fortunately, the void has been filled. If you're looking for that old-school, distraction-free looping experience, give WatchOnRepeat a try.</p>
+          <p>It's always a bummer when a classic internet tool gets bogged down with paywalls and bloat. If you're looking for that old-school, distraction-free looping experience without having to pull out your credit card, there are still good options available today.</p>
         </section>
       </div>
 """
@@ -145,8 +163,4 @@ for a in articles:
     with open(f"blog/{a['slug']}.html", 'w', encoding='utf-8') as f:
         f.write(make_page(a['title'], a['desc'], a['content'], a['slug']))
 
-# Delete the third article if it exists
-if os.path.exists('blog/transcribe-music-youtube-ab-looping.html'):
-    os.remove('blog/transcribe-music-youtube-ab-looping.html')
-    
-print("Blog rewritten successfully.")
+print("Blog updated successfully.")
