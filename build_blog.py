@@ -1,14 +1,12 @@
 import os
 import re
 
-# Create blog dir if it doesn't exist
-os.makedirs('blog', exist_ok=True)
+# We will rewrite articles 1 and 2, and delete 3.
 
 # Read template from youtube-looper.html
 with open('youtube-looper.html', 'r', encoding='utf-8') as f:
     template = f.read()
 
-# Find split points
 head_split = template.find('</head>')
 main_split = template.find('<main class="main-content" style="padding-top: 2rem;">')
 footer_split = template.find('<footer class="site-footer"')
@@ -21,7 +19,7 @@ articles = [
     {
         "slug": "how-to-loop-youtube-videos-infinitely",
         "title": "How to Loop YouTube Videos Infinitely (2026 Guide) - WatchOnRepeat",
-        "desc": "Learn the best and easiest ways to loop YouTube videos infinitely on desktop and mobile in 2026, including A/B looping techniques.",
+        "desc": "A straightforward guide on looping YouTube videos on desktop and mobile without ads breaking your flow.",
         "content": """
       <div class="article-container">
         <div class="breadcrumb">
@@ -32,33 +30,35 @@ articles = [
         <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">Last Updated: August 2026</p>
 
         <section class="prose">
-          <p>Have you ever found a song, an ambient background track, or a study video on YouTube that you just wanted to listen to on repeat? You're not alone. Millions of users every day search for ways to seamlessly put YouTube videos on an infinite loop. While YouTube does have a built-in loop feature, it often falls short when you need advanced controls, ad-blocking, or specific segment repeating (A/B looping). In this comprehensive guide, we'll explore all the different methods to loop YouTube videos infinitely on desktop, mobile, and tablets in 2026.</p>
+          <p>We've all been there: you find a perfect lo-fi mix for studying, ambient rain sounds to help you sleep, or a backing track for guitar practice, and you just want it to keep playing. You don't want to switch tabs every 10 minutes to hit replay.</p>
+          <p>Looping a YouTube video seems like it should be the easiest thing in the world. And while YouTube does have a built-in loop feature now, anyone who uses it regularly knows it has some frustrating quirks—especially when ads ruin the loop.</p>
+          <p>Here is a no-nonsense look at how to actually put videos on repeat, depending on what device you're using and what you're trying to do.</p>
           
-          <h2>Method 1: The Native YouTube Loop Feature</h2>
-          <p>In 2021, YouTube finally rolled out a native loop feature for desktop users. Here's how to use it:</p>
+          <h2>The Default Way: YouTube's Native Loop</h2>
+          <p>If you're on a computer, the fastest way to repeat a video is using YouTube's own player.</p>
           <ol>
-            <li>Open your desired video on YouTube in your desktop browser.</li>
-            <li>Right-click anywhere inside the video player.</li>
-            <li>Select <strong>"Loop"</strong> from the context menu that appears.</li>
+            <li>Open a video in your browser.</li>
+            <li>Right-click on the video player itself.</li>
+            <li>Click <strong>"Loop"</strong> from the menu.</li>
           </ol>
-          <p>While this is convenient, it has major limitations. First, if the video has ads, the ads may still play between loops, completely ruining the vibe of a study or sleep session. Second, you cannot loop a specific *part* of a video (like a guitar solo). Third, the mobile app version of this feature is buried deep in the settings menu.</p>
+          <p>It works, but there's a catch. If you don't have YouTube Premium, an ad will often interrupt the video right as it restarts. Nothing ruins a deep focus session quite like a loud car commercial suddenly blasting in your ears.</p>
+          <p>On mobile phones, it's a bit more hidden. You have to tap the gear icon in the top right corner of the video, open the extra settings menu, and toggle "Loop video" on. Again, it works in a pinch, but the ad problem remains.</p>
 
-          <h2>Method 2: Using WatchOnRepeat (The Professional Way)</h2>
-          <p>For users who need more control, a dedicated tool like <strong>WatchOnRepeat</strong> is the definitive solution. We built WatchOnRepeat to solve all the annoyances of the native player. It completely strips away the distractions, recommended videos, and comments, leaving you with a pristine, cinema-style interface.</p>
-          <p>To use WatchOnRepeat:</p>
-          <ul>
-            <li><strong>The URL Trick:</strong> Simply go to your browser's address bar while watching a YouTube video, delete "youtube.com", and type "watchonrepeat.com" in its place. Press enter, and the video instantly loads on our looper!</li>
-            <li><strong>Copy and Paste:</strong> Copy any video or playlist link and paste it directly into our homepage.</li>
-          </ul>
+          <h2>The Better Way: Using a Dedicated Looper</h2>
+          <p>If you loop videos often, using a dedicated site like WatchOnRepeat just makes more sense. We built it because we were tired of the native player's limitations.</p>
+          <p>It's incredibly simple to use. When you're watching a video on YouTube, just click your address bar, change "youtube.com" to "watchonrepeat.com", and hit enter. The video will load up in our player and automatically start looping forever.</p>
           
-          <h3>Advanced A/B Looping for Musicians and Language Learners</h3>
-          <p>The biggest advantage of a tool like ours is <strong>A/B looping</strong>. If you are a musician trying to learn a complex solo, or a language learner trying to master the pronunciation of a specific phrase, you don't want to loop a 10-minute video. You want to loop a 5-second chunk. With WatchOnRepeat, you can set precise Start (A) and End (B) points. The player will continuously repeat just that segment until you have it perfectly memorized.</p>
+          <h3>Why use a separate site?</h3>
+          <p>Aside from stripping away the comments and sidebar distractions, the main reason people use a dedicated tool is for <strong>A/B looping</strong>.</p>
+          <p>Say you're trying to learn a guitar riff, or maybe you're trying to nail the pronunciation of a phrase in a foreign language. You don't need the whole 15-minute video to repeat. You just need a specific 4-second chunk to play over and over again until you get it right.</p>
+          <p>With a tool like ours, you just click "Set A" where you want it to start, and "Set B" where you want it to end. The player will continuously bounce between those two timestamps.</p>
 
-          <h2>Method 3: Browser Extensions</h2>
-          <p>There are several Chrome and Firefox extensions designed to loop videos. While they work, they often require intrusive permissions to read all your website data. Furthermore, as YouTube constantly updates its frontend code to combat ad blockers, many of these extensions break frequently. Using a standalone web-app avoids these constant breakages and keeps your browser free of bloatware.</p>
+          <h2>What About Browser Extensions?</h2>
+          <p>You can find dozens of Chrome extensions that loop videos. Some of them are great, but there are a few reasons we generally avoid them.</p>
+          <p>First, YouTube updates its site code constantly. When they do, these extensions usually break and you have to wait for the developer to patch them. Second, most browser extensions require permission to "read and change all your data on the websites you visit." That's a massive privacy risk just to repeat a video.</p>
 
-          <h2>Conclusion</h2>
-          <p>Whether you're studying for an exam with lo-fi hip hop, practicing an instrument, or just enjoying your favorite track, looping shouldn't be a hassle. Skip the clunky native features and try a dedicated, feature-rich looper for the ultimate uninterrupted experience.</p>
+          <h2>Final Thoughts</h2>
+          <p>If you just need a video repeated once in a blue moon, right-clicking the YouTube player is fine. But if you rely on background tracks for focus, or if you're a musician trying to learn parts by ear, skip the hassle and use a dedicated looping site. It will save you a lot of clicking around.</p>
         </section>
       </div>
 """
@@ -66,83 +66,41 @@ articles = [
     {
         "slug": "best-listenonrepeat-alternatives-2026",
         "title": "The Best ListenOnRepeat Alternatives in 2026 - WatchOnRepeat",
-        "desc": "Looking for a ListenOnRepeat alternative? Discover why WatchOnRepeat is the ultimate free tool for looping and repeating YouTube videos.",
+        "desc": "A breakdown of what happened to ListenOnRepeat and the best free alternatives available today.",
         "content": """
       <div class="article-container">
         <div class="breadcrumb">
           <a href="/">Home</a> &gt; <a href="/blog/">Blog</a> &gt; Best ListenOnRepeat Alternatives
         </div>
         
-        <h1 style="font-size: 2.5rem; margin-bottom: 1rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">The Best ListenOnRepeat Alternatives for 2026</h1>
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">The Best ListenOnRepeat Alternatives Right Now</h1>
         <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">Last Updated: August 2026</p>
 
         <section class="prose">
-          <p>For over a decade, ListenOnRepeat was the go-to destination for millions of internet users looking to loop their favorite YouTube videos. Its simple URL trick (adding 'repeat' to the YouTube URL) became internet folklore. However, in recent years, ListenOnRepeat has dramatically pivoted its business model. They introduced paywalls, restricted core features behind premium subscriptions, and bloated their interface with unnecessary social features and ads.</p>
-          <p>If you're frustrated with these changes and are looking for a true, free, and distraction-free alternative, you're in the right place. Here is a deep dive into the best alternatives available in 2026.</p>
+          <p>For a really long time, if you wanted to put a YouTube song on a loop, you just typed "repeat" into the URL. ListenOnRepeat was an internet staple. It was simple, it was free, and it just worked.</p>
+          <p>But if you've tried using it recently, you probably noticed things have changed drastically. The site shifted focus, heavily monetized its core features, and locked basic tools behind premium subscriptions. It left a lot of long-time users looking for a replacement that captures the simplicity of the original site.</p>
 
-          <h2>Why Are Users Leaving ListenOnRepeat?</h2>
-          <p>The core philosophy of a video looper is simplicity. Users want to listen to a song on repeat, not sign up for a social network or pay a monthly fee just to repeat a video segment. The frustration hit a boiling point when basic features like A/B looping and saving loop history were pushed behind a premium tier. This left a massive vacuum in the market for a tool that respects the user's time and wallet.</p>
+          <h2>What Changed?</h2>
+          <p>The beauty of a video looper is that it's a utility. You want to open it, play your video, and leave it running in the background. You don't really want a social network.</p>
+          <p>Over the years, the original site added a lot of bloat—chat rooms, music discovery feeds, and heavy ads. Eventually, they put features like A/B looping (repeating a specific section of a video) behind a paywall. For musicians who relied on that feature to practice, it was the final straw.</p>
 
-          <h2>Enter WatchOnRepeat: The Ultimate Successor</h2>
-          <p>We built <strong>WatchOnRepeat</strong> specifically to address the pain points of former ListenOnRepeat users. Our goal was to create the fastest, cleanest, and most feature-rich looper entirely for free.</p>
+          <h2>The Best True Alternative: WatchOnRepeat</h2>
+          <p>We built WatchOnRepeat to be exactly what the old site used to be: fast, lightweight, and completely free to use. There are no paywalls for core features.</p>
           
-          <h3>Key Features That Make It Better:</h3>
+          <p>Here is what makes it a solid replacement:</p>
           <ul>
-            <li><strong>100% Free Core Features:</strong> A/B looping, unlimited video repeats, and speed controls will always remain free. No paywalls for the basics.</li>
-            <li><strong>The New URL Trick:</strong> Just like the old days, you can simply change "youtube.com" to "watchonrepeat.com" in any URL to instantly launch the looper. It's muscle memory rebuilt for a new era.</li>
-            <li><strong>Audio Recording:</strong> Want to practice along with a backing track? WatchOnRepeat features a built-in microphone recorder so you can record your takes while the video loops, saving them securely to your local browser.</li>
-            <li><strong>Time-Stamped Notes:</strong> Perfect for studying, you can take notes that are directly tied to video timestamps. Clicking a note jumps the video right to that exact second.</li>
-            <li><strong>No Tracking, Pure Privacy:</strong> Your history, your notes, and your audio recordings are stored in your browser's IndexedDB. We don't upload your private study sessions or practice takes to our servers.</li>
+            <li><strong>The URL Trick Still Works:</strong> Instead of adding "repeat", you just replace "youtube.com" with "watchonrepeat.com" in the address bar. It immediately loads the looper.</li>
+            <li><strong>A/B Looping is Free:</strong> You can set start and end points to loop specific parts of a video without hitting a paywall limit.</li>
+            <li><strong>Speed Controls:</strong> You can slow down playback (without changing the pitch) to learn fast musical parts easily.</li>
+            <li><strong>No Tracking:</strong> If you use the notes or audio recording features, everything saves locally to your own browser. We don't store your personal practice sessions on our servers.</li>
           </ul>
 
-          <h2>Other Alternatives</h2>
-          <p>While we believe WatchOnRepeat is the premier choice, there are other tools like YouTubeLoop and Loop2Learn. However, these tools often suffer from outdated, clunky UI designs that haven't been updated since 2015, or they lack advanced features like playlist support and pitch-shifting.</p>
+          <h2>Other Options Out There</h2>
+          <p>There are a few other looping sites out there like YouTubeLoop or Loop2Learn. They function perfectly fine if you just need a basic loop.</p>
+          <p>The main drawback with these older alternatives is that their interfaces haven't been updated in years. They can be clunky on mobile devices and often lack quality-of-life features like keyboard shortcuts or dark mode.</p>
 
-          <h2>The Verdict</h2>
-          <p>If you miss the golden days of simple, effective video looping without the corporate bloat, WatchOnRepeat is the definitive ListenOnRepeat alternative for 2026. Give the URL trick a try on your next favorite song, and experience the difference.</p>
-        </section>
-      </div>
-"""
-    },
-    {
-        "slug": "transcribe-music-youtube-ab-looping",
-        "title": "How to Transcribe Music from YouTube using A/B Looping - WatchOnRepeat",
-        "desc": "A complete guide for musicians on how to transcribe complex solos, chords, and lyrics from YouTube videos using advanced A/B looping and speed controls.",
-        "content": """
-      <div class="article-container">
-        <div class="breadcrumb">
-          <a href="/">Home</a> &gt; <a href="/blog/">Blog</a> &gt; Transcribe Music with A/B Looping
-        </div>
-        
-        <h1 style="font-size: 2.5rem; margin-bottom: 1rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">How to Transcribe Music from YouTube Using A/B Looping</h1>
-        <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">Last Updated: August 2026</p>
-
-        <section class="prose">
-          <p>Transcribing music—learning a song by ear without sheet music—is arguably the most powerful exercise a musician can do to improve their ear, technique, and vocabulary. Historically, musicians wore out vinyl records and cassette tapes physically rewinding the same 5-second solo over and over. Today, we have YouTube, the largest library of recorded music in human history. But navigating a fast bebop jazz solo or a blistering metal sweep picking section on the standard YouTube player is an exercise in frustration.</p>
-          <p>This is where <strong>A/B looping</strong> and speed control become your best friends. In this guide, we'll show you exactly how to use WatchOnRepeat to transcribe any piece of music efficiently.</p>
-
-          <h2>What is A/B Looping?</h2>
-          <p>A/B looping simply means setting a specific start point (Point A) and a specific end point (Point B) within an audio or video track. The player will continuously play only the section between A and B, instantly jumping back to A the millisecond it reaches B. This allows you to listen to a difficult phrase dozens of times in a row without ever taking your hands off your instrument.</p>
-
-          <h2>Step-by-Step Transcription Workflow</h2>
-          
-          <h3>1. Isolate the Phrase</h3>
-          <p>Never try to transcribe an entire solo at once. Break it down into digestible phrases—usually 1 to 2 bars of music, or a single breath of a vocal line. Paste your YouTube link into WatchOnRepeat. Play the video and hit the <strong>[Set A]</strong> button exactly where the phrase starts, and the <strong>[Set B]</strong> button where it ends. Fine-tune the timestamps using the micro-adjustment buttons (+/- 0.1s) until the loop feels perfectly seamless.</p>
-
-          <h3>2. Slow It Down (Without Changing Pitch)</h3>
-          <p>If the phrase is too fast to decipher, use the speed controls. WatchOnRepeat uses advanced audio algorithms to slow down the video playback (e.g., to 50% or 25% speed) <em>without</em> altering the pitch of the notes. This means the notes will still be in the correct key, just played slower, allowing your ear to catch every passing tone and ghost note.</p>
-
-          <h3>3. Sing What You Hear</h3>
-          <p>Before you even touch your instrument, try to sing the phrase. If you can sing it perfectly in pitch and rhythm, you have internalized it in your brain. This makes finding the notes on your guitar, piano, or bass significantly easier. Let the A/B loop run 10 times while you just listen, then sing along with it for the next 10 loops.</p>
-
-          <h3>4. Find the First Note</h3>
-          <p>Once the phrase is in your head, pause the loop. Find the first note of the phrase on your instrument. Then, find the last note. Work your way through the middle, using your voice as a guide. Play along with the loop at a slow speed until you nail it.</p>
-          
-          <h3>5. Record Your Take</h3>
-          <p>A unique feature of WatchOnRepeat is the built-in <strong>Audio Recorder</strong>. Once you think you have transcribed the phrase, hit the record button and play along with the original video. Listen back to your recording. Are you rushing the tempo? Are your bends perfectly in tune with the original artist? Self-recording provides brutal but necessary feedback for mastery.</p>
-
-          <h2>Conclusion</h2>
-          <p>Transcribing is hard work, but the right tools make it significantly less frustrating. By utilizing precise A/B loops, speed controls, and self-recording, you can accelerate your musical growth and learn from the greatest musicians on earth, directly from YouTube. Happy practicing!</p>
+          <h2>Wrapping Up</h2>
+          <p>It's always a bummer when a classic internet tool gets bogged down with paywalls and bloat. Fortunately, the void has been filled. If you're looking for that old-school, distraction-free looping experience, give WatchOnRepeat a try.</p>
         </section>
       </div>
 """
@@ -156,7 +114,7 @@ blog_index = f"""
           <a href="/">Home</a> &gt; Blog
         </div>
         <h1 style="font-size: 2.5rem; margin-bottom: 2rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">The WatchOnRepeat Blog</h1>
-        <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">Guides, tutorials, and deep-dives into getting the most out of video looping, music practice, and language learning.</p>
+        <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">Thoughts, guides, and tips on getting the most out of video looping.</p>
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
           {"".join([f'''
           <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: var(--radius-lg); transition: background 0.2s;">
@@ -180,11 +138,15 @@ def make_page(title, desc, content, slug=""):
 
 # Save index
 with open('blog/index.html', 'w', encoding='utf-8') as f:
-    f.write(make_page("Blog & Guides - WatchOnRepeat", "Guides, tutorials, and deep-dives into getting the most out of video looping.", blog_index, ""))
+    f.write(make_page("Blog & Guides - WatchOnRepeat", "Thoughts, guides, and tips on getting the most out of video looping.", blog_index, ""))
 
 # Save articles
 for a in articles:
     with open(f"blog/{a['slug']}.html", 'w', encoding='utf-8') as f:
         f.write(make_page(a['title'], a['desc'], a['content'], a['slug']))
 
-print("Blog generated successfully.")
+# Delete the third article if it exists
+if os.path.exists('blog/transcribe-music-youtube-ab-looping.html'):
+    os.remove('blog/transcribe-music-youtube-ab-looping.html')
+    
+print("Blog rewritten successfully.")
