@@ -1371,8 +1371,20 @@ h1, h2, h3, h4, .brand-name {
     order: 4;
   }
   
+  .navbar-top {
+    flex-wrap: wrap;
+  }
+  .brand {
+    order: 1;
+  }
+  .auth-section {
+    order: 2;
+  }
   .search-container {
-    margin: 0 1rem;
+    order: 3;
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin: 1rem 0 0 0;
   }
   
   .navbar {
@@ -1431,13 +1443,12 @@ h1, h2, h3, h4, .brand-name {
   }
   
   .auth-section {
-    width: 100%;
-    justify-content: space-between;
+    justify-content: flex-end;
     margin-top: 4px;
   }
   
   .brand {
-    width: 100%;
+    /* natural width */
   }
   .search-btn {
     padding: 0.6rem 1rem;
