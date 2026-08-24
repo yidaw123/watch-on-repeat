@@ -219,6 +219,14 @@ blog_css = """
 # Let's inject into head_top.
 head_top = head_top + blog_css
 
+# Add AdSense script tag to blog pages
+adsense_tag = """
+  <!-- Google AdSense -->
+  <meta name="google-adsense-account" content="ca-pub-7515114786845929">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7515114786845929" crossorigin="anonymous"></script>
+"""
+head_top = head_top + adsense_tag
+
 
 articles = [
     {
