@@ -1,4 +1,4 @@
-﻿import os
+import os
 import re
 
 # Create blog dir if it doesn't exist
@@ -336,6 +336,121 @@ articles = [
           <p>The 10,000-hour rule is a myth because time is passive. Mastery is active. The next time you sit down to practice, ask yourself: am I just putting in time, or am I deliberately tackling my weaknesses?</p>
           
           <p><em>(Tip: Tools that allow for precise A/B looping and speed control without pitch distortion are essential for deliberate practice. This philosophy is the foundation of why we created <a href="/" style="color: var(--primary-color);">WatchOnRepeat</a>.)</em></p>
+        </div>
+      </article>
+"""
+    },
+    {
+        "slug": "why-transcribing-by-ear-beats-reading-tabs",
+        "title": "Why Transcribing by Ear Beats Reading Tabs (And How to Start)",
+        "desc": "Sheet music and guitar tabs are great, but developing relative pitch through transcription is the true secret to musical fluency.",
+        "tag": "Music Theory",
+        "date": "August 2026",
+        "content": """
+      <article>
+        <header class="article-header">
+          <div class="blog-tag">Music Theory</div>
+          <h1>Why Transcribing by Ear Beats Reading Tabs (And How to Start)</h1>
+          <div class="article-meta">
+            <span>By the WatchOnRepeat Team</span>
+            <span>&bull;</span>
+            <span>August 2026</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>We live in a golden age of musical accessibility. If you want to learn the blistering guitar solo from "Hotel California" or the bassline to a Dua Lipa song, a quick Google search will yield dozens of free, highly accurate tabs and sheet music. It has never been easier to learn how to play a song.</p>
+          
+          <p>But there is a hidden downside to this convenience: musicians are losing their ears.</p>
+          
+          <p>When you rely exclusively on visual aids (like sheet music or fretboard diagrams) to learn music, you are essentially painting by numbers. You might be able to physically recreate the sounds, but you aren't developing the underlying neurological connection between what you hear and what your hands do.</p>
+
+          <h2>The Problem with "Painting by Numbers"</h2>
+          <p>Imagine trying to hold a conversation in a foreign language, but instead of understanding the words, you are just reading phonetics off a teleprompter. That is what it feels like to play music entirely from tabs. When the sheet music is taken away, or when you are asked to improvise with a band, you freeze.</p>
+          
+          <p>True musical fluency comes from <strong>relative pitch</strong>—the ability to hear a musical interval (the distance between two notes) and instantly know what it feels like to play it on your instrument. The only way to develop relative pitch is through transcription: listening to a piece of music and figuring it out entirely by ear.</p>
+
+          <h2>The Transcription Process</h2>
+          <p>Transcribing can be incredibly frustrating at first, especially if you have spent years relying on your eyes instead of your ears. The trick is to start small and isolate your variables.</p>
+          
+          <ol>
+            <li><strong>Find the Root Note:</strong> Before you try to learn a melody, figure out the bassline. The bass notes usually dictate the chord progression. Once you know what key the song is in, you have a roadmap for the rest of the notes.</li>
+            <li><strong>Sing It First:</strong> This is the most important step. If you can't sing the riff, you can't play it. Put your instrument down, listen to the phrase, and sing it back. This forces your brain to internalize the pitch rather than relying on muscle memory.</li>
+            <li><strong>Hunt and Peck:</strong> Once you can sing the melody perfectly, pick up your instrument and try to match the notes to the sounds in your head. It will be slow at first, but your brain will quickly start mapping the physical frets or keys to the intervals you hear.</li>
+          </ol>
+
+          <h2>The Technology of Slowing Down</h2>
+          <p>Historically, transcribing fast jazz solos or complex classical runs required physical vinyl records. Musicians would literally place a finger on the record to slow it down, which dropped the pitch and made it incredibly difficult to decipher.</p>
+          
+          <p>Today, digital tools have completely revolutionized this process. When tackling a difficult piece of music, the most effective workflow is to isolate a specific 2-second measure and loop it continuously. If the notes are too fast to distinguish, you can digitally slow the playback speed down to 50% without altering the pitch.</p>
+          
+          <blockquote>"Your ears are your most important instrument. If you can't hear it, you can't play it." — <em>The WatchOnRepeat Team</em></blockquote>
+
+          <h2>Conclusion</h2>
+          <p>Reading sheet music is an incredibly valuable skill, but it should not be your only tool. If you want to become a fluent, expressive musician who can jam with others and write original melodies, you need to turn off the screen, close your eyes, and trust your ears.</p>
+          
+          <p><em>(Tip: If you're looking for an easy way to isolate and loop difficult musical passages, we built <a href="../" style="color: var(--primary-color);">WatchOnRepeat</a> specifically to help musicians A/B loop and slow down YouTube videos without losing pitch).</em></p>
+        </div>
+      </article>
+"""
+    },
+    {
+        "slug": "the-psychology-of-flow-why-we-loop-songs",
+        "title": "The Psychology of Flow: Why Gamers and Coders Listen to the Same Song on Repeat",
+        "desc": "Explore the science of the 'flow state' and why repetitive background audio helps block out distractions and reduce cognitive load.",
+        "tag": "Productivity",
+        "date": "August 2026",
+        "content": """
+      <article>
+        <header class="article-header">
+          <div class="blog-tag">Productivity</div>
+          <h1>The Psychology of Flow: Why Gamers and Coders Listen to the Same Song on Repeat</h1>
+          <div class="article-meta">
+            <span>By the WatchOnRepeat Team</span>
+            <span>&bull;</span>
+            <span>August 2026</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>If you walk into a software engineering firm or a competitive gaming tournament, you'll notice a strange phenomenon: a significant number of people will be listening to the exact same song, or the exact same ambient track, looped continuously for hours on end.</p>
+          
+          <p>To an outside observer, this sounds like psychological torture. Why would anyone subject themselves to the same 3-minute synth-wave track fifty times in a row? The answer lies in the neuroscience of focus and the pursuit of the "flow state."</p>
+
+          <h2>Understanding the Flow State</h2>
+          <p>In the 1970s, psychologist Mihaly Csikszentmihalyi coined the term <em>Flow</em>. It describes a state of total cognitive absorption—a mental state where a person is fully immersed in a feeling of energized focus, full involvement, and enjoyment in the process of an activity. In pop culture, it's often referred to as being "in the zone."</p>
+          
+          <p>Achieving flow requires a delicate balance between the challenge of a task and the skill of the performer. But more importantly, it requires the complete elimination of external distractions. This is where looping audio comes in.</p>
+
+          <h2>The Problem with Playlists</h2>
+          <p>Many people use Spotify playlists or the radio to help them focus. But traditional music formats are inherently disruptive to deep work. Every time a song ends and a new one begins, there is a shift in tempo, key, instrumentation, and volume.</p>
+          
+          <p>Your brain is hardwired to notice novelty. From an evolutionary standpoint, sudden changes in our auditory environment signal potential threats. So, every time the song changes, a small part of your brain is pulled out of your work to process the new auditory information. This constant micro-context-switching prevents you from ever sinking fully into a flow state.</p>
+
+          <h2>How Looping Audio Hacks the Brain</h2>
+          <p>When you put a single track on an infinite loop, something magical happens around the third or fourth repetition. The music stops being a focal point and becomes a predictable, ambient texture.</p>
+          
+          <p>Because the brain knows exactly what is coming next, it stops allocating cognitive resources to analyzing the audio. The music fades into the background, acting as an acoustic shield that blocks out unpredictable environmental noises (like a coworker talking or a siren outside) without demanding any attention itself.</p>
+
+          <div style="background: rgba(139, 92, 246, 0.1); border-left: 4px solid var(--primary-color); padding: 1.5rem; margin: 2rem 0; border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">The Video Game Connection</h3>
+            <p style="margin-bottom: 0; font-size: 1rem; color: var(--text-secondary);">This is exactly why video game soundtracks are so effective for studying. Composers like Koji Kondo (Super Mario, Zelda) intentionally design video game music to be looped infinitely in the background without becoming irritating. The music is designed to foster focus and drive the player forward without distracting them from the task at hand.</p>
+          </div>
+
+          <h2>Finding Your Focus Track</h2>
+          <p>Not all music works for looping. Tracks with heavy, comprehensible lyrics are generally poor choices, as the language centers of your brain will constantly try to process the words. The best tracks for looping are usually:</p>
+          
+          <ul>
+            <li><strong>Video Game Soundtracks:</strong> (e.g., Skyrim, Donkey Kong Country, SimCity).</li>
+            <li><strong>Lo-Fi Hip Hop:</strong> Predictable, repetitive beats with gentle instrumentation.</li>
+            <li><strong>Ambient/Drone:</strong> Continuous sonic textures without distinct melodies.</li>
+            <li><strong>Brown Noise:</strong> A deeper, more pleasant alternative to white noise that mimics the sound of heavy rainfall or a distant waterfall.</li>
+          </ul>
+
+          <h2>Conclusion</h2>
+          <p>The next time you are facing a difficult coding problem, a dense reading assignment, or a high-stakes gaming match, try ditching the shuffle button. Find a track that fades nicely into the background, put it on an infinite loop, and let the predictability carry you into the flow state.</p>
+          
+          <p><em>(Tip: YouTube is the best repository for obscure video game soundtracks and ambient noise. You can easily turn any YouTube video into an infinite, ad-free background loop using <a href="../" style="color: var(--primary-color);">WatchOnRepeat</a>).</em></p>
         </div>
       </article>
 """
