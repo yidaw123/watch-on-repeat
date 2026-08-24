@@ -38,7 +38,7 @@ new_navbar = """
         <span class="brand-name" style="font-size: 1.25rem;">Watch<span>On</span>Repeat</span>
       </a>
       <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 1.5rem;">
-        <a href="../blog/" style="color: var(--text-primary); font-weight: 500; text-decoration: none;">Blog</a>
+        <a href="../blog/" style="color: var(--text-primary); font-weight: 500; text-decoration: none;">Blogs</a>
         <a href="../" class="btn btn-primary" style="text-decoration: none; font-size: 0.9rem; padding: 0.5rem 1rem;">Launch App</a>
       </div>
     </header>
@@ -456,7 +456,7 @@ articles = [
 # Generate index.html for /blog/
 blog_index = f"""
       <div class="blog-hero">
-        <h1>Our Blog</h1>
+        <h1>Our Blogs</h1>
         <p>Deep dives into the psychology of learning, the science of skill mastery, and the art of deliberate practice.</p>
       </div>
 
