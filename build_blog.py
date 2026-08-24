@@ -1,4 +1,4 @@
-﻿import os
+import os
 import re
 
 # Create blog dir if it doesn't exist
@@ -290,7 +290,12 @@ articles = [
           
           <p>There's just one problem: it's not true.</p>
           
-          <p>Anders Ericsson, the psychologist whose research Gladwell based his rule on, spent his career debunking the pop-culture version of his work. Ericsson found that simply repeating an action for thousands of hours often leads to stagnation, not mastery. The difference between an amateur and an expert isn't the <em>amount</em> of time spent practicing, but the <em>quality</em> of the practice.</p>
+          <p>Anders Ericsson, the cognitive psychologist whose research Gladwell originally based his rule on, spent the latter part of his career actively debunking the pop-culture version of his work. In his foundational 1993 study, <em>"The Role of Deliberate Practice in the Acquisition of Expert Performance"</em> (published in the Psychological Review), Ericsson and his colleagues demonstrated that simply repeating an action for thousands of hours often leads to stagnation, not mastery. The difference between an amateur and an expert isn't the <em>amount</em> of time spent practicing, but the <em>quality</em> of the practice.</p>
+
+          <div style="background: rgba(139, 92, 246, 0.1); border-left: 4px solid var(--primary-color); padding: 1.5rem; margin: 2rem 0; border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">The Scientific Consensus</h3>
+            <p style="margin-bottom: 0; font-size: 1rem; color: var(--text-secondary);">A 2014 meta-analysis by Princeton researchers published in <em>Psychological Science</em> further supported Ericsson's caveat. They analyzed 88 studies on deliberate practice and found that practice time only accounted for a 12% difference in performance across various domains. The scientific consensus is clear: hours alone do not create experts; cognitive engagement and targeted correction do.</p>
+          </div>
 
           <h2>The Trap of Mindless Repetition</h2>
           <p>Think about driving a car. You probably have thousands of hours of driving experience. Are you a world-class race car driver? No. You are probably exactly as good at driving today as you were five years ago.</p>
