@@ -1,4 +1,4 @@
-import os
+﻿import os
 import re
 
 # Create blog dir if it doesn't exist
