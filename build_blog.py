@@ -30,7 +30,7 @@ head_bottom = head_bottom.replace('src="/logo.svg"', 'src="../logo.svg"')
 # Replace the navbar in head_bottom to make it modern and clean for the blog
 new_navbar = """
   <div id="app-shell">
-    <header class="navbar" style="border-bottom: 1px solid var(--border-color); background: var(--bg-surface); padding: 1rem 2rem;">
+    <header class="navbar" style="background: transparent; padding: 1rem 2rem;">
       <a href="../" class="brand" style="text-decoration: none; display: flex; align-items: center; gap: 0.75rem;">
         <img src="../logo.svg" alt="WatchOnRepeat Logo" style="width: 32px; height: 32px; object-fit: contain;">
         <span class="brand-name" style="font-size: 1.25rem;">Watch<span>On</span>Repeat</span>
