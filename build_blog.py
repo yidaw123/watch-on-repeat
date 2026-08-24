@@ -17,10 +17,14 @@ head_top = template[:head_split]
 head_bottom = template[head_split:main_split]
 footer_bottom = template[footer_split:]
 
-# Fix asset paths in the head_bottom (CSS, logo)
-head_bottom = head_bottom.replace('href="style.css', 'href="../style.css')
+# Fix asset paths in the head_top (CSS, logo, etc.)
+head_top = head_top.replace('href="style.css', 'href="../style.css')
+head_top = head_top.replace('href="/style.css', 'href="../style.css')
+head_top = head_top.replace('href="logo.svg"', 'href="../logo.svg"')
+head_top = head_top.replace('href="/logo.svg"', 'href="../logo.svg"')
+
+# Fix asset paths in the head_bottom (Navbar logo)
 head_bottom = head_bottom.replace('src="logo.svg"', 'src="../logo.svg"')
-head_bottom = head_bottom.replace('href="/style.css', 'href="../style.css')
 head_bottom = head_bottom.replace('src="/logo.svg"', 'src="../logo.svg"')
 
 # Replace the navbar in head_bottom to make it modern and clean for the blog
