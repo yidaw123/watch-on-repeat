@@ -1,4 +1,4 @@
-import os
+﻿import os
 import re
 
 # Create blog dir if it doesn't exist
@@ -16,6 +16,8 @@ footer_split = template.find('<footer class="site-footer"')
 head_top = template[:head_split]
 head_bottom = template[head_split:main_split]
 footer_bottom = template[footer_split:]
+# Fix footer links
+footer_bottom = footer_bottom.replace('href="/', 'href="../')
 
 # Fix asset paths in the head_top (CSS, logo, etc.)
 head_top = head_top.replace('href="style.css', 'href="../style.css')
@@ -231,7 +233,7 @@ articles = [
           <div class="blog-tag">Language Learning</div>
           <h1>The Science of Repetition: How to Master a Language Through Immersion</h1>
           <div class="article-meta">
-            <span>By The Editorial Team</span>
+            <span>By the WatchOnRepeat Team</span>
             <span>&bull;</span>
             <span>August 2026</span>
           </div>
@@ -289,7 +291,7 @@ articles = [
           <div class="blog-tag">Skill Mastery</div>
           <h1>Why the 10,000 Hour Rule is Wrong (And How Deliberate Practice Works)</h1>
           <div class="article-meta">
-            <span>By The Editorial Team</span>
+            <span>By the WatchOnRepeat Team</span>
             <span>&bull;</span>
             <span>August 2026</span>
           </div>
@@ -328,7 +330,7 @@ articles = [
           
           <p>If you are learning a dance routine from a video, don't watch the whole routine. Isolate a 4-beat measure. Loop that specific measure. Slow the video down to 50% speed. Watch the instructor's footwork intensely, then try to replicate it. Record yourself on your phone and compare your footage directly against the instructor. Only when you have mastered those 4 beats should you move on to the next.</p>
           
-          <blockquote>"The journey to mastery is not a straight line of accumulated hours; it is a staircase built on focused, uncomfortable moments of conscious effort."</blockquote>
+          <blockquote>"The journey to mastery is not a straight line of accumulated hours; it is a staircase built on focused, uncomfortable moments of conscious effort." — <em>WatchOnRepeat Team</em></blockquote>
 
           <h2>Conclusion</h2>
           <p>The 10,000-hour rule is a myth because time is passive. Mastery is active. The next time you sit down to practice, ask yourself: am I just putting in time, or am I deliberately tackling my weaknesses?</p>
@@ -351,9 +353,9 @@ blog_index = f"""
         {"".join([f'''
         <div class="blog-card">
           <div class="blog-tag">{a['tag']}</div>
-          <h2><a href="/blog/{a['slug']}">{a['title']}</a></h2>
+          <h2><a href="../blog/{a['slug']}">{a['title']}</a></h2>
           <p>{a['desc']}</p>
-          <a href="/blog/{a['slug']}" class="read-more">Read Article <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i></a>
+          <a href="../blog/{a['slug']}" class="read-more">Read Article <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i></a>
         </div>
         ''' for a in articles])}
       </div>
@@ -365,6 +367,12 @@ def make_page(title, desc, content, slug=""):
     h = re.sub(r'<meta property="og:title" content=".*?">', f'<meta property="og:title" content="{title}">', h, flags=re.DOTALL)
     h = re.sub(r'<meta property="og:description" content=".*?">', f'<meta property="og:description" content="{desc}">', h, flags=re.DOTALL)
     h = re.sub(r'<link rel="canonical" href=".*?">', f'<link rel="canonical" href="https://watchonrepeat.com/blog/{slug}">', h, flags=re.DOTALL)
+    
+    # Fix og:url and twitter tags
+    h = re.sub(r'<meta property="og:url" content=".*?">', f'<meta property="og:url" content="https://watchonrepeat.com/blog/{slug}">', h, flags=re.DOTALL)
+    h = re.sub(r'<meta name="twitter:title" content=".*?">', f'<meta name="twitter:title" content="{title}">', h, flags=re.DOTALL)
+    h = re.sub(r'<meta name="twitter:description" content=".*?">', f'<meta name="twitter:description" content="{desc}">', h, flags=re.DOTALL)
+
     
     # We stripped out the main-content container to replace with full width for the blog hero
     # So we should close the main content wrapper cleanly if it's there, but actually we don't need the default main wrapper
