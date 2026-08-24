@@ -17,17 +17,23 @@ head_top = template[:head_split]
 head_bottom = template[head_split:main_split]
 footer_bottom = template[footer_split:]
 
+# Fix asset paths in the head_bottom (CSS, logo)
+head_bottom = head_bottom.replace('href="style.css', 'href="../style.css')
+head_bottom = head_bottom.replace('src="logo.svg"', 'src="../logo.svg"')
+head_bottom = head_bottom.replace('href="/style.css', 'href="../style.css')
+head_bottom = head_bottom.replace('src="/logo.svg"', 'src="../logo.svg"')
+
 # Replace the navbar in head_bottom to make it modern and clean for the blog
 new_navbar = """
   <div id="app-shell">
     <header class="navbar" style="border-bottom: 1px solid var(--border-color); background: var(--bg-surface); padding: 1rem 2rem;">
-      <a href="/" class="brand" style="text-decoration: none; display: flex; align-items: center; gap: 0.75rem;">
-        <img src="/logo.svg" alt="WatchOnRepeat Logo" style="width: 32px; height: 32px; object-fit: contain;">
+      <a href="../" class="brand" style="text-decoration: none; display: flex; align-items: center; gap: 0.75rem;">
+        <img src="../logo.svg" alt="WatchOnRepeat Logo" style="width: 32px; height: 32px; object-fit: contain;">
         <span class="brand-name" style="font-size: 1.25rem;">Watch<span>On</span>Repeat</span>
       </a>
       <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 1.5rem;">
-        <a href="/blog/" style="color: var(--text-primary); font-weight: 500; text-decoration: none;">Blog</a>
-        <a href="/" class="btn btn-primary" style="text-decoration: none; font-size: 0.9rem; padding: 0.5rem 1rem;">Launch App</a>
+        <a href="../blog/" style="color: var(--text-primary); font-weight: 500; text-decoration: none;">Blog</a>
+        <a href="../" class="btn btn-primary" style="text-decoration: none; font-size: 0.9rem; padding: 0.5rem 1rem;">Launch App</a>
       </div>
     </header>
 """
@@ -161,7 +167,7 @@ blog_css = """
     .article-content p {
       font-size: 1.15rem;
       line-height: 1.8;
-      color: rgba(255,255,255,0.85);
+      color: var(--text-secondary, #333);
       margin-bottom: 1.75rem;
     }
     .article-content h2 {
@@ -183,7 +189,7 @@ blog_css = """
     .article-content li {
       font-size: 1.15rem;
       line-height: 1.7;
-      color: rgba(255,255,255,0.85);
+      color: var(--text-secondary, #333);
       margin-bottom: 0.75rem;
     }
     .article-content blockquote {
