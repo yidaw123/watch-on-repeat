@@ -3110,3 +3110,19 @@ body.theater-mode .sidebar-column {
     padding: 0 0.5rem;
   }
 }
+
+/* Mobile Footer Left-Align */
+@media (max-width: 768px) {
+  .site-footer {
+    text-align: left !important;
+    align-items: flex-start !important;
+    padding: 2rem 1.5rem !important;
+  }
+  .site-footer .footer-seo-links,
+  .site-footer .footer-links {
+    justify-content: flex-start !important;
+  }
+  .site-footer p {
+    text-align: left !important;
+  }
+}
