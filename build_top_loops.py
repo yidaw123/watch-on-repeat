@@ -2,9 +2,9 @@ import re
 
 # We want to extract just the head/header and the footer.
 # But we don't want the left/right ad gutters from index.html for this page, we want it full width like the blog.
-# Actually, the cleanest way is to use the exact same template logic as the blog, which uses youtube-looper.html!
+# Actually, the cleanest way is to use the exact same template logic as the blog, which uses guide.html!
 
-with open('youtube-looper.html', 'r', encoding='utf-8') as f:
+with open('guide.html', 'r', encoding='utf-8') as f:
     html = f.read()
 
 # Find split points (youtube-looper uses the simpler layout)

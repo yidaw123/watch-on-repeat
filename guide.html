@@ -151,21 +151,53 @@
         </div>
         
         <div style="margin-top: 3rem;">
-          <h2>Step 6: Master Keyboard Shortcuts</h2>
-          <p>For the best experience, keep your hands on your instrument and use our default keyboard shortcuts to control the video without reaching for your mouse:</p>
-          <ul>
-            <li><strong>Spacebar:</strong> Play / Pause</li>
-            <li><strong>[ :</strong> Set Loop Start (Point A)</li>
-            <li><strong>] :</strong> Set Loop End (Point B)</li>
-            <li><strong>\ :</strong> Clear current Loop</li>
-            <li><strong>Right/Left Arrow:</strong> Seek forward/backward 5 seconds</li>
-            <li><strong>Shift + Right/Left Arrow:</strong> Nudge loop points by 1 second</li>
-            <li><strong>Up/Down Arrow:</strong> Adjust Volume</li>
-          </ul>
-        </div>
+            <h2>Step 6: Master Keyboard Shortcuts</h2>
+            <p>For the best experience, keep your hands on your instrument and use our default keyboard shortcuts to control the video without reaching for your mouse:</p>
+            <ul>
+              <li><strong>Spacebar:</strong> Play / Pause</li>
+              <li><strong>[ :</strong> Set Loop Start (Point A)</li>
+              <li><strong>] :</strong> Set Loop End (Point B)</li>
+              <li><strong>\ :</strong> Clear current Loop</li>
+              <li><strong>Right/Left Arrow:</strong> Seek forward/backward 5 seconds</li>
+              <li><strong>Shift + Right/Left Arrow:</strong> Nudge loop points by 1 second</li>
+              <li><strong>Up/Down Arrow:</strong> Adjust Volume</li>
+            </ul>
+          </div>
 
-        <div style="margin-top: 3rem;">
-          <h2>Bonus: Unlock Premium & Pro Features</h2>
+          <div style="margin-top: 3rem;">
+            <h2>Pro-Tip #1: The URL Trick</h2>
+            <p>You can instantly loop any video without copying and pasting! Just go to your browser's address bar and replace <code>youtube</code>, <code>facebook</code>, <code>dailymotion</code>, or <code>vimeo</code> with <code>watchonrepeat</code>. <em>(For Twitch VODs, change <code>twitch.tv</code> to <code>watchonrepeat.com</code>)</em>.</p>
+            <p style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid var(--primary-color);">
+              <strong>Example:</strong><br>
+              Change: <code>https://www.<strong>youtube</strong>.com/watch?v=dQw4w9WgXcQ</code><br>
+              To: <code>https://www.<strong>watchonrepeat</strong>.com/watch?v=dQw4w9WgXcQ</code>
+            </p>
+          </div>
+
+          <div style="margin-top: 3rem;">
+            <h2>Pro-Tip #2: The Bookmarklet</h2>
+            <p>Want to loop videos even faster? Drag our "Loop on WOR" bookmarklet from the app's sidebar directly to your browser's bookmarks bar. The next time you are on YouTube and want to repeat a video, click the bookmark, and it will instantly open here!</p>
+            
+            <div class="bookmarklet-box" style="margin-top: 2rem; margin-bottom: 2rem;">
+              <h4><i data-lucide="bookmark"></i> WatchOnRepeat Bookmark</h4>
+              <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Twitch, Facebook, Dailymotion, Vimeo, Mixcloud, Loom, Wistia, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
+              <a id="bookmarklet-btn-guide" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;" title="WatchOnRepeat">
+                <i data-lucide="repeat"></i>
+                <span>WatchOnRepeat</span>
+              </a>
+            </div>
+            <script>
+              document.addEventListener('DOMContentLoaded', () => {
+                const origin = window.location.origin;
+                const jsCode = `javascript:(function(){var url=window.location.href;if(url.indexOf('youtube.com')!==-1||url.indexOf('youtu.be')!==-1||url.indexOf('vimeo.com')!==-1||url.indexOf('dailymotion.com')!==-1){window.open('${origin}/?url='+encodeURIComponent(url),'_blank');}else{alert('Please click this bookmark shortcut while watching a YouTube, Vimeo, or Dailymotion video!');}})();`;
+                const btn = document.getElementById('bookmarklet-btn-guide');
+                if (btn) btn.setAttribute('href', jsCode);
+              });
+            </script>
+          </div>
+
+          <div style="margin-top: 3rem;">
+            <h2>Bonus: Unlock Premium & Pro Features</h2>
           <p>If you are a power user, consider upgrading to our <strong>Premium or Pro tiers</strong> to unlock the ultimate distraction-free environment. Upgrading removes all site banner ads, giving you a cleaner interface. It also unlocks <strong>Advanced Loop Controls</strong>, allowing you to save up to 10 or 15 different timestamped notes per video. Pro users can also unlock <strong>Custom Hotkey Binding</strong>—allowing you to map loop functions to any key on your keyboard or even a Bluetooth foot pedal!</p>
         </div>
 
@@ -180,7 +212,6 @@
         <strong>Guides & Use Cases:</strong>
         <a href="/top-loops.html" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none; font-weight: bold;">Top Loops</a> <span style="opacity:0.3">|</span>
         <a href="/guide" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none; font-weight: bold;">Step-by-Step Guide</a> <span style="opacity:0.3">|</span>
-        <a href="/youtube-looper" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">YouTube Looper & Repeater</a> <span style="opacity:0.3">|</span> 
         <a href="/music-practice" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Music Practice</a> <span style="opacity:0.3">|</span> 
         <a href="/language-learning" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Language Learning</a> <span style="opacity:0.3">|</span> 
         <a href="/youtube-study-tool" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Video Study Tool</a> <span style="opacity:0.3">|</span> 

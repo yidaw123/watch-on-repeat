@@ -4,8 +4,8 @@ import re
 # Create blog dir if it doesn't exist
 os.makedirs('blog', exist_ok=True)
 
-# Read template from youtube-looper.html
-with open('youtube-looper.html', 'r', encoding='utf-8') as f:
+# Read template from guide.html
+with open('guide.html', 'r', encoding='utf-8') as f:
     template = f.read()
 
 # Find split points
