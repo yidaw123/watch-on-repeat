@@ -73,15 +73,15 @@ main_content = """
     </a>
 
     <!-- 2. Dance -->
-    <a href="/?v=5_ovfAjVJAU&p=youtube&start=45&end=60" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
-      <img src="https://img.youtube.com/vi/5_ovfAjVJAU/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="Dance Choreography Loop">
+    <a href="/?v=knGYfOCjc6Q&p=youtube&start=45&end=60" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
+      <img src="https://img.youtube.com/vi/knGYfOCjc6Q/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="Dance Choreography Loop">
       <div style="padding: 1.5rem;">
         <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
           <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">YouTube</span>
           <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">DANCE</span>
         </div>
-        <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Learn K-Pop Choreography</h3>
-        <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.5;">Break down complex footwork by looping this 15-second chorus drop over and over until you have it memorized.</p>
+        <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Step-by-Step Choreography</h3>
+        <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.5;">Learn complex routines safely. Loop this 15-second instructional segment at half-speed until you nail the footwork.</p>
       </div>
     </a>
 
@@ -98,14 +98,12 @@ main_content = """
       </div>
     </a>
 
-    <!-- 4. Twitch Gaming -->
-    <a href="/?v=768143290&p=twitch" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
-      <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #9146FF 0%, #6441A5 100%); display: flex; align-items: center; justify-content: center; color: white;">
-        <i data-lucide="twitch" style="width: 48px; height: 48px;"></i>
-      </div>
+    <!-- 4. Gaming -->
+    <a href="/?v=psftTShgBiQ&p=youtube" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
+      <img src="https://img.youtube.com/vi/psftTShgBiQ/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="Gaming VOD Loop">
       <div style="padding: 1.5rem;">
         <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-          <span style="background: rgba(145, 70, 255, 0.1); color: #9146FF; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Twitch</span>
+          <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">YouTube</span>
           <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">GAMING</span>
         </div>
         <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Analyze Pro Player VODs</h3>
