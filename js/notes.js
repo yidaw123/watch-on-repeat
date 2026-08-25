@@ -675,6 +675,7 @@ class NotesMixin {
     const db = this.getDb('notes');
     db[vId] = this.state.sharedNotesToLoad;
     this.saveDb('notes', db);
+    this.syncNotesToCloud(vId, db[vId]);
     this.state.sharedNotesToLoad = null;
     this.showToast("Shared notes saved to your session!", "check");
     this.renderNotes();
