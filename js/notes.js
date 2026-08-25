@@ -72,7 +72,7 @@ class NotesMixin {
     }
     
     const notes = this.getDb('notes');
-    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     
     // Enforce Notes Limit based on tier
     const tier = this.getUserTier();
@@ -157,7 +157,7 @@ class NotesMixin {
   }
 
   deleteNote(noteId) {
-    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     if (db[vId]) {
       const index = db[vId].findIndex(n => n.id && n.id.toString() === noteId.toString());
@@ -281,7 +281,7 @@ class NotesMixin {
   }
 
   async deleteAllNotes() {
-    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     if (db[vId] && db[vId].length > 0) {
       const confirmResult = await this.showCustomConfirm({
@@ -314,7 +314,7 @@ class NotesMixin {
 
   renderNotes() {
     if (!this.state.currentVideo) return;
-    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     let notes = db[vId] || [];
 
@@ -409,91 +409,94 @@ class NotesMixin {
     const listEl = document.getElementById('active-notes-list');
     if (!listEl) return;
     
-    // MIGRATION: Merge any orphaned Session UUID notes into their underlying base video
-    let migrated = false;
-    const validPlatforms = ['youtube', 'vimeo', 'dailymotion', 'soundcloud', 'twitch', 'facebook', 'mixcloud', 'wistia'];
-    try {
-      const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
-      for (const key of Object.keys(db)) {
-        if (key === '__titles') continue;
-        const platform = key.split('_')[0];
-        
-        if (!validPlatforms.includes(platform)) {
-          // This is a session UUID, let's map it to the video
-          const uuid = key;
-          const instance = localInstances[uuid];
-          
-          if (instance && instance.platform && instance.videoId) {
-            const newKey = `${instance.platform}_${instance.videoId}`;
-            if (!db[newKey]) db[newKey] = [];
-            
-            // Merge notes uniquely by id
-            const existingIds = new Set(db[newKey].map(n => n.id));
-            for (const n of (db[uuid] || [])) {
-              if (!existingIds.has(n.id)) db[newKey].push(n);
-            }
-            db[newKey].sort((a, b) => a.time - b.time);
-            
-            if (db.__titles && db.__titles[uuid]) {
-              if (!db.__titles[newKey] || db.__titles[newKey] === 'Unknown Video') {
-                db.__titles[newKey] = db.__titles[uuid];
-              }
-              delete db.__titles[uuid];
-            }
-          }
-          // Always delete the UUID key once migrated or if orphaned
-          delete db[uuid];
-          if (db.__titles && db.__titles[uuid]) delete db.__titles[uuid];
-          migrated = true;
-        }
-      }
-      if (migrated) this.saveDb('notes', db);
-    } catch (e) {
-      if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.warn("Note migration error", e);
-    }
-
     listEl.innerHTML = '';
     
-    const uniqueVideos = Object.keys(db).filter(k => k !== '__titles' && Array.isArray(db[k]) && db[k].length > 0 && validPlatforms.includes(k.split('_')[0]));
-    if (uniqueVideos.length === 0) {
+    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    const validPlatforms = ['youtube', 'vimeo', 'dailymotion', 'soundcloud', 'twitch', 'facebook', 'mixcloud', 'wistia'];
+    
+    const videoGroups = {};
+    
+    for (const key of Object.keys(db)) {
+      if (key === '__titles' || !Array.isArray(db[key]) || db[key].length === 0) continue;
+      
+      let platform, videoId, baseKey, sessionName, isBase;
+      const parts = key.split('_');
+      
+      if (validPlatforms.includes(parts[0])) {
+        platform = parts[0];
+        videoId = parts.slice(1).join('_');
+        baseKey = key;
+        sessionName = "No Session";
+        isBase = true;
+      } else {
+        const instance = localInstances[key];
+        if (!instance || !instance.platform || !instance.videoId) {
+           continue; // orphaned session notes, hide them for now
+        }
+        platform = instance.platform;
+        videoId = instance.videoId;
+        baseKey = `${platform}_${videoId}`;
+        sessionName = instance.title || "Unnamed Session";
+        isBase = false;
+      }
+      
+      if (!videoGroups[baseKey]) {
+        videoGroups[baseKey] = {
+          baseKey, platform, videoId,
+          title: 'Unknown Video',
+          maxAdd: 0, maxEdit: 0,
+          sessions: []
+        };
+        
+        let title = (db.__titles && db.__titles[baseKey]) ? db.__titles[baseKey] : 'Unknown Video';
+        if (title === 'Unknown Video' || title === 'Loading title...' || title.startsWith('Video: ')) {
+          const history = this.getDb('history') || [];
+          const hItem = history.find(h => h.videoId === videoId && h.platform === platform);
+          if (hItem && hItem.title && hItem.title !== 'Loading title...') {
+            title = hItem.title;
+            if (!db.__titles) db.__titles = {};
+            db.__titles[baseKey] = title;
+            this.saveDb('notes', db);
+          } else if (localInstances[key] && localInstances[key].videoTitle) {
+            title = localInstances[key].videoTitle;
+          } else {
+            title = `Video: ${videoId}`;
+          }
+        }
+        videoGroups[baseKey].title = title;
+      }
+      
+      const notes = db[key];
+      const sMaxAdd = Math.max(...notes.map(n => n.timestamp || 0));
+      const sMaxEdit = Math.max(...notes.map(n => n.editedAt || n.timestamp || 0));
+      
+      videoGroups[baseKey].sessions.push({
+        key,
+        name: sessionName,
+        count: notes.length,
+        maxAdd: sMaxAdd,
+        maxEdit: sMaxEdit,
+        isBase
+      });
+      
+      videoGroups[baseKey].maxAdd = Math.max(videoGroups[baseKey].maxAdd, sMaxAdd);
+      videoGroups[baseKey].maxEdit = Math.max(videoGroups[baseKey].maxEdit, sMaxEdit);
+    }
+    
+    let videosData = Object.values(videoGroups);
+    if (videosData.length === 0) {
       listEl.innerHTML = '<div class="empty-state-list"><i data-lucide="file-text"></i><p>No active notes for any videos.</p></div>';
       if (window.lucide) window.lucide.createIcons();
       return;
     }
-
-    let videosData = uniqueVideos.map(id => {
-      let title = (db.__titles && db.__titles[id]) ? db.__titles[id] : 'Unknown Video';
-      
-      const parts = id.split('_');
-      const platform = parts[0];
-      const videoId = parts.slice(1).join('_');
-      
-      if (title === 'Unknown Video' || title === 'Loading title...' || title.startsWith('Video: ')) {
-        const history = this.getDb('history') || [];
-        const hItem = history.find(h => h.videoId === videoId && h.platform === platform);
-        if (hItem && hItem.title && hItem.title !== 'Loading title...') {
-          title = hItem.title;
-          if (!db.__titles) db.__titles = {};
-          db.__titles[id] = title;
-          this.saveDb('notes', db);
-        } else {
-          title = `Video: ${videoId}`;
-        }
-      }
-
-      const notes = db[id];
-      const maxAdd = Math.max(...notes.map(n => n.timestamp || 0));
-      const maxEdit = Math.max(...notes.map(n => n.editedAt || n.timestamp || 0));
-      return { id, title, platform, videoId, maxAdd, maxEdit, notesCount: notes.length };
-    });
-
+    
     const sortVal = document.getElementById('notes-sort') ? document.getElementById('notes-sort').value : 'recent_add';
     videosData.sort((a, b) => {
       if (sortVal === 'alpha') return a.title.localeCompare(b.title);
       if (sortVal === 'recent_edit') return b.maxEdit - a.maxEdit;
       return b.maxAdd - a.maxAdd; // recent_add
     });
-
+    
     const itemsPerPage = 5;
     let currentPage = app.state.pagination.savedNotes || 1;
     const totalPages = Math.ceil(videosData.length / itemsPerPage) || 1;
@@ -503,40 +506,58 @@ class NotesMixin {
     }
     
     const paginatedVideos = videosData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
+    
     paginatedVideos.forEach(vData => {
-      const id = vData.id;
-      let title = vData.title;
-      const noteCount = vData.notesCount;
-      const platform = vData.platform;
-      const videoId = vData.videoId;
-
       const div = document.createElement('div');
       div.className = 'note-item';
-      div.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px; transition: background 0.2s;";
+      div.style = "padding: 12px; transition: background 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 8px;";
       
-      div.onmouseover = () => div.style.background = 'rgba(255,255,255,0.05)';
-      div.onmouseout = () => div.style.background = 'var(--surface-color)';
+      div.onmouseover = () => div.style.background = 'rgba(255,255,255,0.02)';
+      div.onmouseout = () => div.style.background = 'transparent';
       
-      const thumbUrl = this.getThumbnailUrl(platform, videoId);
+      const thumbUrl = this.getThumbnailUrl(vData.platform, vData.videoId);
       
       let appUrl = '?url=';
-      if (platform === 'youtube') appUrl += encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`);
-      else if (platform === 'vimeo') appUrl += encodeURIComponent(`https://vimeo.com/${videoId}`);
-      else if (platform === 'dailymotion') appUrl += encodeURIComponent(`https://www.dailymotion.com/video/${videoId}`);
-      else if (platform === 'soundcloud') appUrl += encodeURIComponent(`https://soundcloud.com/${videoId}`);
-
+      if (vData.platform === 'youtube') appUrl += encodeURIComponent(`https://www.youtube.com/watch?v=${vData.videoId}`);
+      else if (vData.platform === 'vimeo') appUrl += encodeURIComponent(`https://vimeo.com/${vData.videoId}`);
+      else if (vData.platform === 'dailymotion') appUrl += encodeURIComponent(`https://www.dailymotion.com/video/${vData.videoId}`);
+      else if (vData.platform === 'soundcloud') appUrl += encodeURIComponent(`https://soundcloud.com/${vData.videoId}`);
+      
+      let sessionsHtml = '';
+      vData.sessions.sort((a, b) => {
+        if (a.isBase && !b.isBase) return -1;
+        if (!a.isBase && b.isBase) return 1;
+        return b.maxEdit - a.maxEdit;
+      });
+      
+      vData.sessions.forEach(sess => {
+        const loadCall = sess.isBase ? `app.loadVideo('${this.escapeHtml(vData.videoId)}', '${this.escapeHtml(vData.platform)}')` : `app.loadInstance('${this.escapeHtml(sess.key)}')`;
+        
+        sessionsHtml += `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; margin-top: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+            <div style="flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); ${loadCall}; window.scrollTo({top: 0, behavior: 'smooth'}); }">
+              <i data-lucide="${sess.isBase ? 'video' : 'layers'}" style="width: 14px; height: 14px; color: var(--primary-color);"></i>
+              <span style="font-size: 13px; color: #ddd; font-weight: 500;">${this.escapeHtml(sess.name)}</span>
+              <span style="font-size: 11px; color: var(--text-muted); margin-left: 8px;">(${sess.count} note${sess.count !== 1 ? 's' : ''})</span>
+            </div>
+            <button class="btn-icon-delete" style="padding: 4px;" aria-label="Clear notes" onclick="app.clearNotesForVideo('${this.escapeHtml(sess.key)}')" title="Clear notes for this version">
+              <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+            </button>
+          </div>
+        `;
+      });
+      
       div.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 12px; flex: 1; overflow: hidden;">
-          <a href="${appUrl}" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); app.loadVideo('${this.escapeHtml(videoId)}', '${this.escapeHtml(platform)}'); window.scrollTo({top: 0, behavior: 'smooth'}); }"><img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0; cursor: pointer;" alt="thumbnail"></a>
+        <div style="display: flex; align-items: center; gap: 12px; flex: 1; overflow: hidden; margin-bottom: 8px;">
+          <a href="${appUrl}" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); app.loadVideo('${this.escapeHtml(vData.videoId)}', '${this.escapeHtml(vData.platform)}'); window.scrollTo({top: 0, behavior: 'smooth'}); }"><img src="${thumbUrl}" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0; cursor: pointer;" alt="thumbnail"></a>
           <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            <a href="${appUrl}" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); app.loadVideo('${this.escapeHtml(videoId)}', '${this.escapeHtml(platform)}'); window.scrollTo({top: 0, behavior: 'smooth'}); }" style="color: var(--primary-color); display: block; overflow: hidden; text-overflow: ellipsis; font-weight: 500; text-decoration: none;">${this.escapeHtml(title)}</a>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${noteCount} saved note${noteCount !== 1 ? 's' : ''}</div>
+            <a href="${appUrl}" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); app.loadVideo('${this.escapeHtml(vData.videoId)}', '${this.escapeHtml(vData.platform)}'); window.scrollTo({top: 0, behavior: 'smooth'}); }" style="color: white; display: block; overflow: hidden; text-overflow: ellipsis; font-weight: 600; text-decoration: none; font-size: 14px;">${this.escapeHtml(vData.title)}</a>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase;">${this.escapeHtml(vData.platform)}</div>
           </div>
         </div>
-        <button class="btn-icon-delete" aria-label="Clear all notes for this video" onclick="app.clearNotesForVideo('${this.escapeHtml(id)}')" title="Clear all notes for this video">
-          <i data-lucide="trash-2"></i>
-        </button>
+        <div class="note-sessions-list" style="margin-left: 2px;">
+          ${sessionsHtml}
+        </div>
       `;
       listEl.appendChild(div);
     });
@@ -576,7 +597,7 @@ class NotesMixin {
       return;
     }
     
-    const vId = this.state.currentVideo ? `${this.state.currentPlatform}_${this.state.currentVideo.id}` : null;
+    const vId = this.state.currentInstanceId || (this.state.currentVideo ? `${this.state.currentPlatform}_${this.state.currentVideo.id}` : null);
     if (!vId) return;
     
     const db = this.getDb('notes');
@@ -603,7 +624,7 @@ class NotesMixin {
 
   saveSharedNotes() {
     if (!this.state.sharedNotesToLoad || !this.state.currentVideo) return;
-    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     db[vId] = this.state.sharedNotesToLoad;
     this.saveDb('notes', db);
