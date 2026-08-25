@@ -72,7 +72,7 @@ class NotesMixin {
     }
     
     const notes = this.getDb('notes');
-    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     
     // Enforce Notes Limit based on tier
     const tier = this.getUserTier();
@@ -157,7 +157,7 @@ class NotesMixin {
   }
 
   deleteNote(noteId) {
-    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     if (db[vId]) {
       const index = db[vId].findIndex(n => n.id && n.id.toString() === noteId.toString());
@@ -281,7 +281,7 @@ class NotesMixin {
   }
 
   async deleteAllNotes() {
-    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     if (db[vId] && db[vId].length > 0) {
       const confirmResult = await this.showCustomConfirm({
@@ -314,7 +314,7 @@ class NotesMixin {
 
   renderNotes() {
     if (!this.state.currentVideo) return;
-    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     let notes = db[vId] || [];
 
@@ -408,9 +408,53 @@ class NotesMixin {
   renderActiveNotesSummary(db, currentVId) {
     const listEl = document.getElementById('active-notes-list');
     if (!listEl) return;
+    
+    // MIGRATION: Merge any orphaned Session UUID notes into their underlying base video
+    let migrated = false;
+    const validPlatforms = ['youtube', 'vimeo', 'dailymotion', 'soundcloud', 'twitch', 'facebook', 'mixcloud', 'wistia'];
+    try {
+      const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+      for (const key of Object.keys(db)) {
+        if (key === '__titles') continue;
+        const platform = key.split('_')[0];
+        
+        if (!validPlatforms.includes(platform)) {
+          // This is a session UUID, let's map it to the video
+          const uuid = key;
+          const instance = localInstances[uuid];
+          
+          if (instance && instance.platform && instance.videoId) {
+            const newKey = `${instance.platform}_${instance.videoId}`;
+            if (!db[newKey]) db[newKey] = [];
+            
+            // Merge notes uniquely by id
+            const existingIds = new Set(db[newKey].map(n => n.id));
+            for (const n of (db[uuid] || [])) {
+              if (!existingIds.has(n.id)) db[newKey].push(n);
+            }
+            db[newKey].sort((a, b) => a.time - b.time);
+            
+            if (db.__titles && db.__titles[uuid]) {
+              if (!db.__titles[newKey] || db.__titles[newKey] === 'Unknown Video') {
+                db.__titles[newKey] = db.__titles[uuid];
+              }
+              delete db.__titles[uuid];
+            }
+          }
+          // Always delete the UUID key once migrated or if orphaned
+          delete db[uuid];
+          if (db.__titles && db.__titles[uuid]) delete db.__titles[uuid];
+          migrated = true;
+        }
+      }
+      if (migrated) this.saveDb('notes', db);
+    } catch (e) {
+      if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.warn("Note migration error", e);
+    }
+
     listEl.innerHTML = '';
     
-    const uniqueVideos = Object.keys(db).filter(k => k !== '__titles' && Array.isArray(db[k]) && db[k].length > 0);
+    const uniqueVideos = Object.keys(db).filter(k => k !== '__titles' && Array.isArray(db[k]) && db[k].length > 0 && validPlatforms.includes(k.split('_')[0]));
     if (uniqueVideos.length === 0) {
       listEl.innerHTML = '<div class="empty-state-list"><i data-lucide="file-text"></i><p>No active notes for any videos.</p></div>';
       if (window.lucide) window.lucide.createIcons();
@@ -559,7 +603,7 @@ class NotesMixin {
 
   saveSharedNotes() {
     if (!this.state.sharedNotesToLoad || !this.state.currentVideo) return;
-    const vId = this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+    const vId = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
     const db = this.getDb('notes');
     db[vId] = this.state.sharedNotesToLoad;
     this.saveDb('notes', db);
