@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E9NYZYJL0D"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E9NYZYJL0D');
+  </script>
+
+  <meta name="google" content="notranslate">
+  <title>Contact Support - WatchOnRepeat</title>
+  <meta name="description" content="Contact the WatchOnRepeat team. Have questions about our video looper or want to submit feedback? We'd love to hear from you.">
+  <link rel="canonical" href="https://watchonrepeat.com/contact" />
+  
+  <meta property="og:title" content="Contact Support - WatchOnRepeat">
+  <meta property="og:description" content="Contact the WatchOnRepeat team. Have questions about our video looper or want to submit feedback? We'd love to hear from you.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://watchonrepeat.com/contact">
+  <meta property="og:image" content="https://watchonrepeat.com/og-image.png">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Contact Support - WatchOnRepeat">
+  <meta name="twitter:description" content="Contact the WatchOnRepeat team. Have questions about our video looper or want to submit feedback? We'd love to hear from you.">
+  <meta name="twitter:image" content="https://watchonrepeat.com/og-image.png">
+
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    .contact-container { max-width: 600px; margin: 60px auto; padding: 40px; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0,0,0,0.2); backdrop-filter: blur(12px); width: 90%; }
+    .contact-header { text-align: center; margin-bottom: 32px; }
+    .contact-header h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; margin-bottom: 12px; }
+    .contact-header p { color: var(--text-muted); }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-family: 'Inter', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; }
+    .form-group select option { background-color: #1e1e2d; color: white; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent-color); }
+    .btn-submit { width: 100%; padding: 14px; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-submit:hover { background: var(--accent-hover); }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+    .back-btn { position: absolute; top: 20px; left: 20px; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 500; transition: color 0.2s; }
+    .back-btn:hover { color: var(--text-primary); }
+    #success-message { display: none; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); color: #4ade80; padding: 16px; border-radius: 8px; margin-top: 20px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="glow-bg">
+    <div class="blob blob-purple"></div>
+    <div class="blob blob-blue"></div>
+  </div>
+
+  <header class="navbar">
+    <a href="/" class="brand">
+      <img src="logo.svg" alt="WatchOnRepeat Logo" class="brand-icon" style="background: none; object-fit: cover; border-radius: var(--radius-md);">
+      <span class="brand-name">Watch<span>On</span>Repeat</span>
+    </a>
+  </header>
+
+  <div class="contact-container">
+    <div class="contact-header">
+      <h1>Contact Support</h1>
+      <p>Having trouble? Found a bug? Let us know!</p>
+    </div>
+    
+    <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Contact Form</h2>
+    <form id="contact-form">
+      <div class="form-group">
+        <label for="contact-name">Name</label>
+        <input type="text" id="contact-name" placeholder="Your name" required>
+      </div>
+      <div class="form-group">
+        <label for="contact-email">Email Address</label>
+        <input type="email" id="contact-email" placeholder="name@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="contact-category">What can we help you with?</label>
+        <select id="contact-category" required>
+          <option value="" disabled selected>Select an option</option>
+          <option value="Login Issues">Login Issues</option>
+          <option value="Billing Issues/Refund">Billing Issues/Refund</option>
+          <option value="Bugs/Issues">Bugs/Issues</option>
+          <option value="Suggestions/Improvements">Suggestions/Improvements</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="contact-message">Message</label>
+        <textarea id="contact-message" rows="6" maxlength="1000" placeholder="Please describe your issue in detail..." style="resize: vertical;" required></textarea>
+        <div style="text-align: right; margin-top: 8px; color: var(--text-muted); font-size: 13px;">
+          <span id="char-count">0</span> / 1000
+        </div>
+      </div>
+      <button type="submit" class="btn-submit" id="submit-btn">
+        <i data-lucide="send"></i> Send Message
+      </button>
+      <div id="success-message">
+        <i data-lucide="check-circle" style="display: inline-block; vertical-align: middle; margin-right: 8px;"></i>
+        Message sent successfully! We will get back to you soon.
+      </div>
+    </form>
+  </div>
+
+  <footer class="site-footer" style="padding: 2rem; background: var(--bg-surface); border-top: 1px solid var(--border-color); text-align: center;">
+    <div class="footer-seo-links" style="font-size: 0.9em; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.5rem; line-height: 1.8;">
+        <strong>Guides & Use Cases:</strong>
+        <a href="/guide" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none; font-weight: bold;">Step-by-Step Guide</a> <span style="opacity:0.3">|</span>
+        <a href="/youtube-looper" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">YouTube Looper & Repeater</a> <span style="opacity:0.3">|</span> 
+        <a href="/music-practice" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Music Practice</a> <span style="opacity:0.3">|</span> 
+        <a href="/language-learning" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Language Learning</a> <span style="opacity:0.3">|</span> 
+        <a href="/youtube-study-tool" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Video Study Tool</a> <span style="opacity:0.3">|</span> 
+        <a href="/listenonrepeat-alternative" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">ListenOnRepeat Alternative</a> <span style="opacity:0.3">|</span>
+        <a href="/blog/" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Blogs</a> <span style="opacity:0.3">|</span>
+        <a href="/top-loops.html" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none; font-weight: bold;">Top Loops</a>
+      </div>
+    <div class="footer-links" style="font-size: 0.85em; opacity: 0.9; margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+      <a href="/listenonrepeat-alternative" style="background: var(--gradient-primary, linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)); color: white; padding: 5px 14px; border-radius: 9999px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); transition: transform 0.2s;"><i data-lucide="crown" style="width: 14px; height: 14px;"></i> Upgrade</a>
+      <a href="https://buymeacoffee.com/watchonrepeat" target="_blank" style="background: rgba(255,255,255,0.05); color: #e2e8f0; padding: 5px 14px; border-radius: 9999px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,0.1); transition: background 0.2s;"><i data-lucide="heart" style="width: 14px; height: 14px; color: #fb7185;"></i> Donate</a>
+      <span style="opacity: 0.3; margin: 0 -0.5rem;">|</span>
+      
+      <a href="/about" style="color: #94a3b8; text-decoration: none;">About Us</a>
+      <a href="/privacy" target="_blank" style="color: #94a3b8; text-decoration: none;">Privacy</a>
+      <a href="/terms" target="_blank" style="color: #94a3b8; text-decoration: none;">Terms</a>
+      <a href="/contact" style="color: #94a3b8; text-decoration: none;">Contact Us</a>
+      <a href="mailto:ads@watchonrepeat.com" style="color: #60a5fa; text-decoration: none; font-weight: 500;">Advertise with Us</a>
+    </div>
+    <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 WatchOnRepeat. All rights reserved.</p>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const currentPath = window.location.pathname.replace(/\/$/, '').replace(/\.html$/, '') || '/';
+    document.querySelectorAll('.footer-seo-links a').forEach(link => {
+      let href = link.getAttribute('href');
+      if (href) {
+        href = href.replace(/\/$/, '').replace(/\.html$/, '') || '/';
+        if (currentPath === href || (currentPath === '/' && href === '/index')) {
+          link.style.color = 'var(--primary-color, #a855f7)';
+          link.style.fontWeight = 'bold';
+        }
+      }
+    });
+  });
+</script>
+</footer>
+
+  <script>
+    lucide.createIcons();
+    
+    const SUPABASE_URL = 'https://golkbcdlxpojjwqtyuzn.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_e1gQuU0n8FofmTkitqTEQQ_pi1g8fqD';
+    let supabaseClient = null;
+    try {
+      if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch(e) {}
+
+    const form = document.getElementById('contact-form');
+    const msgInput = document.getElementById('contact-message');
+    const countDisplay = document.getElementById('char-count');
+    const submitBtn = document.getElementById('submit-btn');
+    const successMsg = document.getElementById('success-message');
+
+    msgInput.addEventListener('input', () => {
+      countDisplay.textContent = msgInput.value.length;
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('contact-name').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const category = document.getElementById('contact-category').value;
+      const message = document.getElementById('contact-message').value.trim();
+      
+      if (!name || !email || !category || !message) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Sending...';
+      lucide.createIcons();
+
+      try {
+        if (supabaseClient) {
+          const { error } = await supabaseClient.from('support_tickets').insert({
+            user_id: null,
+            name,
+            email,
+            category,
+            message
+          });
+          if (error) {
+             console.error("Supabase Error:", error);
+          }
+        }
+        
+        await new Promise(r => setTimeout(r, 600));
+        
+        window.location.href = 'contact-success.html';
+        
+      } catch (err) {
+        console.error(err);
+        alert("Failed to send message.");
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="send"></i> Send Message';
+        lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
