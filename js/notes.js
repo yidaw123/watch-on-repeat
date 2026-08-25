@@ -190,7 +190,7 @@ class NotesMixin {
     
     for (const vId in db) {
       if (vId === '__titles') continue;
-      const idx = db[vId].findIndex(n => n.id === id);
+      const idx = db[vId].findIndex(n => n.id && n.id.toString() === id.toString());
       if (idx !== -1) {
         targetVid = vId;
         targetNoteIndex = idx;
@@ -202,17 +202,75 @@ class NotesMixin {
     
     const note = db[targetVid][targetNoteIndex];
     
-    const newText = await app.showCustomPrompt({
-      title: 'Edit Note',
-      message: 'Update your note:',
-      defaultValue: note.text,
-      isTextArea: true,
-      okText: 'Save'
+    // Custom edit note modal
+    const modal = document.getElementById('edit-note-modal');
+    const timeInput = document.getElementById('edit-note-time');
+    const textInput = document.getElementById('edit-note-text');
+    const cancelBtn = document.getElementById('edit-note-cancel');
+    const okBtn = document.getElementById('edit-note-ok');
+    
+    if (!modal) {
+      // Fallback
+      const newText = await app.showCustomPrompt({
+        title: 'Edit Note',
+        message: 'Update your note:',
+        defaultValue: note.text,
+        isTextArea: true,
+        okText: 'Save'
+      });
+      if (newText !== null && newText.trim() !== '') {
+        note.text = newText.trim();
+        note.editedAt = Date.now();
+        this.saveDb('notes', db);
+        this.syncNotesToCloud(targetVid, db[targetVid]);
+        this.renderNotes();
+        this.showToast("Note updated", "check-circle");
+      }
+      return;
+    }
+    
+    timeInput.value = this.formatTime(note.time);
+    textInput.value = note.text;
+    
+    modal.classList.remove('hidden');
+    
+    const result = await new Promise((resolve) => {
+      const handleCancel = () => { cleanup(); resolve(null); };
+      const handleOk = () => { cleanup(); resolve({ time: timeInput.value, text: textInput.value }); };
+      
+      const cleanup = () => {
+        cancelBtn.removeEventListener('click', handleCancel);
+        okBtn.removeEventListener('click', handleOk);
+        modal.classList.add('hidden');
+      };
+      
+      cancelBtn.addEventListener('click', handleCancel);
+      okBtn.addEventListener('click', handleOk);
     });
     
-    if (newText !== null && newText.trim() !== '') {
-      note.text = newText.trim();
+    if (result && result.text.trim() !== '') {
+      note.text = result.text.trim();
       note.editedAt = Date.now();
+      
+      // Parse time
+      let newTime = note.time;
+      const tStr = result.time.trim();
+      if (tStr) {
+        if (tStr.includes(':')) {
+          const parts = tStr.split(':').map(Number);
+          if (parts.length === 2) newTime = parts[0] * 60 + parts[1];
+          else if (parts.length === 3) newTime = parts[0] * 3600 + parts[1] * 60 + parts[2];
+        } else if (!isNaN(tStr)) {
+          newTime = parseFloat(tStr);
+        }
+      }
+      
+      if (!isNaN(newTime) && newTime >= 0) {
+        note.time = Math.max(0, newTime); // ensure non-negative
+      }
+      
+      // Resort notes by time after edit
+      db[targetVid].sort((a, b) => a.time - b.time);
       
       this.saveDb('notes', db);
       this.syncNotesToCloud(targetVid, db[targetVid]);

@@ -1445,6 +1445,30 @@
     </div>
   </div>
 
+  <!-- Edit Note Modal -->
+  <div id="edit-note-modal" class="modal-overlay hidden" style="z-index: 10000;">
+    <div class="modal-card confirm-modal-card" style="max-width: 450px;">
+      <div class="confirm-modal-icon">
+        <i data-lucide="edit-3" style="color: var(--primary-color);"></i>
+      </div>
+      <div class="confirm-modal-content" style="text-align: left;">
+        <h2>Edit Note</h2>
+        
+        <div style="margin-top: 1.5rem; text-align: left;">
+          <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Timestamp (HH:MM:SS or Seconds)</label>
+          <input type="text" id="edit-note-time" class="auth-input" placeholder="e.g. 01:23 or 83">
+          
+          <label style="display: block; margin-bottom: 0.5rem; margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">Note Text</label>
+          <textarea id="edit-note-text" class="auth-input" rows="4" style="resize: vertical;"></textarea>
+        </div>
+      </div>
+      <div class="confirm-modal-actions">
+        <button id="edit-note-cancel" class="btn btn-outline" style="flex: 1;">Cancel</button>
+        <button id="edit-note-ok" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
 
   <!-- Info Modal -->
   <div class="modal-overlay hidden" id="info-modal" onclick="app.closeInfoModal()" style="z-index: 9999;">
@@ -1518,7 +1542,7 @@
   <script src="/js/audioDb.js"></script>
   <script src="/js/database.js?v=75"></script>
   <script src="/js/auth.js?v=75"></script>
-  <script src="/js/notes.js?v=75"></script>
+  <script src="/js/notes.js?v=76"></script>
   <script src="/js/playlists.js?v=75"></script>
   <script src="/js/loops.js?v=75"></script>
   <script src="/js/audioRecorder.js?v=75"></script>
