@@ -137,7 +137,7 @@
   }
   </script>
   
-  <link href="/style.css?v=11" rel="stylesheet" />
+  <link href="/style.css?v=12" rel="stylesheet" />
   <!-- Google Fonts: Outfit and Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="manifest" href="/manifest.json">
@@ -1119,9 +1119,13 @@
   </section>
 
     <!-- FAQ Section -->
-  <section class="faq-accordion">
-    <h2>Frequently Asked Questions</h2>
+  <section class="faq-accordion" id="main-faq-section">
+    <h2 class="faq-main-header" onclick="document.getElementById('main-faq-section').classList.toggle('mobile-expanded')">
+      Frequently Asked Questions
+      <i data-lucide="chevron-down" class="faq-main-chevron"></i>
+    </h2>
     
+    <div class="faq-items-wrapper">
     <div class="faq-item">
       <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
         How can I put a video on repeat?
@@ -1259,9 +1263,10 @@
       <div class="faq-answer">
         <p>No limit! You can leave a 10-hour ambient fireplace video looping for days if you want to.</p>
       </div>
+      </div>
     </div>
-</section>
-    </main>
+  </section>
+      </main>
 
     <!-- Right Gutter Ad Space -->
     <aside class="ad-slot ad-gutter ad-gutter-right" id="ad-gutter-right">

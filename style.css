@@ -2916,6 +2916,43 @@ input[type="checkbox"]:focus {
   margin-bottom: 24px;
   font-size: 1.5rem;
 }
+
+/* Mobile FAQ Wrapper */
+.faq-main-chevron {
+  display: none;
+}
+.faq-main-header {
+  cursor: default;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.faq-items-wrapper {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .faq-main-chevron {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    width: 24px;
+    height: 24px;
+  }
+  .faq-main-header {
+    cursor: pointer;
+    justify-content: space-between;
+  }
+  .faq-items-wrapper {
+    display: none;
+  }
+  .faq-accordion.mobile-expanded .faq-items-wrapper {
+    display: block;
+  }
+  .faq-accordion.mobile-expanded .faq-main-chevron {
+    transform: rotate(180deg);
+  }
+}
+
 .faq-item {
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--border-color);
