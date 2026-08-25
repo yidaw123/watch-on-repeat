@@ -29,8 +29,8 @@ class NotesMixin {
           localInstances[vId].updatedAt = new Date().toISOString();
           localStorage.setItem('wor_instances', JSON.stringify(localInstances));
           
-          if (typeof app !== 'undefined' && app.syncToSupabase) {
-            app.syncToSupabase('instances'); // Pushes the updated instance to the video_instances table
+          if (typeof app !== 'undefined' && app.pushToSupabase) {
+            app.pushToSupabase('instances', localInstances);
           }
         }
       } catch (e) {
@@ -188,12 +188,15 @@ class NotesMixin {
         this.syncNotesToCloud(vId, db[vId]);
         
         if (window.supabaseClient && this.state.user) {
-          window.supabaseClient.from('notes').delete()
-            .eq('id', noteId)
-            .eq('user_id', this.state.user.id)
-            .then(({ error }) => {
-              if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Failed to delete note from cloud:", error);
-            });
+          const isBaseVid = vId.includes('_') && ['youtube', 'vimeo', 'dailymotion', 'soundcloud', 'twitch', 'facebook', 'mixcloud', 'wistia'].includes(vId.split('_')[0]);
+          if (isBaseVid) {
+            window.supabaseClient.from('notes').delete()
+              .eq('id', noteId)
+              .eq('user_id', this.state.user.id)
+              .then(({ error }) => {
+                if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Failed to delete note from cloud:", error);
+              });
+          }
         }
         
         this.renderNotes();
@@ -319,13 +322,16 @@ class NotesMixin {
       this.syncNotesToCloud(vId, db[vId]);
       
       if (window.supabaseClient && this.state.user) {
-        const noteIds = notesToDelete.map(n => n.id);
-        window.supabaseClient.from('notes').delete()
-          .in('id', noteIds)
-          .eq('user_id', this.state.user.id)
-          .then(({ error }) => {
-            if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Failed to delete all notes from cloud:", error);
-          });
+        const isBaseVid = vId.includes('_') && ['youtube', 'vimeo', 'dailymotion', 'soundcloud', 'twitch', 'facebook', 'mixcloud', 'wistia'].includes(vId.split('_')[0]);
+        if (isBaseVid) {
+          const noteIds = notesToDelete.map(n => n.id);
+          window.supabaseClient.from('notes').delete()
+            .in('id', noteIds)
+            .eq('user_id', this.state.user.id)
+            .then(({ error }) => {
+              if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Failed to delete all notes from cloud:", error);
+            });
+        }
       }
       
       this.renderNotes();
@@ -597,6 +603,26 @@ class NotesMixin {
       delete db[vId];
       if (db.__titles && db.__titles[vId]) delete db.__titles[vId];
       this.saveDb('notes', db);
+      
+      // If vId is a session UUID, also clear notes from wor_instances and sync to cloud
+      const validPlatforms = ['youtube', 'vimeo', 'dailymotion', 'soundcloud', 'twitch', 'facebook', 'mixcloud', 'wistia'];
+      const isBaseVid = vId.includes('_') && validPlatforms.includes(vId.split('_')[0]);
+      if (!isBaseVid) {
+        try {
+          const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+          if (localInstances[vId] && localInstances[vId].settings) {
+            localInstances[vId].settings.notes = [];
+            localInstances[vId].updatedAt = new Date().toISOString();
+            localStorage.setItem('wor_instances', JSON.stringify(localInstances));
+            if (typeof app !== 'undefined' && app.pushToSupabase) {
+              app.pushToSupabase('instances', localInstances);
+            }
+          }
+        } catch (e) {
+          if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Failed to clear session notes from cloud:", e);
+        }
+      }
+      
       this.renderNotes();
       this.showToast("Notes cleared for video", "trash-2");
     }
