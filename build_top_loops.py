@@ -21,14 +21,14 @@ head_content = re.sub(r'<meta name="description" content=".*?">', '<meta name="d
 
 # Clean up header UI (we want the simple blog header)
 new_header = """
-    <header class="navbar" style="background: transparent; padding: 1rem 2rem;">
-      <a href="/" class="brand" style="text-decoration: none; display: flex; align-items: center; gap: 0.75rem;">
-        <img src="/logo.svg" alt="WatchOnRepeat Logo" style="width: 32px; height: 32px; object-fit: contain;">
-        <span class="brand-name" style="font-size: 1.25rem;">Watch<span>On</span>Repeat</span>
-      </a>
-      <div style="flex: 1;"></div>
-      <a href="/blog/" style="color: var(--text-secondary); text-decoration: none; margin-right: 1.5rem; font-weight: 500;">Blogs</a>
-      <a href="/" class="btn btn-primary" style="padding: 0.5rem 1.25rem; font-weight: 600; font-size: 0.9rem;">Launch App</a>
+    <header class="navbar">
+      <div class="navbar-top" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a href="/" class="brand" style="text-decoration: none; display: flex; align-items: center; gap: 0.75rem;">
+          <img src="/logo.svg" alt="WatchOnRepeat Logo" style="width: 32px; height: 32px; object-fit: contain;">
+          <span class="brand-name" style="font-size: 1.25rem;">Watch<span>On</span>Repeat</span>
+        </a>
+        <a href="/" class="btn btn-primary" style="padding: 0.5rem 1.25rem; font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap;">Launch App</a>
+      </div>
     </header>
 """
 head_content = re.sub(r'<header class="navbar.*?</header>', new_header, head_content, flags=re.DOTALL)
