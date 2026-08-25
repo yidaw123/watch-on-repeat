@@ -1,13 +1,18 @@
 import re
 
-with open('index.html', 'r', encoding='utf-8') as f:
+# We want to extract just the head/header and the footer.
+# But we don't want the left/right ad gutters from index.html for this page, we want it full width like the blog.
+# Actually, the cleanest way is to use the exact same template logic as the blog, which uses youtube-looper.html!
+
+with open('youtube-looper.html', 'r', encoding='utf-8') as f:
     html = f.read()
 
-# Extract head and footer
-head_split = html.find('<main class="main-container">')
+# Find split points (youtube-looper uses the simpler layout)
+head_split = html.find('</head>')
+main_split = html.find('<main class="main-content"')
 footer_split = html.find('<footer class="site-footer"')
 
-head_content = html[:head_split]
+head_content = html[:main_split]
 footer_content = html[footer_split:]
 
 # Replace title and description in head
@@ -44,11 +49,19 @@ main_content = """
     <i data-lucide="star" style="color: #f59e0b;"></i> Curated Examples
   </h2>
   
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; margin-bottom: 5rem;">
+  <style>
+    @media (min-width: 900px) {
+      .top-loops-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+    }
+  </style>
+  
+  <div class="top-loops-grid" style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 5rem;">
     
     <!-- 1. Guitar -->
-    <a href="/?v=rS1133n0B0U&p=youtube&start=120&end=145" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
-      <img src="https://img.youtube.com/vi/rS1133n0B0U/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="Guitar Tutorial Loop">
+    <a href="/?v=BBz-Jyr23M4&p=youtube&start=120&end=145" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
+      <img src="https://img.youtube.com/vi/BBz-Jyr23M4/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="Guitar Tutorial Loop">
       <div style="padding: 1.5rem;">
         <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
           <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">YouTube</span>
@@ -60,8 +73,8 @@ main_content = """
     </a>
 
     <!-- 2. Dance -->
-    <a href="/?v=V9W4lQ8Fq0U&p=youtube&start=45&end=60" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
-      <img src="https://img.youtube.com/vi/V9W4lQ8Fq0U/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="Dance Choreography Loop">
+    <a href="/?v=5_ovfAjVJAU&p=youtube&start=45&end=60" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
+      <img src="https://img.youtube.com/vi/5_ovfAjVJAU/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="Dance Choreography Loop">
       <div style="padding: 1.5rem;">
         <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
           <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">YouTube</span>
@@ -73,8 +86,8 @@ main_content = """
     </a>
 
     <!-- 3. English Learning -->
-    <a href="/?v=juKd26qkNAw&p=youtube&start=180&end=195" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
-      <img src="https://img.youtube.com/vi/juKd26qkNAw/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="English Pronunciation Loop">
+    <a href="/?v=9917PU7CPzg&p=youtube&start=180&end=195" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
+      <img src="https://img.youtube.com/vi/9917PU7CPzg/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="English Pronunciation Loop">
       <div style="padding: 1.5rem;">
         <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
           <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">YouTube</span>
@@ -116,8 +129,8 @@ main_content = """
     </a>
 
     <!-- 6. Coding -->
-    <a href="/?v=kqtD5dpn9C8&p=youtube&start=300&end=330" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
-      <img src="https://img.youtube.com/vi/kqtD5dpn9C8/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="Python Coding Tutorial Loop">
+    <a href="/?v=ix9cRaBkVe0&p=youtube&start=300&end=330" style="display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='none';">
+      <img src="https://img.youtube.com/vi/ix9cRaBkVe0/hqdefault.jpg" style="width: 100%; height: 200px; object-fit: cover;" alt="Python Coding Tutorial Loop">
       <div style="padding: 1.5rem;">
         <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
           <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">YouTube</span>
