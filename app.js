@@ -1163,7 +1163,19 @@ class WatchOnRepeat {
     localInstances[uuid] = instance;
     this.saveDb('instances', localInstances);
     
+    const isNewSession = !this.state.currentInstanceId;
     this.state.currentInstanceId = uuid;
+    
+    // If transitioning from base video to a new session, clone the notes locally so they don't disappear from UI
+    if (isNewSession) {
+      const notesDb = this.getDb('notes');
+      const baseKey = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+      if (notesDb[baseKey] && notesDb[baseKey].length > 0) {
+        notesDb[uuid] = JSON.parse(JSON.stringify(notesDb[baseKey]));
+        this.saveDb('notes', notesDb);
+        if (typeof this.renderNotes === 'function') this.renderNotes();
+      }
+    }
     
     // Update URL gracefully
     const url = new URL(window.location);

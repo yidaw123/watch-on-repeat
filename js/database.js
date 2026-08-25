@@ -103,6 +103,9 @@ class DatabaseMixin {
       const { data: instances } = await supabaseClient.from('video_instances').select('*').eq('user_id', this.state.user.id);
       if (instances) {
         const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+        const localNotes = JSON.parse(localStorage.getItem('wor_notes') || '{}');
+        let notesUpdated = false;
+        
         instances.forEach(inst => {
           localInstances[inst.id] = {
             id: inst.id,
@@ -114,8 +117,17 @@ class DatabaseMixin {
             createdAt: inst.created_at,
             updatedAt: inst.updated_at
           };
+          
+          // Seed local notes database with session notes so they appear in Active Notes summary
+          if (inst.settings && inst.settings.notes && Array.isArray(inst.settings.notes)) {
+             localNotes[inst.id] = inst.settings.notes;
+             notesUpdated = true;
+          }
         });
         localStorage.setItem('wor_instances', JSON.stringify(localInstances));
+        if (notesUpdated) {
+          localStorage.setItem('wor_notes', JSON.stringify(localNotes));
+        }
       }
 
       const { data: fullHistory } = await supabaseClient.from('user_history').select('*').eq('user_id', this.state.user.id);
