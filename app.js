@@ -1048,8 +1048,9 @@ class WatchOnRepeat {
       
       if (settings.notes && settings.notes.length > 0) {
         try {
-          const notesStr = btoa(encodeURIComponent(JSON.stringify(settings.notes)));
-          url.searchParams.set('n', notesStr);
+          const notesDb = JSON.parse(localStorage.getItem('wor_notes') || '{}');
+          notesDb[uuid] = settings.notes;
+          localStorage.setItem('wor_notes', JSON.stringify(notesDb));
         } catch(e){}
       }
       
@@ -1110,7 +1111,7 @@ class WatchOnRepeat {
       end: this.state.abLoop.end,
       playbackRate: this.state.playbackRate,
       multiSegments: this.state.abLoop.multiSegments || [],
-      notes: (this.getDb('notes')[`${this.state.currentPlatform}_${this.state.currentVideo.id}`] || [])
+      notes: (this.getDb('notes')[this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`] || [])
     };
     
     const customName = this.elements.loopNameInput ? this.elements.loopNameInput.value.trim() : "";

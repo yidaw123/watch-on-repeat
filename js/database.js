@@ -79,9 +79,17 @@ class DatabaseMixin {
             time: n.timestamp, timestamp: n.timestamp, timestampFormatted: n.timestamp_formatted
           });
         });
-        // Merge: cloud notes take priority, but preserve local __titles
+        // Merge: cloud notes take priority, but preserve local __titles AND session UUIDs
         const existingNotes = JSON.parse(localStorage.getItem('wor_notes') || '{}');
         if (existingNotes.__titles) cloudNotes.__titles = existingNotes.__titles;
+        
+        const validPlatforms = ['youtube', 'vimeo', 'dailymotion', 'soundcloud', 'twitch', 'facebook', 'mixcloud', 'wistia'];
+        for (const key of Object.keys(existingNotes)) {
+          if (key !== '__titles' && !validPlatforms.includes(key.split('_')[0])) {
+            cloudNotes[key] = existingNotes[key]; // Preserve session notes
+          }
+        }
+        
         localStorage.setItem('wor_notes', JSON.stringify(cloudNotes));
       }
       // If notes is empty/null, do NOT overwrite local notes — they may just not have synced yet
@@ -184,10 +192,13 @@ class DatabaseMixin {
         }
       } else if (key === 'notes') {
           const userNotes = [];
+          const validPlatforms = ['youtube', 'vimeo', 'dailymotion', 'soundcloud', 'twitch', 'facebook', 'mixcloud', 'wistia'];
           for (const vId in data) {
              if (vId === '__titles') continue;
+             const parts = vId.split('_');
+             if (!validPlatforms.includes(parts[0])) continue; // Skip session UUIDs, they sync via video_instances
+             
              data[vId].forEach(n => {
-               const parts = vId.split('_');
                if (!n.userId || n.userId === this.state.user.id) {
                  userNotes.push({
                    id: n.id, user_id: this.state.user.id, video_id: parts.slice(1).join('_'), platform: parts[0],

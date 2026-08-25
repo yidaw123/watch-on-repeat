@@ -2,20 +2,41 @@ class NotesMixin {
   syncNotesToCloud(vId, notesArray) {
     if (!this.state.user || !window.supabaseClient || !this.state.currentVideo) return;
     
-    // vId is formatted as platform_videoId, but we need raw videoId and platform for user_history
-    const platform = this.state.currentPlatform;
-    const videoId = this.state.currentVideo.id;
+    // Check if vId is a base video (e.g. youtube_abc123) or a session UUID
+    const isBaseVideo = vId.includes('_') && ['youtube', 'vimeo', 'dailymotion', 'soundcloud', 'twitch', 'facebook', 'mixcloud', 'wistia'].includes(vId.split('_')[0]);
     
-    supabaseClient.from('user_history').upsert({
-      user_id: this.state.user.id,
-      video_id: videoId,
-      platform: platform,
-      title: this.state.currentVideo.title || '',
-      notes_data: notesArray,
-      last_played: new Date().toISOString()
-    }, { onConflict: 'user_id, video_id, platform' }).then(({ error }) => {
-      if (error && DEBUG_MODE) console.error("Notes Data Sync Error:", error);
-    });
+    if (isBaseVideo) {
+      const platform = this.state.currentPlatform;
+      const videoId = this.state.currentVideo.id;
+      
+      supabaseClient.from('user_history').upsert({
+        user_id: this.state.user.id,
+        video_id: videoId,
+        platform: platform,
+        title: this.state.currentVideo.title || '',
+        notes_data: notesArray,
+        last_played: new Date().toISOString()
+      }, { onConflict: 'user_id, video_id, platform' }).then(({ error }) => {
+        if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Notes Data Sync Error:", error);
+      });
+    } else {
+      // It's a session UUID! We need to update the session in wor_instances and trigger a cloud sync for instances.
+      try {
+        const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+        if (localInstances[vId]) {
+          if (!localInstances[vId].settings) localInstances[vId].settings = {};
+          localInstances[vId].settings.notes = notesArray;
+          localInstances[vId].updatedAt = new Date().toISOString();
+          localStorage.setItem('wor_instances', JSON.stringify(localInstances));
+          
+          if (typeof app !== 'undefined' && app.syncToSupabase) {
+            app.syncToSupabase('instances'); // Pushes the updated instance to the video_instances table
+          }
+        }
+      } catch (e) {
+        if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error("Failed to sync session notes:", e);
+      }
+    }
   }
 
   async addNote(isManual = false) {
