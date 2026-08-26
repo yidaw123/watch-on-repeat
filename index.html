@@ -548,7 +548,7 @@
           <!-- Sidebar Tabs Header -->
           <div class="sidebar-tabs">
             <button class="tab-btn active" id="tab-up-next-btn" onclick="app.showTab('up-next')">
-              <i data-lucide="list"></i> <span id="up-next-tab-label">Example Loops</span>
+              <i data-lucide="list"></i> <span id="up-next-tab-label">Most Looped</span>
             </button>
             <button class="tab-btn" id="tab-favorites-btn" onclick="app.showTab('favorites')">
               <i data-lucide="heart"></i> Favorites
@@ -916,7 +916,7 @@
             <!-- Up Next Tab -->
             <div id="tab-up-next" class="tab-panel active">
               <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <h3 id="up-next-header-label" style="margin-left: 12px; margin-bottom: 0;">Example Loops</h3>
+                <h3 id="up-next-header-label" style="margin-left: 12px; margin-bottom: 0;">Most Looped</h3>
                 <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted);">
                   <button id="prev-video-btn" class="btn-icon" aria-label="Previous Video" onclick="app.playPreviousVideo()" title="Previous Video" style="display: none; padding: 4px;">
                     <i data-lucide="skip-back" style="width: 16px; height: 16px;"></i>
@@ -1550,7 +1550,7 @@
   <script src="/js/playlists.js?v=75"></script>
   <script src="/js/loops.js?v=75"></script>
   <script src="/js/audioRecorder.js?v=75"></script>
-  <script src="/app.js?v=89"></script>
+  <script src="/app.js?v=90"></script>
   <!-- Share Modal -->
   <div class="modal-overlay hidden" id="share-modal" onclick="app.closeShareModal()" style="z-index: 9999;">
     <div class="modal-card" style="max-width: 450px; padding: 24px; text-align: left;" onclick="event.stopPropagation()">
