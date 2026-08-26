@@ -350,6 +350,31 @@ h1, h2, h3, h4, .brand-name {
   stroke: currentColor;
 }
 
+.btn-icon-action {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-icon-action:hover {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+  color: #c084fc;
+}
+
+.btn-icon-action i {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
 
 .btn-outline {
   background: transparent;

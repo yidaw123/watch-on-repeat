@@ -6268,7 +6268,7 @@ class WatchOnRepeat {
               <span style="font-size: 12px; color: #888; font-family: monospace;">${this.formatTime(seg.start)} - ${this.formatTime(seg.end)}</span>
             </div>
             <div style="display: flex; gap: 4px;">
-              <button type="button" class="btn-icon-delete" style="color: var(--text-muted);" onclick="event.preventDefault(); event.stopPropagation(); app.renameSavedLoop('${seg.id}')" title="Rename this loop"><i data-lucide="edit-3"></i></button>
+              <button type="button" class="btn-icon-action" onclick="event.preventDefault(); event.stopPropagation(); app.renameSavedLoop('${seg.id}')" title="Rename this loop"><i data-lucide="edit-3"></i></button>
               <button type="button" class="btn-icon-delete" onclick="event.preventDefault(); event.stopPropagation(); app.deleteSavedLoops('${seg.id}', true)" title="Delete this loop"><i data-lucide="trash-2"></i></button>
             </div>
           </div>
@@ -6441,9 +6441,9 @@ class WatchOnRepeat {
                 </div>
               </div>
             </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <button class="btn-icon-delete" style="color: var(--text-muted);" onclick="app.renameSavedSession('${sess.id}')" title="Rename Session"><i data-lucide="edit-3"></i></button>
-              <button class="btn btn-secondary btn-sm" onclick="app.shareSavedSession('${sess.id}')" title="Share Session"><i data-lucide="link"></i></button>
+            <div style="display: flex; gap: 8px; align-items: center; margin-left: 12px; flex-shrink: 0;">
+              <button class="btn-icon-action" onclick="app.renameSavedSession('${sess.id}')" title="Rename Session"><i data-lucide="edit-3"></i></button>
+              <button class="btn-icon-action" onclick="app.shareSavedSession('${sess.id}')" title="Share Session"><i data-lucide="link"></i></button>
               <button class="btn-icon-delete" onclick="app.deleteSavedSession('${sess.id}')" title="Delete Session"><i data-lucide="trash-2"></i></button>
             </div>
           </div>
