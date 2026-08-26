@@ -1077,7 +1077,112 @@ class WatchOnRepeat {
     }
   }
 
-  async saveInstance() {
+    updateCurrentSession() {
+    this.saveInstance(false);
+  }
+
+  saveAsNewSession() {
+    this.saveInstance(true);
+  }
+
+  isForeignSession() {
+    if (!this.state.currentInstanceId) return false;
+    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    const activeInstance = localInstances[this.state.currentInstanceId];
+    const myUserId = this.state.user ? this.state.user.id : 'guest';
+    if (activeInstance && activeInstance.userId && activeInstance.userId !== myUserId) {
+      return true;
+    }
+    return false;
+  }
+
+  startBlankSession() {
+    this.state.currentInstanceId = null;
+    this.state.abLoop.start = 0;
+    this.state.abLoop.end = this.state.currentVideoDuration || 0;
+    this.state.abLoop.multiSegments = [];
+    this.state.isMultiSegment = false;
+    if (this.elements.multiSegmentCheckbox) this.elements.multiSegmentCheckbox.checked = false;
+    this.setPlaybackSpeed(1, true);
+    if (this.elements.loopNameInput) this.elements.loopNameInput.value = sessionTitle;
+    
+    // Clear notes UI for this blank session
+    const notesArea = document.getElementById('session-notes');
+    if (notesArea) notesArea.value = '';
+    
+    this.updateSessionButtonsUI();
+    this.showToast("Started a new blank session", "file-plus");
+    this.renderMultiSegments();
+    this.updateLoopVisuals();
+  }
+
+  updateSessionButtonsUI() {
+    const updateBtn = document.getElementById('update-session-btn');
+    const saveNewBtn = document.getElementById('save-new-session-btn');
+    const newBlankBtn = document.getElementById('new-blank-session-btn');
+    
+    if (this.state.currentInstanceId && !this.state.isReadOnlyShared && !this.isForeignSession()) {
+      if (updateBtn) updateBtn.style.display = 'inline-flex';
+      if (newBlankBtn) newBlankBtn.style.display = 'inline-flex';
+    } else {
+      if (updateBtn) updateBtn.style.display = 'none';
+      // Only show new blank if we have segments to clear, otherwise it's already blank
+      if (newBlankBtn) newBlankBtn.style.display = (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) ? 'inline-flex' : 'none';
+    }
+    
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  async autoLoadLatestSession(videoId, platform) {
+    let latestInstanceId = null;
+    let latestTitle = null;
+
+    if (this.state.user && window.supabaseClient) {
+      const { data, error } = await supabaseClient.from('video_instances')
+        .select('id, video_title, created_at')
+        .eq('video_id', videoId)
+        .eq('platform', platform)
+        .eq('user_id', this.state.user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data && !error) {
+        latestInstanceId = data.id;
+        latestTitle = data.video_title;
+      }
+    }
+
+    if (!latestInstanceId) {
+      const myUserId = this.state.user ? this.state.user.id : 'guest';
+      const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+      let latestLocal = null;
+      for (const key in localInstances) {
+        const inst = localInstances[key];
+        if (inst.videoId === videoId && inst.platform === platform && inst.userId === myUserId) {
+          if (!latestLocal) {
+            latestLocal = inst;
+          } else {
+            latestLocal = inst;
+          }
+        }
+      }
+      if (latestLocal) {
+        latestInstanceId = latestLocal.id;
+        latestTitle = latestLocal.title;
+      }
+    }
+
+    if (latestInstanceId) {
+      this.state.isLoadingInstance = true;
+      await this.loadInstance(latestInstanceId);
+      this.state.isLoadingInstance = false;
+      this.showToast(\`Auto-loaded your latest session: \${latestTitle}\`, 'refresh-cw');
+    } else {
+      this.updateSessionButtonsUI();
+    }
+  }
+
+  async saveInstance(forceNewSession = false) {
     if (!this.state.currentVideo) {
       this.showToast("No video loaded", "alert-circle");
       return;
@@ -1088,18 +1193,10 @@ class WatchOnRepeat {
     }
     
     // Check if the current session belongs to someone else
-    let isForeignSession = false;
-    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
-    if (this.state.currentInstanceId) {
-      const activeInstance = localInstances[this.state.currentInstanceId];
-      const myUserId = this.state.user ? this.state.user.id : 'guest';
-      if (activeInstance && activeInstance.userId && activeInstance.userId !== myUserId) {
-        isForeignSession = true;
-      }
-    }
+    let isForeignSession = this.isForeignSession();
     
     // Check subscription limits if creating a new session
-    if (!this.state.currentInstanceId || isForeignSession) {
+    if (!this.state.currentInstanceId || isForeignSession || forceNewSession) {
       const userTier = this.getUserTier();
       const userId = this.state.user ? this.state.user.id : 'guest';
       const userInstancesCount = Object.values(localInstances).filter(i => i.userId === userId).length;
@@ -1121,7 +1218,7 @@ class WatchOnRepeat {
     }
     
     // Generate UUID if we don't have one, or if cloning a foreign session
-    const uuid = (!this.state.currentInstanceId || isForeignSession) ? ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const uuid = (!this.state.currentInstanceId || isForeignSession || forceNewSession) ? ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     })) : this.state.currentInstanceId;
@@ -1205,9 +1302,11 @@ class WatchOnRepeat {
     url.search = `?instance=${uuid}`;
     window.history.replaceState({}, '', url);
     
-    if (this.elements.loopNameInput) this.elements.loopNameInput.value = '';
+    if (this.elements.loopNameInput) this.elements.loopNameInput.value = sessionTitle;
     
     this.showToast(`Session "${sessionTitle}" saved successfully`, "check-circle");
+    this.state.currentInstanceId = uuid;
+    this.updateSessionButtonsUI();
     
     if (this.state.activeTab === 'analytics') this.renderAnalyticsTab();
     if (this.state.activeTab === 'saved-loops') this.renderSavedLoopsTab();
@@ -1774,6 +1873,10 @@ class WatchOnRepeat {
       this.state.isReadOnlyShared = false;
       this.state.currentInstanceId = null;
       this.state.isViewingSharedSegments = false;
+    }
+    
+    if (!this.state.currentInstanceId && !this.state.isViewingSharedSegments && !this.state.isLoadingInstance && platform !== 'local') {
+      await this.autoLoadLatestSession(id, platform);
     }
     
     if (platform === 'local') {
