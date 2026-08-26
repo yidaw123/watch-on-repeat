@@ -980,8 +980,8 @@ class WatchOnRepeat {
     // Explicitly set sidebar to "Most Looped" on empty state
     const tabLabel = document.getElementById('up-next-tab-label');
     const headerLabel = document.getElementById('up-next-header-label');
-    if (tabLabel) tabLabel.textContent = 'Most Looped';
-    if (headerLabel) headerLabel.textContent = 'Most Looped';
+    if (tabLabel) tabLabel.textContent = 'Example Loops';
+    if (headerLabel) headerLabel.textContent = 'Example Loops';
     
     // Clean up playlist state and UI so it doesn't persist over the discover tab
     this.state.playlistQueue = [];
@@ -3625,8 +3625,8 @@ class WatchOnRepeat {
     
     // Ensure we are showing suggested loops if no playlist
     if (list) list.style.display = 'flex';
-    if (tabLabel) tabLabel.textContent = 'Most Looped';
-    if (headerLabel) headerLabel.textContent = 'Most Looped';
+    if (tabLabel) tabLabel.textContent = 'Example Loops';
+    if (headerLabel) headerLabel.textContent = 'Example Loops';
     
     // Clean up playlist container if it exists
     const playlistContainer = document.getElementById('playlist-queue-container');
@@ -3712,11 +3712,12 @@ class WatchOnRepeat {
       ];
 
       if (window.supabaseClient) {
-        const { data } = await supabaseClient.from('global_stats')
+        const { data } = await supabaseClient.from('video_instances')
           .select('*')
           .neq('platform', 'local')
-          .order('global_loops', { ascending: false })
-          .limit(20);
+          .eq('settings->>isPublic', 'true')
+          .order('created_at', { ascending: false })
+          .limit(50);
         
         if (data && data.length > 0) {
           // Shuffle and pick 10
@@ -3734,7 +3735,7 @@ class WatchOnRepeat {
               videoId: d.video_id,
               platform: d.platform,
               title: title,
-              globalLoops: d.global_loops
+              instanceId: d.id
             };
           });
           discoverVideos = await Promise.all(fetchPromises);
@@ -4043,7 +4044,11 @@ class WatchOnRepeat {
     card.style.color = 'inherit';
     
     const vidId = video.videoId || video.id;
-    card.href = `${window.location.pathname}?v=${encodeURIComponent(vidId)}&p=${encodeURIComponent(video.platform)}`;
+    if (video.instanceId) {
+      card.href = `/?instance=${video.instanceId}`;
+    } else {
+      card.href = `${window.location.pathname}?v=${encodeURIComponent(vidId)}&p=${encodeURIComponent(video.platform)}`;
+    }
     
     // Resolve thumbnail
     let thumbUrl = video.thumbnail || this.getThumbnailUrl(video.platform, video.videoId || video.id);
@@ -4148,11 +4153,15 @@ class WatchOnRepeat {
       e.preventDefault();
       const vidId = video.videoId || video.id;
       
-      // Update URL
-      const newUrl = `${window.location.pathname}?v=${vidId}&p=${video.platform}`;
-      window.history.pushState({ v: vidId, p: video.platform }, '', newUrl);
-      
-      this.loadVideo(vidId, video.platform);
+      if (video.instanceId) {
+        const newUrl = `/?instance=${video.instanceId}`;
+        window.history.pushState({ instance: video.instanceId }, '', newUrl);
+        this.loadInstance(video.instanceId);
+      } else {
+        const newUrl = `${window.location.pathname}?v=${vidId}&p=${video.platform}`;
+        window.history.pushState({ v: vidId, p: video.platform }, '', newUrl);
+        this.loadVideo(vidId, video.platform);
+      }
     });
 
     return card;
