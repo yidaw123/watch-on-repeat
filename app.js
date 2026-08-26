@@ -1176,7 +1176,7 @@ class WatchOnRepeat {
       this.state.isLoadingInstance = true;
       await this.loadInstance(latestInstanceId);
       this.state.isLoadingInstance = false;
-      this.showToast(\`Auto-loaded your latest session: \${latestTitle}\`, 'refresh-cw');
+      this.showToast(`Auto-loaded your latest session: ${latestTitle}`, 'refresh-cw');
     } else {
       this.updateSessionButtonsUI();
     }
