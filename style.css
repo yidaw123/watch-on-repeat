@@ -739,16 +739,14 @@ h1, h2, h3, h4, .brand-name {
 
 /* Stats Dashboard */
 .stats-dashboard {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   margin-top: 1.5rem;
 }
 
 .stat-card {
-  flex: 1 1 250px;
-  max-width: 320px;
+
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--radius-md);
@@ -1369,6 +1367,7 @@ h1, h2, h3, h4, .brand-name {
   
   .stats-dashboard {
     order: 3;
+    grid-template-columns: repeat(2, 1fr);
   }
   
   #up-next-section {
