@@ -152,6 +152,10 @@ h1, h2, h3, h4, .brand-name {
   width: 100%;
 }
 
+.navbar-top > .btn-primary {
+  order: 99;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -1374,6 +1378,9 @@ h1, h2, h3, h4, .brand-name {
   .navbar-top {
     flex-wrap: wrap;
   }
+  .navbar-top > .btn-primary {
+    order: 99;
+  }
   .brand {
     order: 1;
   }
@@ -1409,6 +1416,10 @@ h1, h2, h3, h4, .brand-name {
     .navbar-top {
       flex-wrap: wrap;
       gap: 0.5rem;
+    }
+    
+    .navbar-top > .btn-primary {
+      order: 99;
     }
     
     .video-wrapper {
