@@ -258,14 +258,14 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     try {
-      // Fetch 20 most recent public instances
+      // Fetch 50 most recent public instances and pick 10 randomly
       const { data, error } = await supabaseClient
         .from('video_instances')
         .select('*')
         .neq('platform', 'local') // Exclude local files since they can't be shared
         .eq('settings->>isPublic', 'true') // Only show explicitly public sessions
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(50);
 
       if (error) throw error;
       
@@ -276,7 +276,11 @@
 
       feedContainer.innerHTML = ''; // Clear loading state
       
-      data.forEach(instance => {
+      // Shuffle and pick 10
+      let shuffledData = data.sort(() => 0.5 - Math.random());
+      let selectedData = shuffledData.slice(0, 10);
+      
+      selectedData.forEach(instance => {
         const date = new Date(instance.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
         
         let thumbUrl = '';

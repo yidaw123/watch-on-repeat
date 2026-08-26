@@ -3712,12 +3712,11 @@ class WatchOnRepeat {
       ];
 
       if (window.supabaseClient) {
-        const { data } = await supabaseClient.from('video_instances')
+        const { data } = await supabaseClient.from('global_stats')
           .select('*')
           .neq('platform', 'local')
-          .eq('settings->>isPublic', 'true')
-          .order('created_at', { ascending: false })
-          .limit(50);
+          .order('global_loops', { ascending: false })
+          .limit(20);
         
         if (data && data.length > 0) {
           // Shuffle and pick 10
@@ -3735,7 +3734,7 @@ class WatchOnRepeat {
               videoId: d.video_id,
               platform: d.platform,
               title: title,
-              instanceId: d.id
+              globalLoops: d.global_loops
             };
           });
           discoverVideos = await Promise.all(fetchPromises);
@@ -4044,11 +4043,7 @@ class WatchOnRepeat {
     card.style.color = 'inherit';
     
     const vidId = video.videoId || video.id;
-    if (video.instanceId) {
-      card.href = `/?instance=${video.instanceId}`;
-    } else {
-      card.href = `${window.location.pathname}?v=${encodeURIComponent(vidId)}&p=${encodeURIComponent(video.platform)}`;
-    }
+    card.href = `${window.location.pathname}?v=${encodeURIComponent(vidId)}&p=${encodeURIComponent(video.platform)}`;
     
     // Resolve thumbnail
     let thumbUrl = video.thumbnail || this.getThumbnailUrl(video.platform, video.videoId || video.id);
@@ -4153,15 +4148,11 @@ class WatchOnRepeat {
       e.preventDefault();
       const vidId = video.videoId || video.id;
       
-      if (video.instanceId) {
-        const newUrl = `/?instance=${video.instanceId}`;
-        window.history.pushState({ instance: video.instanceId }, '', newUrl);
-        this.loadInstance(video.instanceId);
-      } else {
-        const newUrl = `${window.location.pathname}?v=${vidId}&p=${video.platform}`;
-        window.history.pushState({ v: vidId, p: video.platform }, '', newUrl);
-        this.loadVideo(vidId, video.platform);
-      }
+      // Update URL
+      const newUrl = `${window.location.pathname}?v=${vidId}&p=${video.platform}`;
+      window.history.pushState({ v: vidId, p: video.platform }, '', newUrl);
+      
+      this.loadVideo(vidId, video.platform);
     });
 
     return card;
