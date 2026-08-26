@@ -955,6 +955,7 @@ class WatchOnRepeat {
   loadHome() {
     this.state.currentVideo = null;
     this.state.currentPlatform = null;
+    this.state.currentInstanceId = null;
     this.stopTimer();
     
     document.title = "WatchOnRepeat | Loop YouTube Videos & Practice Tool";
@@ -1017,7 +1018,8 @@ class WatchOnRepeat {
             videoId: data.video_id,
             platform: data.platform,
             title: data.video_title,
-            settings: data.settings
+            settings: data.settings,
+            userId: data.user_id
           };
           localInstances[uuid] = instance;
           localStorage.setItem('wor_instances', JSON.stringify(localInstances));
@@ -1077,9 +1079,19 @@ class WatchOnRepeat {
       return;
     }
     
-    // Check subscription limits if creating a new session
+    // Check if the current session belongs to someone else
+    let isForeignSession = false;
     const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
-    if (!this.state.currentInstanceId) {
+    if (this.state.currentInstanceId) {
+      const activeInstance = localInstances[this.state.currentInstanceId];
+      const myUserId = this.state.user ? this.state.user.id : 'guest';
+      if (activeInstance && activeInstance.userId && activeInstance.userId !== myUserId) {
+        isForeignSession = true;
+      }
+    }
+    
+    // Check subscription limits if creating a new session
+    if (!this.state.currentInstanceId || isForeignSession) {
       const userTier = this.getUserTier();
       const userId = this.state.user ? this.state.user.id : 'guest';
       const userInstancesCount = Object.values(localInstances).filter(i => i.userId === userId).length;
@@ -1100,11 +1112,11 @@ class WatchOnRepeat {
       }
     }
     
-    // Generate UUID if we don't have one
-    const uuid = this.state.currentInstanceId || ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    // Generate UUID if we don't have one, or if cloning a foreign session
+    const uuid = (!this.state.currentInstanceId || isForeignSession) ? ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
-    }));
+    })) : this.state.currentInstanceId;
     
     const settings = {
       start: this.state.abLoop.start,
@@ -1163,15 +1175,17 @@ class WatchOnRepeat {
     localInstances[uuid] = instance;
     this.saveDb('instances', localInstances);
     
-    const isNewSession = !this.state.currentInstanceId;
+    const prevInstanceId = this.state.currentInstanceId;
+    const isNewSession = (!this.state.currentInstanceId || this.state.currentInstanceId !== uuid);
     this.state.currentInstanceId = uuid;
     
-    // If transitioning from base video to a new session, clone the notes locally so they don't disappear from UI
+    // If transitioning from base video or foreign session to a new session, clone the notes locally so they don't disappear from UI
     if (isNewSession) {
       const notesDb = this.getDb('notes');
-      const baseKey = `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
-      if (notesDb[baseKey] && notesDb[baseKey].length > 0) {
-        notesDb[uuid] = JSON.parse(JSON.stringify(notesDb[baseKey]));
+      // If we had a previous session UUID, clone its notes. Otherwise clone the base video notes.
+      const sourceKey = prevInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`;
+      if (notesDb[sourceKey] && notesDb[sourceKey].length > 0) {
+        notesDb[uuid] = JSON.parse(JSON.stringify(notesDb[sourceKey]));
         this.saveDb('notes', notesDb);
         if (typeof this.renderNotes === 'function') this.renderNotes();
       }
@@ -1745,6 +1759,7 @@ class WatchOnRepeat {
 
     if (this.state.currentVideo && (this.state.currentVideo.id !== id || this.state.currentVideo.platform !== platform)) {
       this.state.isReadOnlyShared = false;
+      this.state.currentInstanceId = null;
     }
     
     if (platform === 'local') {
