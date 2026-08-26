@@ -389,7 +389,7 @@ class NotesMixin {
             <div style="color: var(--primary-color); font-weight: 500; font-size: 14px;">Viewing Shared Notes</div>
             <div style="color: var(--text-muted); font-size: 12px;">This is a temporary view.</div>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="app.saveSharedNotes()">Save & Override</button>
+          <button class="btn btn-primary btn-sm" onclick="app.saveSharedNotes()">Save & Overwrite session</button>
         </div>
       `;
       this.elements.notesList.appendChild(saveBtnContainer);
