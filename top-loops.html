@@ -263,6 +263,7 @@
         .from('video_instances')
         .select('*')
         .neq('platform', 'local') // Exclude local files since they can't be shared
+        .eq('settings->>isPublic', 'true') // Only show explicitly public sessions
         .order('created_at', { ascending: false })
         .limit(20);
 

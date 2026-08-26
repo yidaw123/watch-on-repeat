@@ -958,6 +958,10 @@ class WatchOnRepeat {
     this.state.currentInstanceId = null;
     this.stopTimer();
     
+    if (document.getElementById('is-public-session')) {
+      document.getElementById('is-public-session').checked = false;
+    }
+    
     document.title = "WatchOnRepeat | Loop YouTube Videos & Practice Tool";
 
     // Show the playerEmpty state overlay
@@ -1033,6 +1037,10 @@ class WatchOnRepeat {
       }
       
       const settings = instance.settings || {};
+      
+      if (document.getElementById('is-public-session')) {
+        document.getElementById('is-public-session').checked = !!settings.isPublic;
+      }
       
       // Inject settings into URL params silently so loadVideo picks them up
       const url = new URL(window.location);
@@ -1123,7 +1131,8 @@ class WatchOnRepeat {
       end: this.state.abLoop.end,
       playbackRate: this.state.playbackRate,
       multiSegments: this.state.abLoop.multiSegments || [],
-      notes: (this.getDb('notes')[this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`] || [])
+      notes: (this.getDb('notes')[this.state.currentInstanceId || `${this.state.currentPlatform}_${this.state.currentVideo.id}`] || []),
+      isPublic: document.getElementById('is-public-session') ? document.getElementById('is-public-session').checked : false
     };
     
     const customName = this.elements.loopNameInput ? this.elements.loopNameInput.value.trim() : "";
@@ -1312,6 +1321,10 @@ class WatchOnRepeat {
     try {
       const url = this.elements.videoInput.value;
       const parsed = this.parseVideoUrl(url);
+
+      if (document.getElementById('is-public-session')) {
+        document.getElementById('is-public-session').checked = false;
+      }
 
       if (parsed) {
         this.elements.videoInput.value = '';
