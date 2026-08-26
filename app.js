@@ -977,7 +977,7 @@ class WatchOnRepeat {
     if (this.elements.platformBadge) this.elements.platformBadge.innerHTML = '';
     if (this.elements.videoTitle) this.elements.videoTitle.textContent = "Ready to Loop";
     
-    // Explicitly set sidebar to "Most Looped" on empty state
+    // Explicitly set sidebar to "Example Loops" on empty state
     const tabLabel = document.getElementById('up-next-tab-label');
     const headerLabel = document.getElementById('up-next-header-label');
     if (tabLabel) tabLabel.textContent = 'Example Loops';
