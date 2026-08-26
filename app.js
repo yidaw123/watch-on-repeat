@@ -1773,6 +1773,7 @@ class WatchOnRepeat {
     if (this.state.currentVideo && (this.state.currentVideo.id !== id || this.state.currentVideo.platform !== platform)) {
       this.state.isReadOnlyShared = false;
       this.state.currentInstanceId = null;
+      this.state.isViewingSharedSegments = false;
     }
     
     if (platform === 'local') {
@@ -2290,12 +2291,7 @@ class WatchOnRepeat {
       this.renderMultiSegments();
     }
     
-    const overrideBtn = document.getElementById('save-override-btn');
-    if (this.state.isViewingSharedSegments) {
-      if (overrideBtn) overrideBtn.classList.remove('hidden');
-    } else {
-      if (overrideBtn) overrideBtn.classList.add('hidden');
-    }
+    // Override button has been removed to reduce confusion with Save Session
 
     // Re-save to clean up any corrupted data in localStorage ONLY if we aren't viewing a shared read-only link
     if (!this.state.isReadOnlyShared && (data || this.state.abLoop.multiSegments.length > 0)) {
