@@ -1070,6 +1070,13 @@ class WatchOnRepeat {
       window.history.replaceState({}, '', url);
       this.handleRouting(); // Re-trigger with injected parameters
       
+      // Reset read-only state since this is the user's own session, not a shared link
+      this.state.isReadOnlyShared = false;
+      
+      // Populate session name input and update button visibility
+      if (this.elements.loopNameInput) this.elements.loopNameInput.value = instance.title || '';
+      this.updateSessionButtonsUI();
+      
     } catch (e) {
       if (DEBUG_MODE) console.error("Error loading instance", e);
       this.showToast("Failed to load instance", "alert-circle");
@@ -1104,13 +1111,19 @@ class WatchOnRepeat {
     this.state.isMultiSegment = false;
     if (this.elements.multiSegmentCheckbox) this.elements.multiSegmentCheckbox.checked = false;
     this.setPlaybackSpeed(1, true);
-    if (this.elements.loopNameInput) this.elements.loopNameInput.value = sessionTitle;
+    if (this.elements.loopNameInput) this.elements.loopNameInput.value = '';
     
     // Clear notes UI for this blank session
     const notesArea = document.getElementById('session-notes');
     if (notesArea) notesArea.value = '';
     
     this.updateSessionButtonsUI();
+    
+    // Clean URL so reload doesn't restore the old session
+    const url = new URL(window.location);
+    url.searchParams.delete('instance');
+    window.history.replaceState({}, '', url);
+    
     this.showToast("Started a new blank session", "file-plus");
     this.renderMultiSegments();
     this.updateLoopVisuals();
@@ -1121,11 +1134,20 @@ class WatchOnRepeat {
     const saveNewBtn = document.getElementById('save-new-session-btn');
     const newBlankBtn = document.getElementById('new-blank-session-btn');
     
-    if (this.state.currentInstanceId && !this.state.isReadOnlyShared && !this.isForeignSession()) {
+    // Hide all save buttons for read-only shared links
+    if (this.state.isReadOnlyShared) {
+      if (updateBtn) updateBtn.style.display = 'none';
+      if (saveNewBtn) saveNewBtn.style.display = 'none';
+      if (newBlankBtn) newBlankBtn.style.display = 'none';
+    } else if (this.state.currentInstanceId && !this.isForeignSession()) {
+      // User owns this session: show Overwrite + New Blank
       if (updateBtn) updateBtn.style.display = 'inline-flex';
       if (newBlankBtn) newBlankBtn.style.display = 'inline-flex';
+      if (saveNewBtn) saveNewBtn.style.display = 'inline-flex';
     } else {
+      // No session loaded or foreign session: only Save New
       if (updateBtn) updateBtn.style.display = 'none';
+      if (saveNewBtn) saveNewBtn.style.display = 'inline-flex';
       // Only show new blank if we have segments to clear, otherwise it's already blank
       if (newBlankBtn) newBlankBtn.style.display = (this.state.abLoop.multiSegments && this.state.abLoop.multiSegments.length > 0) ? 'inline-flex' : 'none';
     }
@@ -1194,7 +1216,7 @@ class WatchOnRepeat {
     
     // Check if the current session belongs to someone else
     let isForeignSession = this.isForeignSession();
-    
+    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
     // Check subscription limits if creating a new session
     if (!this.state.currentInstanceId || isForeignSession || forceNewSession) {
       const userTier = this.getUserTier();
@@ -1871,7 +1893,9 @@ class WatchOnRepeat {
 
     if (this.state.currentVideo && (this.state.currentVideo.id !== id || this.state.currentVideo.platform !== platform)) {
       this.state.isReadOnlyShared = false;
-      this.state.currentInstanceId = null;
+      if (!this.state.isLoadingInstance) {
+        this.state.currentInstanceId = null;
+      }
       this.state.isViewingSharedSegments = false;
     }
     
@@ -6632,6 +6656,17 @@ class WatchOnRepeat {
       }
       
       this.showToast("Session deleted", "trash-2");
+      
+      // If we just deleted the currently active session, detach it
+      if (this.state.currentInstanceId === sessionId) {
+        this.state.currentInstanceId = null;
+        if (this.elements.loopNameInput) this.elements.loopNameInput.value = '';
+        const url = new URL(window.location);
+        url.searchParams.delete('instance');
+        window.history.replaceState({}, '', url);
+        this.updateSessionButtonsUI();
+      }
+      
       this.renderSavedSessionsTab();
     }
   }
