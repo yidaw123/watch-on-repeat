@@ -973,6 +973,9 @@ class WatchOnRepeat {
     this.destroyPlayers();
     this.elements.playerContainer.innerHTML = '';
     
+    // Reset loop settings to blank
+    this.startBlankSession(true);
+    
     // Reset title and stats for empty state
     if (this.elements.platformBadge) this.elements.platformBadge.innerHTML = '';
     if (this.elements.videoTitle) this.elements.videoTitle.textContent = "Ready to Loop";
@@ -1103,7 +1106,7 @@ class WatchOnRepeat {
     return false;
   }
 
-  startBlankSession() {
+  startBlankSession(skipToast = false) {
     this.state.currentInstanceId = null;
     this.state.abLoop.start = 0;
     this.state.abLoop.end = this.state.currentVideoDuration || 0;
@@ -1124,7 +1127,7 @@ class WatchOnRepeat {
     url.searchParams.delete('instance');
     window.history.replaceState({}, '', url);
     
-    this.showToast("Session reset to defaults", "rotate-ccw");
+    if (!skipToast) this.showToast("Session reset to defaults", "rotate-ccw");
     this.renderMultiSegments();
     this.updateLoopVisuals();
   }
