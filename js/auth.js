@@ -235,6 +235,8 @@ class AuthMixin {
     }
 
     if (signUpData.user) {
+      if (typeof gtag === 'function') gtag('event', 'sign_up', { method: 'email' });
+      
       try {
         const { error: insertErr } = await supabaseClient.from('users').insert({
           id: signUpData.user.id,

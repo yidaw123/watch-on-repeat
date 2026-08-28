@@ -1326,6 +1326,8 @@ class WatchOnRepeat {
     
     if (this.elements.loopNameInput) this.elements.loopNameInput.value = sessionTitle;
     
+    if (typeof gtag === 'function') gtag('event', 'save_session');
+    
     this.showToast(`Session "${sessionTitle}" saved successfully`, "check-circle");
     this.state.currentInstanceId = uuid;
     this.updateSessionButtonsUI();
@@ -5623,8 +5625,11 @@ class WatchOnRepeat {
       this.showToast("Load a video first", "alert-circle");
       return;
     }
+    
+    if (typeof gtag === 'function') gtag('event', 'share_clip');
 
     if (this.state.currentInstanceId) {
+      
       const shareUrl = `${window.location.href.split('?')[0]}?instance=${this.state.currentInstanceId}`;
       const menu = document.getElementById('share-modal');
       const input = document.getElementById('share-link-input');
