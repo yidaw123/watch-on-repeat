@@ -137,7 +137,7 @@
   }
   </script>
   
-  <link href="/style.css?v=17" rel="stylesheet" />
+  <link href="/style.css?v=18" rel="stylesheet" />
   <!-- Google Fonts: Outfit and Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="manifest" href="/manifest.json">
@@ -528,19 +528,6 @@
         </div>
 
 
-        <div id="discover-section" class="player-card" style="margin-top: 1.5rem;">
-
-          
-          <!-- Bookmark Shortcut -->
-          <div class="bookmarklet-box" style="margin-top: 2rem;">
-            <h4><i data-lucide="bookmark"></i> WatchOnRepeat Bookmark</h4>
-            <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Twitch, Facebook, Dailymotion, Vimeo, Mixcloud, Loom, Wistia, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
-            <a id="bookmarklet-btn" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;" title="WatchOnRepeat">
-              <i data-lucide="repeat"></i>
-              <span>WatchOnRepeat</span>
-            </a>
-          </div>
-        </div>
 
       </section>
 
@@ -1055,6 +1042,18 @@
 
         </div>
       </aside>
+
+      <!-- Bookmark Shortcut (Moved to span full width) -->
+      <div id="discover-section" class="player-card" style="grid-column: 1 / -1; margin-top: 0;">
+        <div class="bookmarklet-box" style="margin-top: 0;">
+          <h4><i data-lucide="bookmark"></i> WatchOnRepeat Bookmark</h4>
+          <p>Drag the button below to your bookmarks bar. Click it while watching any video on YouTube, Twitch, Facebook, Dailymotion, Vimeo, Mixcloud, Loom, Wistia, and many other supported sites to immediately open and loop it in WatchOnRepeat!</p>
+          <a id="bookmarklet-btn" href="#" class="btn btn-secondary bookmarklet-draggable" onclick="return false;" title="WatchOnRepeat">
+            <i data-lucide="repeat"></i>
+            <span>WatchOnRepeat</span>
+          </a>
+        </div>
+      </div>
 
       <!-- Stats Dashboard at the very bottom -->
       <div id="stats-dashboard-container" style="width: 100%; order: 99;">
