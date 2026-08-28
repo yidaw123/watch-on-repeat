@@ -864,7 +864,8 @@ h1, h2, h3, h4, .brand-name {
 .sidebar-column {
   display: flex;
   flex-direction: column;
-  align-self: start;
+  align-self: flex-start;
+  height: fit-content;
 }
 
 .sidebar-card {
@@ -875,7 +876,6 @@ h1, h2, h3, h4, .brand-name {
   grid-template-rows: auto minmax(0, 1fr);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  flex: 1;
 }
 
 /* Sidebar Tabs */
