@@ -1124,7 +1124,7 @@ class WatchOnRepeat {
     url.searchParams.delete('instance');
     window.history.replaceState({}, '', url);
     
-    this.showToast("Started a new blank session", "file-plus");
+    this.showToast("Session reset to defaults", "rotate-ccw");
     this.renderMultiSegments();
     this.updateLoopVisuals();
   }
