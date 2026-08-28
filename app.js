@@ -1750,7 +1750,7 @@ class WatchOnRepeat {
     }
     
     // Pagination
-    const itemsPerPage = 10;
+    const itemsPerPage = 5;
     const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
     let currentPage = this.state.playlistPage || 1;
     if (currentPage > totalPages) currentPage = totalPages;
@@ -1852,7 +1852,7 @@ class WatchOnRepeat {
   
   setPlaylistPage(page) {
     if (isNaN(page)) return;
-    const itemsPerPage = 10;
+    const itemsPerPage = 5;
     const query = (this.state.playlistSearchQuery || '').toLowerCase();
     const totalItems = query ? 
       this.state.playlistQueue.filter(v => v.title.toLowerCase().includes(query)).length : 
@@ -3801,7 +3801,7 @@ class WatchOnRepeat {
     }
 
     let suggestions = this.state.discoverData.filter(v => (v.videoId || v.id) !== currentVideoId);
-    suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 10);
+    suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 5);
 
     if (suggestions.length === 0) {
       return;
@@ -3846,7 +3846,7 @@ class WatchOnRepeat {
         if (data && data.length > 0) {
           // Shuffle and pick 10
           let shuffledData = data.sort(() => 0.5 - Math.random());
-          let selectedData = shuffledData.slice(0, 10);
+          let selectedData = shuffledData.slice(0, 5);
           
           const fetchPromises = selectedData.map(async (d) => {
             let title = d.video_title;
@@ -3959,7 +3959,7 @@ class WatchOnRepeat {
       
       const historyDb = this.getDb('history').filter(h => h.userId === this.state.user.id);
       
-      const itemsPerPage = 10;
+      const itemsPerPage = 5;
       let currentPage = this.state.pagination.favorites;
       const totalPages = Math.ceil(favorites.length / itemsPerPage) || 1;
       if (currentPage > totalPages) {
@@ -4097,7 +4097,7 @@ class WatchOnRepeat {
       this.elements.historyList.innerHTML = '';
       this.elements.historyList.classList.remove('hidden');
       
-      const itemsPerPage = 10;
+      const itemsPerPage = 5;
       let currentPage = this.state.pagination.history;
       const totalPages = Math.ceil(history.length / itemsPerPage) || 1;
       if (currentPage > totalPages) {
@@ -4149,7 +4149,7 @@ class WatchOnRepeat {
 
     this.elements.trendsList.innerHTML = '';
     
-    trends.slice(0, 10).forEach((t, index) => {
+    trends.slice(0, 5).forEach((t, index) => {
       const card = this.createVideoCard(t, false, index + 1);
       this.elements.trendsList.appendChild(card);
     });
