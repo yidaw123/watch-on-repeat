@@ -864,7 +864,7 @@ h1, h2, h3, h4, .brand-name {
 .sidebar-column {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  align-self: start;
 }
 
 .sidebar-card {
