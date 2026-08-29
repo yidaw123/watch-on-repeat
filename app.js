@@ -492,6 +492,7 @@ class WatchOnRepeat {
     if (this.state.currentVideo) {
       this.addToHistory(this.state.currentVideo.id, this.state.currentVideo.platform, this.state.currentVideo.title);
       this.updateFavoriteButtonUI();
+      this.updatePlaylistButtonUI();
       this.updateStatsUI();
     }
   }
@@ -975,6 +976,7 @@ class WatchOnRepeat {
     
     // Reset loop settings to blank
     this.startBlankSession(true);
+    this.updatePlaylistButtonUI();
     
     // Reset title and stats for empty state
     if (this.elements.platformBadge) this.elements.platformBadge.innerHTML = '';
@@ -2121,6 +2123,7 @@ class WatchOnRepeat {
     this.updatePlatformBadge(platform);
     this.updateStatsUI();
     this.updateFavoriteButtonUI();
+    this.updatePlaylistButtonUI();
     
     // Load Player based on Platform
     if (platform === 'youtube') {
@@ -3618,6 +3621,34 @@ class WatchOnRepeat {
     } else {
       this.elements.favoriteBtn.classList.remove('active');
       if (svg) svg.setAttribute('fill', 'none');
+    }
+  }
+
+  updatePlaylistButtonUI() {
+    const video = this.state.currentVideo;
+    const btn = document.getElementById('add-playlist-btn');
+    if (!btn) return;
+    
+    let inAnyPlaylist = false;
+    if (video && this.state.user) {
+      const playlists = this.getDb('playlists').filter(p => p.userId === this.state.user.id);
+      inAnyPlaylist = playlists.some(p => p.videos && p.videos.some(v => v.videoId === video.id && v.platform === video.platform));
+    }
+    
+    let checkIcon = btn.querySelector('.in-playlist-check');
+    if (inAnyPlaylist) {
+      if (!checkIcon) {
+        checkIcon = document.createElement('div');
+        checkIcon.className = 'in-playlist-check';
+        checkIcon.style = 'position: absolute; bottom: 0px; right: -2px; background: #10b981; color: white; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--surface); z-index: 2; pointer-events: none;';
+        checkIcon.innerHTML = '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        btn.style.position = 'relative';
+        btn.appendChild(checkIcon);
+      }
+    } else {
+      if (checkIcon) {
+        checkIcon.remove();
+      }
     }
   }
 

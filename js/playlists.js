@@ -384,6 +384,7 @@ class PlaylistsMixin {
     p.videos = p.videos.filter(v => (v.videoId || v.id) !== videoId);
     p.updatedAt = new Date().toISOString();
     this.saveDb('playlists', playlists);
+    if (typeof this.updatePlaylistButtonUI === 'function') this.updatePlaylistButtonUI();
     this.renderPlaylistsTab();
     this.showToast("Video removed from playlist", "check");
   }
@@ -562,10 +563,13 @@ class PlaylistsMixin {
       list.innerHTML = '<p class="text-sm text-gray-400">You don\'t have any playlists yet. Create one in the Playlists tab.</p>';
     } else {
       playlists.forEach(p => {
+        const isAdded = p.videos && p.videos.some(v => v.videoId === this.state.currentVideo.id && v.platform === this.state.currentVideo.platform);
+        const checkIcon = isAdded ? `<i data-lucide="check" class="text-green-500" style="margin-left: 6px; width: 14px; height: 14px; color: #10b981;"></i>` : '';
+        
         const btn = document.createElement('button');
         btn.className = 'btn btn-outline';
         btn.style.justifyContent = 'flex-start';
-        btn.innerHTML = `<i data-lucide="list"></i> <span style="flex: 1; text-align: left;">${this.escapeHtml(p.name)}</span> <span class="text-xs text-gray-500 ml-auto">${p.videos ? p.videos.length : 0} vids</span>`;
+        btn.innerHTML = `<i data-lucide="list"></i> <span style="flex: 1; text-align: left; display: flex; align-items: center;">${this.escapeHtml(p.name)}${checkIcon}</span> <span class="text-xs text-gray-500 ml-auto">${p.videos ? p.videos.length : 0} vids</span>`;
         btn.onclick = () => this.addVideoToPlaylist(p.id);
         list.appendChild(btn);
       });
@@ -661,6 +665,7 @@ class PlaylistsMixin {
       playlist.videos.push(videoObj);
       playlist.updatedAt = new Date().toISOString();
       this.saveDb('playlists', playlists);
+      if (typeof this.updatePlaylistButtonUI === 'function') this.updatePlaylistButtonUI();
       this.showToast(`Added to ${this.escapeHtml(playlist.name)}!`, 'check');
     } else {
       this.showToast(`Already in ${this.escapeHtml(playlist.name)}!`, 'info');

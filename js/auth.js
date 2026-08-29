@@ -303,7 +303,8 @@ class AuthMixin {
     this.showToast("Signed out successfully.");
     
     if (this.state.currentVideo) {
-      this.updateFavoriteButtonUI();
+      if (typeof this.updateFavoriteButtonUI === 'function') this.updateFavoriteButtonUI();
+      if (typeof this.updatePlaylistButtonUI === 'function') this.updatePlaylistButtonUI();
       this.updateStatsUI();
     }
     
