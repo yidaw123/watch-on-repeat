@@ -526,13 +526,10 @@ class LoopsMixin {
     });
     if (!confirmed) return;
     
-    // Reset multi-segments and exit advanced mode
+    // Reset multi-segments to a single empty segment (leaves advanced toggle ON)
     this.state.abLoop.multiSegments = [];
+    this.state.abLoop.multiSegments.push({ start: null, end: null, speed: this.state.playbackRate || 1.0 });
     this.state.abLoop.currentSegmentIndex = 0;
-    this.state.isMultiSegment = false;
-    
-    const checkbox = document.getElementById('multi-segment-checkbox');
-    if (checkbox) checkbox.checked = false;
     
     // Restore global playback speed if it was overridden by a segment
     if (typeof this.setPlaybackSpeed === 'function') {
