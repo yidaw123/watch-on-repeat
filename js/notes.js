@@ -563,7 +563,7 @@ class NotesMixin {
         sessionsHtml += `
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; margin-top: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
             <div style="flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); ${loadCall}; window.scrollTo({top: 0, behavior: 'smooth'}); }">
-              <i data-lucide="${sess.isBase ? 'video' : 'layers'}" style="width: 14px; height: 14px; color: var(--primary-color);"></i>
+              <i data-lucide="layers" style="width: 14px; height: 14px; color: var(--primary-color);"></i>
               <span style="font-size: 13px; color: #ddd; font-weight: 500;">${this.escapeHtml(sess.name)}</span>
               <span style="font-size: 11px; color: var(--text-muted); margin-left: 8px;">(${sess.count} note${sess.count !== 1 ? 's' : ''})</span>
             </div>
