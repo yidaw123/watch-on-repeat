@@ -519,19 +519,32 @@ class LoopsMixin {
 
   async deleteAllSegments() {
     const confirmed = await window.app.showCustomConfirm({
-      title: 'Delete All Segments',
-      message: 'Are you sure you want to delete all segments?',
+      title: 'Reset Video Settings',
+      message: 'Are you sure you want to reset all loops, segments, and speed settings? Your notes will NOT be deleted.',
       isDestructive: true,
-      okText: 'Delete All'
+      okText: 'Reset Settings'
     });
     if (!confirmed) return;
+    
+    // Reset multi-segments
     this.state.abLoop.multiSegments = [];
-    this.state.abLoop.multiSegments.push({ start: null, end: null, speed: this.state.playbackRate || 1.0 });
+    this.state.isMultiSegment = false;
+    
+    // Reset basic A/B loop
+    this.state.abLoop.start = 0;
+    this.state.abLoop.end = this.state.currentVideoDuration || 0;
+    this.state.abLoop.active = false;
     this.state.abLoop.currentSegmentIndex = 0;
+    
+    // Reset speed
+    if (typeof this.setPlaybackSpeed === 'function') {
+      this.setPlaybackSpeed(1, true);
+    }
+    
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
     if (this.renderMultiSegments) this.renderMultiSegments();
-    if (this.showToast) this.showToast("All segments deleted.", "trash-2");
+    if (this.showToast) this.showToast("Video settings reset to default (Notes kept).", "refresh-cw");
   }
 
   setSegmentSpeed(speed, index) {
