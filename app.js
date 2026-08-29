@@ -3849,7 +3849,7 @@ class WatchOnRepeat {
         if (data && data.length > 0) {
           // Shuffle and pick 10
           let shuffledData = data.sort(() => 0.5 - Math.random());
-          let selectedData = shuffledData.slice(0, 10);
+          let selectedData = shuffledData.slice(0, 11);
           
           const fetchPromises = selectedData.map(async (d) => {
             let title = d.video_title;
@@ -3877,7 +3877,7 @@ class WatchOnRepeat {
     
     discoverList.innerHTML = '';
 
-    const itemsPerPage = 10;
+    const itemsPerPage = 11;
     const totalPages = Math.ceil(this.state.discoverData.length / itemsPerPage);
     const startIdx = (page - 1) * itemsPerPage;
     const paginatedData = this.state.discoverData.slice(startIdx, startIdx + itemsPerPage);
