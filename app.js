@@ -3804,7 +3804,7 @@ class WatchOnRepeat {
     }
 
     let suggestions = this.state.discoverData.filter(v => (v.videoId || v.id) !== currentVideoId);
-    suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 10);
+    suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 11);
 
     if (suggestions.length === 0) {
       return;
