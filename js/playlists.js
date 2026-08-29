@@ -661,14 +661,20 @@ class PlaylistsMixin {
       addedAt: Date.now()
     };
     
-    if (!playlist.videos.find(v => v.videoId === videoObj.videoId && v.platform === videoObj.platform)) {
+    const existingIndex = playlist.videos.findIndex(v => v.videoId === videoObj.videoId && v.platform === videoObj.platform);
+    
+    if (existingIndex === -1) {
       playlist.videos.push(videoObj);
       playlist.updatedAt = new Date().toISOString();
       this.saveDb('playlists', playlists);
       if (typeof this.updatePlaylistButtonUI === 'function') this.updatePlaylistButtonUI();
       this.showToast(`Added to ${this.escapeHtml(playlist.name)}!`, 'check');
     } else {
-      this.showToast(`Already in ${this.escapeHtml(playlist.name)}!`, 'info');
+      playlist.videos.splice(existingIndex, 1);
+      playlist.updatedAt = new Date().toISOString();
+      this.saveDb('playlists', playlists);
+      if (typeof this.updatePlaylistButtonUI === 'function') this.updatePlaylistButtonUI();
+      this.showToast(`Removed from ${this.escapeHtml(playlist.name)}`, 'trash-2');
     }
     
     this.closePlaylistModal();
