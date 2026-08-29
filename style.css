@@ -3130,6 +3130,10 @@ body.theater-mode .player-card {
   padding: 1rem 2rem;
 }
 
+body.theater-mode #main-pro-controls {
+  align-self: center !important;
+}
+
 body.theater-mode .sidebar-column {
   width: 100%;
   max-width: 1450px;
