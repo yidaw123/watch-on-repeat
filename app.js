@@ -3423,8 +3423,46 @@ class WatchOnRepeat {
     }
   }
 
-  trackPlaybackProgress() {
+  async trackPlaybackProgress() {
     if (!this.state.currentVideo || !this.state.isPlaying) return;
+    
+    // Consume pending resume time immediately on first tick of playback
+    if (this.state.pendingResumeTime) {
+      const t = this.state.pendingResumeTime;
+      this.state.pendingResumeTime = null;
+      
+      // Ensure we don't jump outside an active A-B loop
+      let shouldResume = true;
+      if (this.state.abLoop && this.state.abLoop.active) {
+         if (t < (this.state.abLoop.start || 0) || (this.state.abLoop.end && t > this.state.abLoop.end)) {
+            shouldResume = false;
+         }
+      }
+      
+      if (shouldResume) {
+        this.seekToTime(t);
+        this.showToast("Resumed from where you left off", "clock");
+        return; // wait until next tick to start saving new time
+      }
+    }
+    
+    // Only save progress every 5 seconds
+    if (this.state.loopSeconds % 5 !== 0) return;
+    
+    try {
+      const t = await this.getCurrentTime();
+      if (t > 0 && this.state.currentVideoDuration > 0) {
+        const progressDb = this.getDb('playback_progress');
+        progressDb[this.state.currentVideo.id] = {
+          t: t,
+          d: this.state.currentVideoDuration,
+          ts: Date.now()
+        };
+        this.saveDb('playback_progress', progressDb);
+      }
+    } catch (e) {
+      if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.warn("Failed to track playback progress:", e);
+    }
   }
 
   // ==========================================
