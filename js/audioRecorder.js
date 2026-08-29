@@ -521,8 +521,22 @@ class AudioRecorderMixin {
       grouped[key].recordings.push(rec);
     });
     
+    const videoGroups = Object.values(grouped);
+    
+    const itemsPerPage = 5;
+    let currentPage = this.state.pagination ? this.state.pagination.recordedAudio : 1;
+    if (!currentPage) currentPage = 1;
+    
+    const totalPages = Math.ceil(videoGroups.length / itemsPerPage) || 1;
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+      if (this.state.pagination) this.state.pagination.recordedAudio = currentPage;
+    }
+    
+    const paginatedGroups = videoGroups.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    
     let html = '';
-    Object.values(grouped).forEach(group => {
+    paginatedGroups.forEach(group => {
       html += `
         <div style="display: flex; flex-direction: column; background: var(--surface-color); border: 1px solid #333; border-radius: 8px; overflow: hidden; margin-bottom: 8px;">
           <a href="${window.location.pathname}?v=${encodeURIComponent(group.videoId)}&p=${encodeURIComponent(group.platform)}" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333; cursor: pointer; text-decoration: none; color: inherit;" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); app.loadVideo('${group.videoId}', '${group.platform}'); }">
@@ -579,6 +593,14 @@ class AudioRecorderMixin {
     });
     
     container.innerHTML = html;
+    
+    if (app && typeof app.renderPaginationControls === 'function') {
+      const paginationControls = app.renderPaginationControls('recordedAudio', videoGroups.length, itemsPerPage, currentPage, () => this.renderRecordedAudioTab());
+      if (paginationControls) {
+        container.appendChild(paginationControls);
+      }
+    }
+    
     if (window.lucide) window.lucide.createIcons();
   }
 

@@ -262,7 +262,8 @@ class WatchOnRepeat {
         history: 1,
         savedSessions: 1,
         savedLoops: 1,
-        savedNotes: 1
+        savedNotes: 1,
+        recordedAudio: 1
       }
     };
 
@@ -6882,7 +6883,7 @@ class WatchOnRepeat {
     }
     this.elements.analyticsEmpty.classList.add('hidden');
     
-    segments.slice(0, 10).forEach(seg => {
+    segments.slice(0, 6).forEach(seg => {
       const mStart = Math.floor(seg.start / 60).toString().padStart(2, '0');
       const sStart = Math.floor(seg.start % 60).toString().padStart(2, '0');
       const mEnd = Math.floor(seg.end / 60).toString().padStart(2, '0');
