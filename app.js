@@ -3547,10 +3547,17 @@ class WatchOnRepeat {
 
   toggleTheaterMode() {
     this.state.isTheaterMode = !this.state.isTheaterMode;
+    const btn = document.getElementById('theater-mode-btn');
+    const svg = btn ? btn.querySelector('svg') : null;
+
     if (this.state.isTheaterMode) {
       document.body.classList.add('theater-mode');
+      if (btn) btn.classList.add('active');
+      if (svg) svg.setAttribute('fill', 'currentColor');
     } else {
       document.body.classList.remove('theater-mode');
+      if (btn) btn.classList.remove('active');
+      if (svg) svg.setAttribute('fill', 'none');
     }
     
     // Optionally trigger a resize event to help the player readjust
