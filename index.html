@@ -812,11 +812,8 @@
                 <div class="active-notes-section" style="padding-top: 0;">
                   <!-- Bulk Actions Toolbar -->
                   <div id="saved-loops-bulk-actions" class="hidden" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
-                      <div class="toggle-switch">
-                        <input type="checkbox" id="saved-loops-select-all" onchange="app.toggleSelectAllSavedLoops(event)">
-                        <span class="toggle-slider"></span>
-                      </div>
+                    <label class="toggle-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+                      <input type="checkbox" id="saved-loops-select-all" class="checkbox" onchange="app.toggleSelectAllSavedLoops(event)" style="cursor: pointer; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.3); width: 18px; height: 18px; accent-color: var(--primary-color);">
                       <span style="font-size: 13px; font-weight: bold;">Select All</span>
                     </label>
                     <button class="btn btn-error btn-sm hidden" id="saved-loops-bulk-delete-btn" onclick="app.deleteSelectedSavedLoops()"><i data-lucide="trash-2"></i> Delete Selected</button>
@@ -1549,7 +1546,7 @@
   <script src="/js/playlists.js?v=77"></script>
   <script src="/js/loops.js?v=78"></script>
   <script src="/js/audioRecorder.js?v=76"></script>
-  <script src="/app.js?v=105"></script>
+  <script src="/app.js?v=106"></script>
   <!-- Share Modal -->
   <div class="modal-overlay hidden" id="share-modal" onclick="app.closeShareModal()" style="z-index: 9999;">
     <div class="modal-card" style="max-width: 450px; padding: 24px; text-align: left;" onclick="event.stopPropagation()">

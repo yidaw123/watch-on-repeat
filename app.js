@@ -6476,16 +6476,24 @@ class WatchOnRepeat {
       `;
       
       let segmentsHtml = '';
-      videoGroup.segments.sort((a, b) => a.start - b.start).forEach(seg => {
+      
+      // Sort by creation time (savedAt) instead of timestamp (start)
+      videoGroup.segments.sort((a, b) => (a.savedAt || 0) - (b.savedAt || 0));
+      
+      videoGroup.segments.forEach((seg, idx) => {
         const urlParams = `?v=${encodeURIComponent(seg.videoId)}&p=${seg.platform}&start=${seg.start}&end=${seg.end}`;
+        
+        // Format default names if they match the auto-generated Title (Part X) pattern
+        let displayName = seg.name || 'Unnamed Loop';
+        if (displayName === videoGroup.title || displayName.startsWith(videoGroup.title + ' (Part ')) {
+           displayName = `Loop ${idx + 1}`;
+        }
+        
         segmentsHtml += `
           <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="toggle-switch">
-              <input type="checkbox" class="saved-loop-item-checkbox" data-video-id="${videoGroup.platform}_${videoGroup.videoId}" value="${seg.id}" onchange="app.checkSavedLoopSelection()" style="cursor: pointer;">
-              <span class="toggle-slider"></span>
-            </div>
+            <input type="checkbox" class="checkbox saved-loop-item-checkbox" data-video-id="${videoGroup.platform}_${videoGroup.videoId}" value="${seg.id}" onchange="app.checkSavedLoopSelection()" style="cursor: pointer; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.3); width: 18px; height: 18px; accent-color: var(--primary-color);">
             <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; color: white; transition: background 0.2s; cursor: pointer;" onclick="history.pushState(null, '', '${urlParams}'); app.handleRouting();" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
-              <span style="font-weight: 500; font-size: 13px;">${this.escapeHtml(seg.name || 'Unnamed Loop')}</span>
+              <span style="font-weight: 500; font-size: 13px;">${this.escapeHtml(displayName)}</span>
               <span style="font-size: 12px; color: #888; font-family: monospace;">${this.formatTime(seg.start)} - ${this.formatTime(seg.end)}</span>
             </div>
             <div style="display: flex; gap: 4px;">
