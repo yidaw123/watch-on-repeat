@@ -3226,6 +3226,11 @@ class WatchOnRepeat {
     const analyticsDb = this.getDb('analytics');
     analyticsDb.totalLoops = (analyticsDb.totalLoops || 0) + 1;
     this.saveDb('analytics', analyticsDb);
+    
+    // Track this specific segment for the "Most Practiced Segments" chart
+    if (typeof this.trackABSegment === 'function') {
+      this.trackABSegment();
+    }
 
     // Optimistic UI updates
     this.state.currentGlobalLoops++;
