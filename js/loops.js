@@ -519,32 +519,30 @@ class LoopsMixin {
 
   async deleteAllSegments() {
     const confirmed = await window.app.showCustomConfirm({
-      title: 'Reset Video Settings',
-      message: 'Are you sure you want to reset all loops, segments, and speed settings? Your notes will NOT be deleted.',
+      title: 'Delete Advanced Segments',
+      message: 'Are you sure you want to delete all advanced segments and revert to basic controls?',
       isDestructive: true,
-      okText: 'Reset Settings'
+      okText: 'Delete All'
     });
     if (!confirmed) return;
     
-    // Reset multi-segments
+    // Reset multi-segments and exit advanced mode
     this.state.abLoop.multiSegments = [];
+    this.state.abLoop.currentSegmentIndex = 0;
     this.state.isMultiSegment = false;
     
-    // Reset basic A/B loop
-    this.state.abLoop.start = 0;
-    this.state.abLoop.end = this.state.currentVideoDuration || 0;
-    this.state.abLoop.active = false;
-    this.state.abLoop.currentSegmentIndex = 0;
+    const checkbox = document.getElementById('multi-segment-checkbox');
+    if (checkbox) checkbox.checked = false;
     
-    // Reset speed
+    // Restore global playback speed if it was overridden by a segment
     if (typeof this.setPlaybackSpeed === 'function') {
-      this.setPlaybackSpeed(1, true);
+      this.setPlaybackSpeed(this.state.playbackRate || 1, true);
     }
     
     this.saveLoopData();
     if (this.updateTimelineUI) this.updateTimelineUI();
     if (this.renderMultiSegments) this.renderMultiSegments();
-    if (this.showToast) this.showToast("Video settings reset to default (Notes kept).", "refresh-cw");
+    if (this.showToast) this.showToast("Advanced segments deleted.", "trash-2");
   }
 
   setSegmentSpeed(speed, index) {
