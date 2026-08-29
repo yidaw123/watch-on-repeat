@@ -429,6 +429,13 @@ h1, h2, h3, h4, .brand-name {
   box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
 }
 
+.btn-icon.active.purple {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: var(--color-purple);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
 /* User Profile Nav */
 .user-profile {
   display: flex;

@@ -3591,11 +3591,11 @@ class WatchOnRepeat {
 
     if (this.state.isTheaterMode) {
       document.body.classList.add('theater-mode');
-      if (btn) btn.classList.add('active');
+      if (btn) btn.classList.add('active', 'purple');
       if (svg) svg.setAttribute('fill', 'currentColor');
     } else {
       document.body.classList.remove('theater-mode');
-      if (btn) btn.classList.remove('active');
+      if (btn) btn.classList.remove('active', 'purple');
       if (svg) svg.setAttribute('fill', 'none');
     }
     
