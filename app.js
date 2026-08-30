@@ -3803,6 +3803,20 @@ class WatchOnRepeat {
   }
 
   showTab(tabId) {
+    // If clicking the already active tab, reset its pagination to page 1
+    if (this.state.activeTab === tabId && this.state.pagination) {
+      let pageKey = tabId;
+      if (tabId === 'saved-loops') pageKey = 'savedLoops';
+      else if (tabId === 'saved-sessions') pageKey = 'savedSessions';
+      else if (tabId === 'recorded-audio') pageKey = 'recordedAudio';
+      
+      if (this.state.pagination[pageKey] !== undefined) {
+        this.state.pagination[pageKey] = 1;
+      } else {
+        this.state.pagination[pageKey] = 1;
+      }
+    }
+
     this.switchTab(tabId);
     // Open user dropdown if menu is open
     if (this.elements.userMenu) {
