@@ -1284,12 +1284,14 @@ class WatchOnRepeat {
           start: seg.start,
           end: seg.end,
           name: finalName,
+          isCustom: customName ? true : false,
           loops: 0,
           savedAt: Date.now(),
           editedAt: Date.now()
         };
       } else if (finalName) {
         analyticsDb.segments[key].name = finalName;
+        analyticsDb.segments[key].isCustom = true;
         analyticsDb.segments[key].editedAt = Date.now();
       }
     });
@@ -6380,12 +6382,14 @@ class WatchOnRepeat {
           start: seg.start,
           end: seg.end,
           name: finalName,
+          isCustom: true,
           loops: 0,
           savedAt: Date.now(),
           editedAt: Date.now()
         };
       } else {
         db.segments[key].name = finalName;
+        db.segments[key].isCustom = true;
         db.segments[key].editedAt = Date.now();
       }
     });
@@ -6496,9 +6500,11 @@ class WatchOnRepeat {
       videoGroup.segments.sort((a, b) => (a.savedAt || 0) - (b.savedAt || 0));
       videoGroup.segments.forEach((seg, idx) => {
         let displayName = seg.name || 'Unnamed Loop';
-        let baseName = displayName.replace(/\s*\(Part \d+\)$/, '').trim();
-        if (baseName === videoGroup.title || (baseName.length > 10 && videoGroup.title.includes(baseName)) || (videoGroup.title.length > 10 && baseName.includes(videoGroup.title)) || displayName === 'Unnamed Loop') {
-           displayName = `Loop ${idx + 1}`;
+        if (!seg.isCustom) {
+          let baseName = displayName.replace(/\s*\(Part \d+\)$/, '').trim();
+          if (baseName === videoGroup.title || (baseName.length > 10 && videoGroup.title.includes(baseName)) || (videoGroup.title.length > 10 && baseName.includes(videoGroup.title)) || displayName === 'Unnamed Loop') {
+             displayName = `Loop ${idx + 1}`;
+          }
         }
         seg._computedName = displayName;
       });
@@ -6600,6 +6606,7 @@ class WatchOnRepeat {
     
     if (newName !== null && newName.trim() !== '') {
       seg.name = newName.trim();
+      seg.isCustom = true;
       this.saveDb('analytics', db);
       this.renderSavedLoopsTab();
       this.showToast("Saved loop renamed", "check-circle");
