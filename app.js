@@ -805,18 +805,25 @@ class WatchOnRepeat {
     if (!videoId && path.length > 1 && path !== '/index.html') {
       const parts = path.split('/').filter(Boolean);
       
+      const whitelist = ['music-practice', 'language-learning', 'youtube-study-tool', 'listenonrepeat-alternative', 'guide', 'about', 'privacy', 'terms', 'contact', 'contact-success', 'top-loops', 'watch', 'blog'];
+      if (whitelist.includes(parts[0])) {
+        return; // Valid route, don't parse as video
+      }
+      
       if (parts.length === 1) {
-        // Handle /watch?v=... where v is missed, or bare IDs
-        if (parts[0] !== 'watch') {
-          const id = parts[0];
+        const id = parts[0];
+        // Validate if it's a real video ID format (11 chars for YT, digits for Vimeo)
+        if ((id.length === 11 && !/^\d+$/.test(id)) || /^\d+$/.test(id)) {
           videoId = id;
           if (id.length === 11 && !/^\d+$/.test(id)) {
             platform = 'youtube';
-          } else if (/^\d+$/.test(id)) {
-            platform = 'vimeo'; // Vimeo usually uses numeric IDs
           } else {
-            platform = 'youtube'; // Default fallback
+            platform = 'vimeo'; // Vimeo usually uses numeric IDs
           }
+        } else {
+          // INVALID URL - Trigger 404
+          this.trigger404(path);
+          return;
         }
       } else if (parts.length >= 2) {
         const type = parts[0].toLowerCase();
@@ -896,6 +903,28 @@ class WatchOnRepeat {
       }
     } else {
       this.loadHome();
+    }
+  }
+
+  trigger404(path) {
+    console.error('404 Not Found:', path);
+    // Add noindex meta tag dynamically so Google doesn't index it
+    const meta = document.createElement('meta');
+    meta.name = 'robots';
+    meta.content = 'noindex';
+    document.head.appendChild(meta);
+
+    // Replace the app container with a simple 404 message
+    const mainContainer = document.querySelector('.main-container');
+    if (mainContainer) {
+      mainContainer.innerHTML = `
+        <div style="text-align: center; padding: 100px 20px;">
+          <h1 style="font-size: 3rem; margin-bottom: 20px;">404</h1>
+          <h2>Page Not Found</h2>
+          <p style="color: #aaa; margin: 20px 0;">The page you are looking for doesn't exist or has been moved.</p>
+          <a href="/" class="btn btn-primary" style="display: inline-block; padding: 10px 20px;">Return to Home</a>
+        </div>
+      `;
     }
   }
 
