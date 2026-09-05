@@ -3905,13 +3905,11 @@ class WatchOnRepeat {
             let shuffledData = data.sort(() => 0.5 - Math.random());
             let selectedData = shuffledData.slice(0, 15);
             
-            const fetchPromises = selectedData.map(async (d) => {
+            discoverVideos = selectedData.map((d) => {
               let title = d.video_title;
-              if (!title) {
-                const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
-                title = meta.title;
+              if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) {
+                title = `Trending ${d.platform} video`;
               }
-              if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) title = `Trending ${d.platform} video`;
               return {
                 videoId: d.video_id,
                 platform: d.platform,
@@ -3919,7 +3917,6 @@ class WatchOnRepeat {
                 globalLoops: d.global_loops
               };
             });
-            discoverVideos = await Promise.all(fetchPromises);
           }
         } catch(e) {}
       }
@@ -3974,13 +3971,11 @@ class WatchOnRepeat {
           let shuffledData = data.sort(() => 0.5 - Math.random());
           let selectedData = shuffledData.slice(0, 11);
           
-          const fetchPromises = selectedData.map(async (d) => {
+          discoverVideos = selectedData.map((d) => {
             let title = d.video_title;
-            if (!title) {
-              const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
-              title = meta.title;
+            if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) {
+              title = `Trending ${d.platform} video`;
             }
-            if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) title = `Trending ${d.platform} video`;
             return {
               videoId: d.video_id,
               platform: d.platform,
@@ -3988,7 +3983,6 @@ class WatchOnRepeat {
               globalLoops: d.global_loops
             };
           });
-          discoverVideos = await Promise.all(fetchPromises);
         }
       }
       this.state.discoverData = discoverVideos;
@@ -4252,13 +4246,11 @@ class WatchOnRepeat {
     if (window.supabaseClient) {
       const { data } = await supabaseClient.from('global_stats').select('*').neq('platform', 'local').order('global_loops', { ascending: false }).limit(10);
       if (data) {
-        const fetchPromises = data.map(async (d) => {
+        trends = data.map((d) => {
           let title = d.video_title;
-          if (!title) {
-            const meta = await this.fetchVideoMetadata(d.video_id, d.platform);
-            title = meta.title;
+          if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) {
+            title = `Trending ${d.platform} video`;
           }
-          if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) title = `Trending ${d.platform} video`;
           return {
             videoId: d.video_id,
             platform: d.platform,
@@ -4267,7 +4259,6 @@ class WatchOnRepeat {
             title: title
           };
         });
-        trends = await Promise.all(fetchPromises);
       }
     }
 
