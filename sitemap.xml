@@ -85,9 +85,15 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-  <url>
+    <url>
     <loc>https://watchonrepeat.com/blog/the-psychology-of-flow-why-we-loop-songs</loc>
     <lastmod>2026-08-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://watchonrepeat.com/blog/the-biology-of-mastery-chunking-and-sleep</loc>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
