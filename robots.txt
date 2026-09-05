@@ -1,4 +1,16 @@
 User-agent: *
 Allow: /
 
+# Block junk/test/debug files from being crawled
+Disallow: /dm_test.html
+Disallow: /test.html
+Disallow: /test_error.html
+Disallow: /test_fb_img.html
+Disallow: /downloader.html
+Disallow: /error_catcher.html
+Disallow: /standalone_dm.html
+Disallow: /edge_output.html
+Disallow: /logo_generator.html
+Disallow: /index_v7.html
+
 Sitemap: https://watchonrepeat.com/sitemap.xml
