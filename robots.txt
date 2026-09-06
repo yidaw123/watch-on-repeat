@@ -1,6 +1,9 @@
 User-agent: *
 Allow: /
 
+# Block Cloudflare internal system paths
+Disallow: /cdn-cgi/
+
 # Block junk/test/debug files from being crawled
 Disallow: /dm_test.html
 Disallow: /test.html
