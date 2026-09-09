@@ -1443,7 +1443,7 @@ class WatchOnRepeat {
     }
 
     // Facebook
-    const fbRegex = /(?:facebook\.com\/(?:[^\/]+\/videos\/|video\.php\?v=|watch\/\?v=|reel\/|reels\/)|fb\.watch\/)([a-zA-Z0-9_-]+)/;
+    const fbRegex = /(?:facebook\.com\/(?:[^\/]+\/videos\/|video\.php\?v=|watch\/\?v=|reel\/|reels\/|share\/v\/|share\/r\/)|fb\.watch\/)([a-zA-Z0-9_-]+)/;
     const fbMatch = url.match(fbRegex);
     if (fbMatch && fbMatch[1]) {
       return { platform: 'facebook', id: fbMatch[1] };
