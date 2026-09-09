@@ -1436,7 +1436,7 @@ class WatchOnRepeat {
     }
 
     // Wistia
-    const wistiaRegex = /(?:wistia\.com\/medias\/|fast\.wistia\.net\/embed\/iframe\/)([a-zA-Z0-9]+)/;
+    const wistiaRegex = /(?:wistia\.com\/medias\/|wistia\.com\/embed\/medias\/|fast\.wistia\.net\/embed\/iframe\/|fast\.wistia\.com\/embed\/medias\/)([a-zA-Z0-9]+)/;
     const wistiaMatch = url.match(wistiaRegex);
     if (wistiaMatch && wistiaMatch[1]) {
       return { platform: 'wistia', id: wistiaMatch[1] };
