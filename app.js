@@ -3859,6 +3859,63 @@ class WatchOnRepeat {
     return '';
   }
 
+  async fetchDiscoverData() {
+    if (this.state.discoverData && this.state.discoverData.length > 0) return true;
+    if (this._isFetchingDiscover) {
+      while (this._isFetchingDiscover) await new Promise(r => setTimeout(r, 100));
+      return this.state.discoverData && this.state.discoverData.length > 0;
+    }
+    
+    this._isFetchingDiscover = true;
+    let success = false;
+    
+    if (window.supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient.from('global_stats')
+          .select('*')
+          .neq('platform', 'local')
+          .order('global_loops', { ascending: false })
+          .limit(20);
+          
+        if (!error && data && data.length > 0) {
+          let shuffledData = data.sort(() => 0.5 - Math.random());
+          this.state.discoverData = shuffledData.slice(0, 15).map((d) => {
+            let title = d.video_title;
+            if (!title || title.includes('(Private or Unavailable)') || (d.platform && title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`)) {
+              title = `Trending ${d.platform || 'video'}`;
+            }
+            return {
+              videoId: d.video_id,
+              platform: d.platform,
+              title: title,
+              globalLoops: d.global_loops
+            };
+          });
+          success = true;
+        }
+      } catch (e) {
+        if (DEBUG_MODE) console.error("Error fetching discover data", e);
+      }
+    }
+    
+    this._isFetchingDiscover = false;
+    
+    if (!success) {
+      this.state.discoverData = [];
+      if (this._retryDiscoverTimer) clearTimeout(this._retryDiscoverTimer);
+      this._retryDiscoverTimer = setTimeout(() => {
+        this.state.discoverData = null;
+        this.fetchDiscoverData().then(ok => {
+          if (ok) {
+            if (this.state.currentVideo) this.renderUpNextQueue(this.state.currentVideo.id);
+            if (this.state.activeTab === 'discover') this.renderDiscoverTab();
+          }
+        });
+      }, 15000);
+    }
+    return success;
+  }
+
   async renderUpNextQueue(currentVideoId) {
     const sidebarContainer = document.getElementById('up-next-sidebar-container');
     let list = document.getElementById('up-next-list');
@@ -3885,55 +3942,17 @@ class WatchOnRepeat {
     
     if (!list) return;
 
-    if (!this.state.discoverData) {
-      // Show a loading skeleton if we have to fetch data
+    if (!this.state.discoverData || this.state.discoverData.length === 0) {
       list.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px; display: flex; flex-direction: column; gap: 8px; align-items: center;"><i data-lucide="loader" class="spin"></i><span>Loading popular loops...</span></div>`;
       if (window.lucide) window.lucide.createIcons();
-      
-      let discoverVideos = [
-        { id: 'aqz-KE-bpKQ', platform: 'youtube', title: 'Big Buck Bunny 60fps 4K' },
-        { id: 'jfKfPfyJRdk', platform: 'youtube', title: 'lofi hip hop radio - beats to relax/study to' },
-        { id: '76979871', platform: 'vimeo', title: 'Big Buck Bunny (High Quality Animated Film)' },
-        { id: 'Sagg0zTrNGA', platform: 'youtube', title: 'Epic Sax Guy - 10 Hours Loop Edition' }
-      ];
-
-      if (window.supabaseClient) {
-        try {
-          const { data, error } = await supabaseClient.from('global_stats')
-            .select('*')
-            .neq('platform', 'local')
-            .order('global_loops', { ascending: false })
-            .limit(20);
-          
-          if (!error && data && data.length > 0) {
-            let shuffledData = data.sort(() => 0.5 - Math.random());
-            let selectedData = shuffledData.slice(0, 15);
-            
-            discoverVideos = selectedData.map((d) => {
-              let title = d.video_title;
-              if (!title || title.includes('(Private or Unavailable)') || (d.platform && title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`)) {
-                title = `Trending ${d.platform || 'video'}`;
-              }
-              return {
-                videoId: d.video_id,
-                platform: d.platform,
-                title: title,
-                globalLoops: d.global_loops
-              };
-            });
-          }
-        } catch(e) {
-          if (DEBUG_MODE) console.error("Error fetching Most Looped", e);
-        }
-      }
-      this.state.discoverData = discoverVideos;
+      await this.fetchDiscoverData();
     }
 
     let suggestions = this.state.discoverData.filter(v => (v.videoId || v.id) !== currentVideoId);
     suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 11);
 
     if (suggestions.length === 0) {
-      list.innerHTML = '';
+      list.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px;">No popular loops available right now.</div>';
       return;
     }
 
@@ -3956,54 +3975,22 @@ class WatchOnRepeat {
   }
 
   async renderDiscoverTab(page = 1) {
-
-    if (!this.state.discoverData) {
-      let discoverVideos = [
-        { id: 'aqz-KE-bpKQ', platform: 'youtube', title: 'Big Buck Bunny 60fps 4K' },
-        { id: 'jfKfPfyJRdk', platform: 'youtube', title: 'lofi hip hop radio - beats to relax/study to' },
-        { id: '76979871', platform: 'vimeo', title: 'Big Buck Bunny (High Quality Animated Film)' },
-        { id: 'x7t5vcr', platform: 'dailymotion', title: 'Introducing Dailymotion - Our brand new HTML5 player SDK' },
-        { id: 'Sagg0zTrNGA', platform: 'youtube', title: 'Epic Sax Guy - 10 Hours Loop Edition' }
-      ];
-
-      if (window.supabaseClient) {
-        try {
-          const { data, error } = await supabaseClient.from('global_stats')
-            .select('*')
-            .neq('platform', 'local')
-            .order('global_loops', { ascending: false })
-            .limit(20);
-          
-          if (!error && data && data.length > 0) {
-            // Shuffle and pick 10
-            let shuffledData = data.sort(() => 0.5 - Math.random());
-            let selectedData = shuffledData.slice(0, 11);
-            
-            discoverVideos = selectedData.map((d) => {
-              let title = d.video_title;
-              if (!title || title.includes('(Private or Unavailable)') || (d.platform && title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`)) {
-                title = `Trending ${d.platform || 'video'}`;
-              }
-              return {
-                videoId: d.video_id,
-                platform: d.platform,
-                title: title,
-                globalLoops: d.global_loops
-              };
-            });
-          }
-        } catch (e) {
-          if (DEBUG_MODE) console.error("Error fetching Discover Tab", e);
-        }
-      }
-      this.state.discoverData = discoverVideos;
-    }
-
     const section = document.getElementById('discover-section');
     const discoverList = document.getElementById('discover-list');
     if (!section || !discoverList) return;
+
+    if (!this.state.discoverData || this.state.discoverData.length === 0) {
+      discoverList.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; align-items: center;"><i data-lucide="loader" class="spin"></i><span>Loading popular loops...</span></div>`;
+      if (window.lucide) window.lucide.createIcons();
+      await this.fetchDiscoverData();
+    }
     
     discoverList.innerHTML = '';
+
+    if (this.state.discoverData.length === 0) {
+      discoverList.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); grid-column: 1 / -1;">No popular loops available right now.</div>';
+      return;
+    }
 
     const itemsPerPage = 11;
     const totalPages = Math.ceil(this.state.discoverData.length / itemsPerPage);
@@ -6921,6 +6908,7 @@ class WatchOnRepeat {
     // ----------------------------
     
     const formatH = (secs) => {
+      if (secs > 0 && secs < 60) return `< 1m`;
       const h = Math.floor(secs / 3600);
       const m = Math.floor((secs % 3600) / 60);
       return `${h}h ${m}m`;
