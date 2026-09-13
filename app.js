@@ -3886,6 +3886,10 @@ class WatchOnRepeat {
     if (!list) return;
 
     if (!this.state.discoverData) {
+      // Show a loading skeleton if we have to fetch data
+      list.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px; display: flex; flex-direction: column; gap: 8px; align-items: center;"><i data-lucide="loader" class="spin"></i><span>Loading popular loops...</span></div>`;
+      if (window.lucide) window.lucide.createIcons();
+      
       let discoverVideos = [
         { id: 'aqz-KE-bpKQ', platform: 'youtube', title: 'Big Buck Bunny 60fps 4K' },
         { id: 'jfKfPfyJRdk', platform: 'youtube', title: 'lofi hip hop radio - beats to relax/study to' },
@@ -3895,20 +3899,20 @@ class WatchOnRepeat {
 
       if (window.supabaseClient) {
         try {
-          const { data } = await supabaseClient.from('global_stats')
+          const { data, error } = await supabaseClient.from('global_stats')
             .select('*')
             .neq('platform', 'local')
             .order('global_loops', { ascending: false })
             .limit(20);
           
-          if (data && data.length > 0) {
+          if (!error && data && data.length > 0) {
             let shuffledData = data.sort(() => 0.5 - Math.random());
             let selectedData = shuffledData.slice(0, 15);
             
             discoverVideos = selectedData.map((d) => {
               let title = d.video_title;
-              if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) {
-                title = `Trending ${d.platform} video`;
+              if (!title || title.includes('(Private or Unavailable)') || (d.platform && title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`)) {
+                title = `Trending ${d.platform || 'video'}`;
               }
               return {
                 videoId: d.video_id,
@@ -3918,7 +3922,9 @@ class WatchOnRepeat {
               };
             });
           }
-        } catch(e) {}
+        } catch(e) {
+          if (DEBUG_MODE) console.error("Error fetching Most Looped", e);
+        }
       }
       this.state.discoverData = discoverVideos;
     }
@@ -3927,6 +3933,7 @@ class WatchOnRepeat {
     suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 11);
 
     if (suggestions.length === 0) {
+      list.innerHTML = '';
       return;
     }
 
@@ -3960,29 +3967,33 @@ class WatchOnRepeat {
       ];
 
       if (window.supabaseClient) {
-        const { data } = await supabaseClient.from('global_stats')
-          .select('*')
-          .neq('platform', 'local')
-          .order('global_loops', { ascending: false })
-          .limit(20);
-        
-        if (data && data.length > 0) {
-          // Shuffle and pick 10
-          let shuffledData = data.sort(() => 0.5 - Math.random());
-          let selectedData = shuffledData.slice(0, 11);
+        try {
+          const { data, error } = await supabaseClient.from('global_stats')
+            .select('*')
+            .neq('platform', 'local')
+            .order('global_loops', { ascending: false })
+            .limit(20);
           
-          discoverVideos = selectedData.map((d) => {
-            let title = d.video_title;
-            if (!title || title.includes('(Private or Unavailable)') || title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`) {
-              title = `Trending ${d.platform} video`;
-            }
-            return {
-              videoId: d.video_id,
-              platform: d.platform,
-              title: title,
-              globalLoops: d.global_loops
-            };
-          });
+          if (!error && data && data.length > 0) {
+            // Shuffle and pick 10
+            let shuffledData = data.sort(() => 0.5 - Math.random());
+            let selectedData = shuffledData.slice(0, 11);
+            
+            discoverVideos = selectedData.map((d) => {
+              let title = d.video_title;
+              if (!title || title.includes('(Private or Unavailable)') || (d.platform && title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`)) {
+                title = `Trending ${d.platform || 'video'}`;
+              }
+              return {
+                videoId: d.video_id,
+                platform: d.platform,
+                title: title,
+                globalLoops: d.global_loops
+              };
+            });
+          }
+        } catch (e) {
+          if (DEBUG_MODE) console.error("Error fetching Discover Tab", e);
         }
       }
       this.state.discoverData = discoverVideos;
