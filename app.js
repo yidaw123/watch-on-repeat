@@ -3896,7 +3896,7 @@ class WatchOnRepeat {
     if (this.state.discoverData && this.state.discoverData.length > 0) return true;
     if (this._isFetchingDiscover) {
       while (this._isFetchingDiscover) await new Promise(r => setTimeout(r, 100));
-      return this.state.discoverData && this.state.discoverData.length > 0;
+      return this.state.discoverData !== null && this.state.discoverData.length > 0;
     }
     
     this._isFetchingDiscover = true;
@@ -4396,6 +4396,20 @@ class WatchOnRepeat {
         const checkDead = () => {
           if (img.naturalWidth === 120) {
             card.style.display = 'none';
+            // If this card is in a list and all cards are hidden, show empty state
+            const parent = card.parentElement;
+            if (parent) {
+              const visibleCards = Array.from(parent.querySelectorAll('.video-card')).filter(c => c.style.display !== 'none');
+              if (visibleCards.length === 0) {
+                if (!parent.querySelector('.empty-msg')) {
+                  const msg = document.createElement('div');
+                  msg.className = 'empty-msg';
+                  msg.style.cssText = 'padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px;';
+                  msg.textContent = 'No popular loops available right now.';
+                  parent.appendChild(msg);
+                }
+              }
+            }
           }
         };
         if (img.complete) {
