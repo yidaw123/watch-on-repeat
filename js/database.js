@@ -170,13 +170,15 @@ class DatabaseMixin {
       if (this.state.activeTab === 'playlists') this.renderPlaylistsTab();
       if (this.state.activeTab === 'notes') this.renderNotes();
       this.updateFavoriteButtonUI();
+      
+      this.state.isSyncedFromSupabase = true;
     } catch (err) {
       console.error("Error syncing from Supabase:", err);
     }
   }
 
   async pushToSupabase(key, data) {
-    if (!this.state.user || !window.supabaseClient) return;
+    if (!this.state.user || !window.supabaseClient || !this.state.isSyncedFromSupabase) return;
     try {
       if (key === 'playlists') {
         const userPlaylists = data.filter(p => p.userId === this.state.user.id);
