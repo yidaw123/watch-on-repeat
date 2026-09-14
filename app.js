@@ -378,6 +378,7 @@ class WatchOnRepeat {
   }
 
   async setUserFromSession(session) {
+    try {
     const user = session.user;
     let tier = 'free';
     let subscriptionEndDate = null;
@@ -495,6 +496,9 @@ class WatchOnRepeat {
       this.updateFavoriteButtonUI();
       this.updatePlaylistButtonUI();
       this.updateStatsUI();
+    }
+    } catch (err) {
+      console.warn("Failed to initialize user session:", err);
     }
   }
 
@@ -2914,7 +2918,13 @@ class WatchOnRepeat {
           this.setVideoDuration(dur);
         } else {
           // YouTube sometimes returns 0 duration immediately after PLAYING event. Poll until it's ready.
+          let pollCount = 0;
           const checkDur = setInterval(() => {
+            pollCount++;
+            if (pollCount > 25) {
+              clearInterval(checkDur);
+              return;
+            }
             if (this.state.players.youtube && this.state.players.youtube.getDuration) {
               const d = this.state.players.youtube.getDuration();
               if (d > 0) {
@@ -3441,6 +3451,7 @@ class WatchOnRepeat {
     this.stopTimer();
     this.state.loopSeconds = 0;
     this.state.loopTimer = setInterval(() => {
+      if (!this.state.isPlaying) return;
       this.state.loopSeconds++;
       let timeStr = "";
       if (this.state.loopSeconds >= 3600) {
@@ -6328,8 +6339,9 @@ class WatchOnRepeat {
     const p = this.state.currentPlatform;
     if (p) db.platforms[p] = (db.platforms[p] || 0) + 1;
     
-    // Track Streaks
-    const today = new Date().toISOString().split('T')[0];
+    // Track Streaks (use local date, not UTC, so streaks don't reset at wrong time)
+    const _now = new Date();
+    const today = _now.getFullYear() + '-' + String(_now.getMonth() + 1).padStart(2, '0') + '-' + String(_now.getDate()).padStart(2, '0');
     if (!db.lastPracticed) {
       db.lastPracticed = today;
       db.currentStreak = 1;
@@ -6381,7 +6393,13 @@ class WatchOnRepeat {
     const limit = tier === 'pro' ? 150 : (tier === 'premium' ? 100 : 50);
     const keys = Object.keys(db.segments);
     if (keys.length > limit) {
-      const sortedKeys = keys.sort((a, b) => db.segments[b].loops - db.segments[a].loops);
+      const sortedKeys = keys.sort((a, b) => {
+        const segA = db.segments[a];
+        const segB = db.segments[b];
+        if (segA.name && !segB.name) return -1;
+        if (!segA.name && segB.name) return 1;
+        return segB.loops - segA.loops;
+      });
       const keysToRemove = sortedKeys.slice(limit);
       keysToRemove.forEach(k => delete db.segments[k]);
     }
