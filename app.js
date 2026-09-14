@@ -3300,21 +3300,33 @@ class WatchOnRepeat {
 
       // CRITICAL FIX: Only upsert if we have successfully loaded the user's history!
       // Otherwise, we would overwrite their lifetime loops with '1' if they loop
-      // before the history fetch completes.
-      if (this.state.user && this.state.historyLoaded) {
-        const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
-        supabaseClient.from('user_history').upsert({
-          user_id: this.state.user.id,
-          video_id: video.id,
-          platform: video.platform,
-          title: video.title || '',
-          loops_count: this.state.currentLifetimeLoops,
-          saved_loop_data: savedLoops[video.id],
-          last_played: new Date().toISOString()
-        }, { onConflict: 'user_id, video_id, platform' }).then(({ error }) => {
-          if (error && DEBUG_MODE) console.error("User History Upsert Error:", error);
-          if (this.state.activeTab === 'history') this.renderHistoryTab();
-        });
+        if (this.state.user && this.state.historyLoaded) {
+          const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+          supabaseClient.rpc('increment_user_history_loops', {
+            p_user_id: this.state.user.id,
+            p_video_id: video.id,
+            p_platform: video.platform,
+            p_title: video.title || '',
+            p_saved_loop_data: savedLoops[video.id] || null
+          }).then(({ error }) => {
+            if (error) {
+              supabaseClient.from('user_history').upsert({
+                user_id: this.state.user.id,
+                video_id: video.id,
+                platform: video.platform,
+                title: video.title || '',
+                loops_count: this.state.currentLifetimeLoops,
+                saved_loop_data: savedLoops[video.id],
+                last_played: new Date().toISOString()
+              }, { onConflict: 'user_id, video_id, platform' }).then(({ error: e2 }) => {
+                if (e2 && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.error('User History Upsert Error:', e2);
+                if (this.state.activeTab === 'history') this.renderHistoryTab();
+              });
+            } else {
+                if (this.state.activeTab === 'history') this.renderHistoryTab();
+            }
+          });
+        }
       }
     }
 
@@ -7120,4 +7132,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     };
   }
 });
+
+
+
 
