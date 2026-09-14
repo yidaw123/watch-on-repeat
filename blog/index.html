@@ -436,38 +436,13 @@
       let currentPage = 1;
       const itemsPerPage = 10; // 5 rows x 2 cols
       
-      // Inject Share buttons to cards
+      // Ensure Read Article links stay at bottom
       cards.forEach(card => {
-        if (!card.querySelector('.share-btn')) {
-          const readMoreLink = card.querySelector('.read-more');
-          if (readMoreLink) {
-            const url = readMoreLink.href;
-            const title = card.querySelector('h2').textContent;
-            
-            const container = document.createElement('div');
-            container.style.display = 'flex';
-            container.style.justifyContent = 'space-between';
-            container.style.alignItems = 'center';
-            container.style.marginTop = 'auto';
-            
-            readMoreLink.parentNode.insertBefore(container, readMoreLink);
-            container.appendChild(readMoreLink);
-            
-            const shareBtn = document.createElement('button');
-            shareBtn.className = 'share-btn';
-            shareBtn.innerHTML = '<i data-lucide="share-2" style="width: 14px; height: 14px;"></i> Share';
-            shareBtn.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 9999px; transition: background 0.2s;';
-            shareBtn.onmouseover = () => shareBtn.style.background = 'rgba(255,255,255,0.1)';
-            shareBtn.onmouseout = () => shareBtn.style.background = 'rgba(255,255,255,0.05)';
-            shareBtn.onclick = () => {
-              if (navigator.share) {
-                navigator.share({ title: title, url: url }).catch(console.error);
-              } else {
-                navigator.clipboard.writeText(url).then(() => alert("Link copied to clipboard!"));
-              }
-            };
-            container.appendChild(shareBtn);
-            if (window.lucide) window.lucide.createIcons({root: shareBtn});
+        const readMoreLink = card.querySelector('.read-more');
+        if (readMoreLink) {
+          readMoreLink.style.marginTop = 'auto';
+        }
+      });
           }
         }
       });
