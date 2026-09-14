@@ -32,9 +32,10 @@ class DatabaseMixin {
   }
 
   getDb(key) {
-    const defaultVal = (key === 'shortcuts' || key === 'analytics' || key === 'notes') ? '{}' : '[]';
+    const isObjectDb = ['shortcuts', 'analytics', 'notes', 'playback_progress', 'instances'].includes(key);
+    const defaultVal = isObjectDb ? '{}' : '[]';
     let parsed = JSON.parse(localStorage.getItem('wor_' + key) || defaultVal);
-    if ((key === 'shortcuts' || key === 'analytics' || key === 'notes') && Array.isArray(parsed)) {
+    if (isObjectDb && Array.isArray(parsed)) {
       parsed = {};
     }
     return parsed;

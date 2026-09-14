@@ -1921,6 +1921,12 @@ class WatchOnRepeat {
   }
 
   async  loadVideo(id, platform = 'youtube') {
+    if (platform !== 'local' && !/^[a-zA-Z0-9_\-\.]+$/.test(id)) {
+        if (DEBUG_MODE) console.error("Blocked invalid video ID:", id);
+        this.showToast("Invalid video ID format", "alert-circle");
+        return;
+    }
+
     if (typeof this.updatePlaylistSkipButtons === 'function') this.updatePlaylistSkipButtons();
     this.flushAnalytics();
     this.toggleLocalVideoRestrictions(false);
@@ -4363,14 +4369,6 @@ class WatchOnRepeat {
         const checkDead = () => {
           if (img.naturalWidth === 120) {
             card.style.display = 'none';
-            if (window.supabaseClient && !isHistory) {
-              window.supabaseClient.from('global_stats')
-                .delete()
-                .eq('video_id', video.videoId || video.id)
-                .then(({ error }) => {
-                  if (error) console.warn('Failed to clean up dead video', error);
-                });
-            }
           }
         };
         if (img.complete) {
@@ -4787,20 +4785,20 @@ class WatchOnRepeat {
   }
 
   applyTimeMask(input, onChangeCallback) {
-    input.addEventListener('focus', function() {
+    input.onfocus = function() {
       setTimeout(() => this.select(), 10);
-    });
+    };
     
-    input.addEventListener('input', function(e) {
+    input.oninput = function(e) {
       this.value = this.value.replace(/[^\d:.]/g, '');
-    });
+    };
 
     if (onChangeCallback) {
-      input.addEventListener('change', onChangeCallback);
-      input.addEventListener('blur', () => {
+      input.onchange = onChangeCallback;
+      input.onblur = () => {
         const parsed = this.parseTime(input.value);
         input.value = this.formatTime(parsed);
-      });
+      };
     }
   }
 
