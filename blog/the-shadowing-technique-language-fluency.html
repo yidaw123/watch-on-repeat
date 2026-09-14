@@ -137,6 +137,9 @@
             <span>September 14, 2026</span>
           </div>
         </header>
+          <div style="margin-top: 1.5rem; display: flex; justify-content: center;">
+            <button onclick="shareArticle()" class="share-btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; padding: 0.5rem 1.2rem; border-radius: 9999px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'"><i data-lucide="share-2" style="width: 16px; height: 16px;"></i> Share Article</button>
+          </div>
         
         <div class="article-content">
           <p>For decades, traditional language education has been failing students. We spend years memorizing vocabulary lists, studying complex grammar tables, and passing written tests, only to freeze completely when a native speaker asks us a basic question on the street.</p>
@@ -201,6 +204,17 @@
     </div>
   <script>
     lucide.createIcons();
+  </script>
+  <script>
+    function shareArticle() {
+      const url = window.location.href;
+      const title = document.title;
+      if (navigator.share) {
+        navigator.share({ title: title, url: url }).catch(console.error);
+      } else {
+        navigator.clipboard.writeText(url).then(() => alert("Link copied to clipboard!"));
+      }
+    }
   </script>
 </body>
 </html>

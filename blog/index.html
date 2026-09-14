@@ -107,11 +107,16 @@
     
     .blog-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 2rem;
       max-width: 1000px;
       margin: 0 auto 5rem auto;
       padding: 0 1.5rem;
+    }
+    @media(max-width: 768px) {
+      .blog-grid {
+        grid-template-columns: 1fr;
+      }
     }
     
     .blog-card {
@@ -271,7 +276,14 @@
         <p>Deep dives into the psychology of learning, the science of skill mastery, and the art of deliberate practice.</p>
       </div>
 
-      <div class="blog-grid">
+      <div class="blog-controls" style="max-width: 1000px; margin: 0 auto 2rem auto; padding: 0 1.5rem; display: flex; justify-content: flex-end;">
+        <div class="search-box" style="position: relative; width: 100%; max-width: 300px;">
+          <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; height: 18px;"></i>
+          <input type="text" id="blog-search" placeholder="Search articles..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; border-radius: 9999px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 1rem; outline: none; transition: border-color 0.2s; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <div class="blog-grid" id="blog-grid">
         <div class="blog-card">
           <div class="blog-tag" style="margin-bottom: 0.5rem;">Language Learning</div>
           <div class="blog-date" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">September 14, 2026</div>
@@ -343,8 +355,9 @@
           <p>Explore the science of the 'flow state' and why repetitive background audio helps block out distractions and reduce cognitive load.</p>
           <a href="../blog/the-psychology-of-flow-why-we-loop-songs" class="read-more">Read Article <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i></a>
         </div>
-        
-      </div>
+              </div>
+      
+      <div id="pagination-controls" style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 5rem;"></div>
 
     </main>
 <footer class="site-footer" style="padding: 2rem; background: var(--bg-surface); border-top: 1px solid var(--border-color); text-align: center;">
@@ -387,9 +400,101 @@
 </script>
 </footer>
   </div>
-  <script>lucide.createIcons();</script>
+  <script>
+    lucide.createIcons();
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('blog-search');
+      const grid = document.getElementById('blog-grid');
+      const cards = Array.from(grid.querySelectorAll('.blog-card'));
+      const paginationContainer = document.getElementById('pagination-controls');
+      
+      let currentPage = 1;
+      const itemsPerPage = 10; // 5 rows x 2 cols
+      
+      // Inject Share buttons to cards
+      cards.forEach(card => {
+        if (!card.querySelector('.share-btn')) {
+          const readMoreLink = card.querySelector('.read-more');
+          if (readMoreLink) {
+            const url = readMoreLink.href;
+            const title = card.querySelector('h2').textContent;
+            
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.justifyContent = 'space-between';
+            container.style.alignItems = 'center';
+            container.style.marginTop = 'auto';
+            
+            readMoreLink.parentNode.insertBefore(container, readMoreLink);
+            container.appendChild(readMoreLink);
+            
+            const shareBtn = document.createElement('button');
+            shareBtn.className = 'share-btn';
+            shareBtn.innerHTML = '<i data-lucide="share-2" style="width: 14px; height: 14px;"></i> Share';
+            shareBtn.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 9999px; transition: background 0.2s;';
+            shareBtn.onmouseover = () => shareBtn.style.background = 'rgba(255,255,255,0.1)';
+            shareBtn.onmouseout = () => shareBtn.style.background = 'rgba(255,255,255,0.05)';
+            shareBtn.onclick = () => {
+              if (navigator.share) {
+                navigator.share({ title: title, url: url }).catch(console.error);
+              } else {
+                navigator.clipboard.writeText(url).then(() => alert("Link copied to clipboard!"));
+              }
+            };
+            container.appendChild(shareBtn);
+            if (window.lucide) window.lucide.createIcons({root: shareBtn});
+          }
+        }
+      });
+
+      function render() {
+        const query = searchInput ? searchInput.value.toLowerCase() : '';
+        
+        // Filter
+        const filtered = cards.filter(card => {
+          return card.textContent.toLowerCase().includes(query);
+        });
+        
+        // Paginate
+        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        
+        const startIdx = (currentPage - 1) * itemsPerPage;
+        const endIdx = startIdx + itemsPerPage;
+        
+        // Show/Hide
+        cards.forEach(card => card.style.display = 'none');
+        filtered.slice(startIdx, endIdx).forEach(card => {
+          card.style.display = 'flex';
+        });
+        
+        // Render Pagination
+        paginationContainer.innerHTML = '';
+        if (totalPages > 1) {
+          for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.style.cssText = `padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid ${i === currentPage ? 'var(--primary-color)' : 'var(--border-color)'}; background: ${i === currentPage ? 'var(--primary-color)' : 'var(--bg-card)'}; color: ${i === currentPage ? 'white' : 'var(--text-primary)'}; cursor: pointer; font-weight: bold;`;
+            btn.onclick = () => {
+              currentPage = i;
+              render();
+              window.scrollTo({ top: document.querySelector('.blog-controls').offsetTop - 100, behavior: 'smooth' });
+            };
+            paginationContainer.appendChild(btn);
+          }
+        }
+      }
+      
+      if (searchInput) {
+        searchInput.addEventListener('input', () => {
+          currentPage = 1;
+          render();
+        });
+      }
+      
+      render();
+    });
+  </script>
 </body>
 </html>
-
-
-

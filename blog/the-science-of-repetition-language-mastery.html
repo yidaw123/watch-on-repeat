@@ -276,11 +276,14 @@
             <span>August 2026</span>
           </div>
         </header>
-
+          <div style="margin-top: 1.5rem; display: flex; justify-content: center;">
+            <button onclick="shareArticle()" class="share-btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; padding: 0.5rem 1.2rem; border-radius: 9999px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'"><i data-lucide="share-2" style="width: 16px; height: 16px;"></i> Share Article</button>
+          </div>
+        
         <div class="article-content">
           <p>Anyone who has tried to learn a new language as an adult knows the feeling: you can memorize vocabulary lists and grammar rules for hours, but the moment a native speaker asks you a simple question, your brain freezes. The words are in your head somewhere, but you can't access them fast enough to hold a conversation.</p>
           
-          <p>This disconnect happens because traditional classroom language learning relies heavily on declarative memory—knowing <em>that</em> a rule exists. True fluency, however, requires procedural memory—knowing <em>how</em> to use the language automatically. The bridge between these two types of memory is built on one fundamental psychological principle: repetition through immersion.</p>
+          <p>This disconnect happens because traditional classroom language learning relies heavily on declarative memoryï¿½knowing <em>that</em> a rule exists. True fluency, however, requires procedural memoryï¿½knowing <em>how</em> to use the language automatically. The bridge between these two types of memory is built on one fundamental psychological principle: repetition through immersion.</p>
           
           <h2>Active vs. Passive Listening</h2>
           <p>A common myth in the language learning community is that you can learn by "osmosis." People will play Spanish podcasts while they sleep or have French movies playing in the background while they work, hoping their subconscious mind will pick it up.</p>
@@ -300,7 +303,7 @@
           
           <p>By forcing your brain to process the exact same auditory input repeatedly, you strip away the cognitive load of trying to keep up with the conversation. You give your neurons the time they need to wire together.</p>
 
-          <blockquote>"Repetition is the mother of learning, the father of action, which makes it the architect of accomplishment." — Zig Ziglar</blockquote>
+          <blockquote>"Repetition is the mother of learning, the father of action, which makes it the architect of accomplishment." ï¿½ Zig Ziglar</blockquote>
 
           <h2>Building Your Immersion Environment</h2>
           <p>In the digital age, you don't need to move to a foreign country to immerse yourself. YouTube is the greatest language learning repository in human history. It offers an infinite supply of native speakers talking naturally about subjects you genuinely care about.</p>
@@ -357,6 +360,18 @@
 </footer>
   </div>
   <script>lucide.createIcons();</script>
+
+  <script>
+    function shareArticle() {
+      const url = window.location.href;
+      const title = document.title;
+      if (navigator.share) {
+        navigator.share({ title: title, url: url }).catch(console.error);
+      } else {
+        navigator.clipboard.writeText(url).then(() => alert("Link copied to clipboard!"));
+      }
+    }
+  </script>
 </body>
 </html>
 
