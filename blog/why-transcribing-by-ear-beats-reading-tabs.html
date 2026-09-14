@@ -366,7 +366,7 @@
   .social-circle:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: #a855f7; }
 </style>
 
-<div id="blog-share-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+<div id="blog-share-modal" onclick="if(event.target === this) closeShareModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
   <div style="background: var(--bg-card, #111827); border: 1px solid var(--border-color, #374151); border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 450px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
     <button onclick="closeShareModal()" style="position: absolute; right: 1rem; top: 1rem; background: none; border: none; color: #9ca3af; cursor: pointer;"><i data-lucide="x"></i></button>
     <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; color: #fff; margin-bottom: 0.5rem; margin-top: 0;">Share Article</h2>
@@ -374,7 +374,7 @@
     
     <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
       <input type="text" id="share-link-input" readonly value="" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid #374151; border-radius: 8px; padding: 0.75rem 1rem; color: #fff; outline: none; font-size: 0.9rem;">
-      <button onclick="copyShareLink()" style="background: linear-gradient(135deg, #a855f7, #ec4899); border: none; border-radius: 8px; padding: 0 1.2rem; color: #fff; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: opacity 0.2s; min-width: 100px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy</button>
+      <button onclick="copyShareLink(this)" style="background: linear-gradient(135deg, #a855f7, #ec4899); border: none; border-radius: 8px; padding: 0 1.2rem; color: #fff; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: opacity 0.2s; min-width: 100px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy</button>
     </div>
     
     <div style="display: flex; gap: 1rem; justify-content: flex-end;">
@@ -396,11 +396,15 @@
   function closeShareModal() {
     document.getElementById('blog-share-modal').style.display = 'none';
   }
-  function copyShareLink() {
+  function copyShareLink(btn) {
     const input = document.getElementById('share-link-input');
     input.select();
     document.execCommand('copy');
-    alert('Link copied to clipboard!');
+    if(btn) {
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+      setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+    }
   }
   function shareSocial(network) {
     const url = encodeURIComponent(window.location.href);
