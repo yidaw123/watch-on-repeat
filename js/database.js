@@ -34,7 +34,13 @@ class DatabaseMixin {
   getDb(key) {
     const isObjectDb = ['shortcuts', 'analytics', 'notes', 'playback_progress', 'instances'].includes(key);
     const defaultVal = isObjectDb ? '{}' : '[]';
-    let parsed = JSON.parse(localStorage.getItem('wor_' + key) || defaultVal);
+    let parsed;
+    try {
+      parsed = JSON.parse(localStorage.getItem('wor_' + key) || defaultVal);
+    } catch (e) {
+      console.warn(`Corrupted localStorage key wor_${key}, resetting.`);
+      parsed = JSON.parse(defaultVal);
+    }
     if (isObjectDb && Array.isArray(parsed)) {
       parsed = {};
     }
@@ -42,7 +48,12 @@ class DatabaseMixin {
   }
 
   saveDb(key, data) {
-    localStorage.setItem('wor_' + key, JSON.stringify(data));
+    try {
+      localStorage.setItem('wor_' + key, JSON.stringify(data));
+    } catch (e) {
+      console.warn(`Failed to save wor_${key} to localStorage (quota exceeded?):`, e);
+      return;
+    }
     
     if (key === 'analytics') {
       if (this._analyticsTimeout) clearTimeout(this._analyticsTimeout);
