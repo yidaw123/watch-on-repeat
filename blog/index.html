@@ -113,6 +113,30 @@
       margin: 0 auto 5rem auto;
       padding: 0 1.5rem;
     }
+    
+    .blog-search-input {
+      width: 100%;
+      padding: 1rem 1rem 1rem 3.5rem;
+      border-radius: 9999px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 1.1rem;
+      outline: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      box-sizing: border-box;
+    }
+    .blog-search-input:focus {
+      border-color: var(--primary-color, #a855f7);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px rgba(168, 85, 247, 0.25);
+    }
+    .blog-search-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
     @media(max-width: 768px) {
       .blog-grid {
         grid-template-columns: 1fr;
@@ -276,10 +300,10 @@
         <p>Deep dives into the psychology of learning, the science of skill mastery, and the art of deliberate practice.</p>
       </div>
 
-      <div class="blog-controls" style="max-width: 1000px; margin: 0 auto 2rem auto; padding: 0 1.5rem; display: flex; justify-content: flex-end;">
-        <div class="search-box" style="position: relative; width: 100%; max-width: 300px;">
-          <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; height: 18px;"></i>
-          <input type="text" id="blog-search" placeholder="Search articles..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; border-radius: 9999px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 1rem; outline: none; transition: border-color 0.2s; box-sizing: border-box;">
+      <div class="blog-controls" style="max-width: 1000px; margin: 0 auto 3rem auto; padding: 0 1.5rem; display: flex; justify-content: center;">
+        <div class="search-box" style="position: relative; width: 100%; max-width: 500px;">
+          <i data-lucide="search" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.6); width: 20px; height: 20px;"></i>
+          <input type="text" id="blog-search" class="blog-search-input" placeholder="Search articles...">
         </div>
       </div>
 
