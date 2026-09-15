@@ -4454,9 +4454,9 @@ class WatchOnRepeat {
           }
         };
         if (img.complete) {
-          checkDead();
+          setTimeout(checkDead, 10);
         } else {
-          img.onload = checkDead;
+          img.onload = () => setTimeout(checkDead, 10);
         }
       }
     }
