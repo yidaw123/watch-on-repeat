@@ -1197,50 +1197,60 @@ class WatchOnRepeat {
   }
 
   async autoLoadLatestSession(videoId, platform) {
-    let latestInstanceId = null;
-    let latestTitle = null;
+    try {
+      let latestInstanceId = null;
+      let latestTitle = null;
 
-    if (this.state.user && window.supabaseClient) {
-      const { data, error } = await supabaseClient.from('video_instances')
-        .select('id, video_title, created_at')
-        .eq('video_id', videoId)
-        .eq('platform', platform)
-        .eq('user_id', this.state.user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (data && !error) {
-        latestInstanceId = data.id;
-        latestTitle = data.video_title;
-      }
-    }
-
-    if (!latestInstanceId) {
-      const myUserId = this.state.user ? this.state.user.id : 'guest';
-      const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
-      let latestLocal = null;
-      for (const key in localInstances) {
-        const inst = localInstances[key];
-        if (inst.videoId === videoId && inst.platform === platform && inst.userId === myUserId) {
-          if (!latestLocal) {
-            latestLocal = inst;
-          } else {
-            latestLocal = inst;
-          }
+      if (this.state.user && window.supabaseClient) {
+        const { data, error } = await supabaseClient.from('video_instances')
+          .select('id, video_title, created_at')
+          .eq('video_id', videoId)
+          .eq('platform', platform)
+          .eq('user_id', this.state.user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (data && !error) {
+          latestInstanceId = data.id;
+          latestTitle = data.video_title;
         }
       }
-      if (latestLocal) {
-        latestInstanceId = latestLocal.id;
-        latestTitle = latestLocal.title;
-      }
-    }
 
-    if (latestInstanceId) {
-      this.state.isLoadingInstance = true;
-      await this.loadInstance(latestInstanceId);
-      this.state.isLoadingInstance = false;
-      this.showToast(`Auto-loaded your latest session: ${latestTitle}`, 'refresh-cw');
-    } else {
+      if (!latestInstanceId) {
+        const myUserId = this.state.user ? this.state.user.id : 'guest';
+        let localInstances = {};
+        try {
+          localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+        } catch (e) {
+          console.warn("localStorage wor_instances is corrupted. Resetting.");
+          localStorage.setItem('wor_instances', '{}');
+        }
+        
+        let latestLocal = null;
+        for (const key in localInstances) {
+          const inst = localInstances[key];
+          if (inst.videoId === videoId && inst.platform === platform && inst.userId === myUserId) {
+            if (!latestLocal || inst.savedAt > latestLocal.savedAt) {
+              latestLocal = inst;
+            }
+          }
+        }
+        if (latestLocal) {
+          latestInstanceId = latestLocal.id;
+          latestTitle = latestLocal.title;
+        }
+      }
+
+      if (latestInstanceId) {
+        this.state.isLoadingInstance = true;
+        await this.loadInstance(latestInstanceId);
+        this.state.isLoadingInstance = false;
+        this.showToast(`Auto-loaded your latest session: ${latestTitle}`, 'refresh-cw');
+      } else {
+        this.updateSessionButtonsUI();
+      }
+    } catch (e) {
+      if (DEBUG_MODE) console.error("Error in autoLoadLatestSession:", e);
       this.updateSessionButtonsUI();
     }
   }
@@ -4001,8 +4011,6 @@ class WatchOnRepeat {
     if (playlistContainer) playlistContainer.remove();
     
     if (!list) return;
-
-    list.innerHTML = '<div style="background:red;color:white;padding:50px;font-size:24px;font-weight:bold;">IF YOU CAN SEE THIS, THE DOM IS UPDATING!</div>';
 
     if (this.state.discoverData === null) {
       list.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px; display: flex; flex-direction: column; gap: 8px; align-items: center;"><i data-lucide="loader" class="spin"></i><span>Loading popular loops...</span></div>`;
