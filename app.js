@@ -3921,11 +3921,17 @@ class WatchOnRepeat {
     
     if (window.supabaseClient) {
       try {
+        // 1. Determine dynamic limit based on total unique videos
+        const { count } = await supabaseClient.from('global_stats').select('*', { count: 'exact', head: true });
+        const totalVideos = count || 0;
+        const fetchLimit = totalVideos >= 500 ? 75 : 50;
+        
+        // 2. Fetch top looped videos
         const { data, error } = await supabaseClient.from('global_stats')
           .select('*')
           .neq('platform', 'local')
           .order('global_loops', { ascending: false })
-          .limit(20);
+          .limit(fetchLimit);
           
         if (error) {
           if (DEBUG_MODE) console.error("Supabase Error:", error);
@@ -3935,8 +3941,15 @@ class WatchOnRepeat {
           if (data.length === 0) {
             this.state.discoverData = []; // Legitimately 0 rows — no retry needed
           } else {
-            let shuffledData = data.sort(() => 0.5 - Math.random());
-            this.state.discoverData = shuffledData.slice(0, 15).map((d) => {
+            // 3. Filter out inappropriate language
+            const badWords = ['fuck', 'shit', 'bitch', 'asshole', 'cunt', 'dick', 'pussy', 'whore', 'slut', 'porn', 'sex', 'xvideos', 'pornhub', 'tits', 'boobs', 'naked', 'nigg', 'fag', 'rape'];
+            const filteredData = data.filter(d => {
+              const lowerTitle = (d.video_title || '').toLowerCase();
+              return !badWords.some(word => lowerTitle.includes(word));
+            });
+
+            // 4. Save full filtered list to this.state.discoverData (do not slice to 15)
+            this.state.discoverData = filteredData.map((d) => {
               let title = d.video_title;
               if (!title || title.includes('(Private or Unavailable)') || (d.platform && title === `${d.platform.charAt(0).toUpperCase() + d.platform.slice(1)} Video`)) {
                 title = `Trending ${d.platform || 'video'}`;
