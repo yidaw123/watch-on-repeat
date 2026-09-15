@@ -3924,7 +3924,12 @@ class WatchOnRepeat {
         // 1. Determine dynamic limit based on total unique videos
         const { count } = await supabaseClient.from('global_stats').select('*', { count: 'exact', head: true });
         const totalVideos = count || 0;
-        const fetchLimit = totalVideos >= 500 ? 75 : 50;
+        let fetchLimit = 50;
+        if (totalVideos >= 750) {
+          fetchLimit = 100;
+        } else if (totalVideos >= 500) {
+          fetchLimit = 75;
+        }
         
         // 2. Fetch top looped videos
         const { data, error } = await supabaseClient.from('global_stats')
