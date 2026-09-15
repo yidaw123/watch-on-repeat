@@ -3940,11 +3940,13 @@ class WatchOnRepeat {
         this.state.discoverData = null;
         this.fetchDiscoverData().then(ok => {
           if (ok) {
-            if (this.state.currentVideo) this.renderUpNextQueue(this.state.currentVideo.id);
-            if (this.state.activeTab === 'discover') this.renderDiscoverTab();
+            // Always re-render the sidebar (even on home screen where currentVideo is null)
+            const vidId = this.state.currentVideo ? this.state.currentVideo.id : null;
+            this.renderUpNextQueue(vidId);
+            this.renderDiscoverTab();
           }
         });
-      }, 15000);
+      }, 3000);
     }
     return success;
   }
@@ -3979,6 +3981,12 @@ class WatchOnRepeat {
       list.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px; display: flex; flex-direction: column; gap: 8px; align-items: center;"><i data-lucide="loader" class="spin"></i><span>Loading popular loops...</span></div>`;
       if (window.lucide) window.lucide.createIcons();
       await this.fetchDiscoverData();
+    }
+
+    // If still no data after fetch (e.g. Supabase was slow or errored), keep the spinner visible.
+    // The retry timer inside fetchDiscoverData will re-call renderUpNextQueue when data arrives.
+    if (!this.state.discoverData || this.state.discoverData.length === 0) {
+      return;
     }
 
     let suggestions = this.state.discoverData.filter(v => (v.videoId || v.id) !== currentVideoId);
