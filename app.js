@@ -230,6 +230,8 @@ class WatchOnRepeat {
       loopTimer: null,
       loopSeconds: 0,
       activeTab: 'discover',
+      discoverData: null,
+      discoverError: null,
       players: {
         youtube: null,
         vimeo: null,
@@ -4007,7 +4009,6 @@ class WatchOnRepeat {
       await this.fetchDiscoverData();
     }
 
-    // If a retry is in progress (discoverData was reset to null), keep the spinner
     if (this.state.discoverData === null) {
       return;
     }
