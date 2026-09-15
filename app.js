@@ -1167,7 +1167,6 @@ class WatchOnRepeat {
     
     if (!skipToast) this.showToast("Session reset to defaults", "rotate-ccw");
     this.renderMultiSegments();
-    this.updateLoopVisuals();
   }
 
   updateSessionButtonsUI() {
