@@ -3893,15 +3893,20 @@ class WatchOnRepeat {
   }
 
   async fetchDiscoverData() {
-    // If we've already fetched (even if it's empty `[]`), don't re-fetch
-    if (this.state.discoverData !== null) return true;
+    // If we've already successfully fetched data, don't re-fetch
+    if (this.state.discoverData !== null && this.state.discoverData.length > 0) return true;
+    
+    // If a previous fetch already completed with 0 rows (legitimate empty DB), don't retry
+    if (this.state.discoverData !== null && !this.state.discoverError) return true;
     
     if (this._isFetchingDiscover) {
       while (this._isFetchingDiscover) await new Promise(r => setTimeout(r, 100));
-      return this.state.discoverData !== null;
+      return this.state.discoverData !== null && this.state.discoverData.length > 0;
     }
     
     this._isFetchingDiscover = true;
+    this._discoverRetryCount = this._discoverRetryCount || 0;
+    let success = false;
     
     if (window.supabaseClient) {
       try {
@@ -3917,7 +3922,7 @@ class WatchOnRepeat {
         } else if (data) {
           this.state.discoverError = null;
           if (data.length === 0) {
-            this.state.discoverData = []; // Successfully fetched 0 rows
+            this.state.discoverData = []; // Legitimately 0 rows — no retry needed
           } else {
             let shuffledData = data.sort(() => 0.5 - Math.random());
             this.state.discoverData = shuffledData.slice(0, 15).map((d) => {
@@ -3933,24 +3938,41 @@ class WatchOnRepeat {
               };
             });
           }
+          success = true;
         }
       } catch (e) {
         if (DEBUG_MODE) console.error("Error fetching discover data", e);
         this.state.discoverError = e.message || "Unknown error";
       }
     } else {
-      this.state.discoverError = "Database not connected.";
+      this.state.discoverError = "Database not connected yet.";
     }
     
     this._isFetchingDiscover = false;
     
-    // If it failed to fetch, set it to [] so the UI can render the error/empty state
-    // instead of infinite retries with a spinner.
+    // If fetch failed (network error, Supabase CDN not loaded yet), retry up to 3 times
+    if (!success && this._discoverRetryCount < 3) {
+      this._discoverRetryCount++;
+      this.state.discoverData = null; // Keep null so the spinner stays visible
+      if (this._retryDiscoverTimer) clearTimeout(this._retryDiscoverTimer);
+      this._retryDiscoverTimer = setTimeout(() => {
+        this.fetchDiscoverData().then(ok => {
+          if (ok) {
+            const vidId = this.state.currentVideo ? this.state.currentVideo.id : null;
+            this.renderUpNextQueue(vidId);
+            this.renderDiscoverTab();
+          }
+        });
+      }, 3000);
+      return false;
+    }
+    
+    // After max retries or on success, make sure discoverData is at least []
     if (this.state.discoverData === null) {
       this.state.discoverData = [];
     }
     
-    return true; // Resolve so the UI updates
+    return success;
   }
 
   async renderUpNextQueue(currentVideoId) {
@@ -3985,9 +4007,13 @@ class WatchOnRepeat {
       await this.fetchDiscoverData();
     }
 
+    // If a retry is in progress (discoverData was reset to null), keep the spinner
+    if (this.state.discoverData === null) {
+      return;
+    }
+
     if (this.state.discoverError) {
-      const msg = this.state.discoverError === "Database not connected." ? "Connecting to database..." : "No popular loops available right now.";
-      list.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px;">${msg}</div>`;
+      list.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px;">No popular loops available right now.</div>';
       return;
     }
 
