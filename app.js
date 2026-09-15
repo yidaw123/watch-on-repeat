@@ -3997,11 +3997,12 @@ class WatchOnRepeat {
     if (tabLabel) tabLabel.textContent = 'Most Looped';
     if (headerLabel) headerLabel.textContent = 'Most Looped';
     
-    // Clean up playlist container if it exists
     const playlistContainer = document.getElementById('playlist-queue-container');
     if (playlistContainer) playlistContainer.remove();
     
     if (!list) return;
+
+    list.innerHTML = '<div style="background:red;color:white;padding:50px;font-size:24px;font-weight:bold;">IF YOU CAN SEE THIS, THE DOM IS UPDATING!</div>';
 
     if (this.state.discoverData === null) {
       list.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px; display: flex; flex-direction: column; gap: 8px; align-items: center;"><i data-lucide="loader" class="spin"></i><span>Loading popular loops...</span></div>`;
@@ -4062,7 +4063,7 @@ class WatchOnRepeat {
     
     discoverList.innerHTML = '';
 
-    if (this.state.discoverData.length === 0) {
+    if (!this.state.discoverData || this.state.discoverData.length === 0) {
       discoverList.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); grid-column: 1 / -1;">No popular loops available right now.</div>';
       return;
     }
