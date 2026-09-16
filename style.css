@@ -3136,6 +3136,10 @@ input[type="checkbox"]:focus {
 }
 
 /* Theater Mode */
+body.theater-mode .navbar {
+  position: static !important;
+}
+
 body.theater-mode .main-container {
   display: flex;
   flex-direction: column;
@@ -3159,7 +3163,9 @@ body.theater-mode .video-wrapper {
   aspect-ratio: 16 / 9;
   height: auto;
   max-height: calc(100vh - 120px);
-  border-radius: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
 }
 
 body.theater-mode .video-info-bar {
