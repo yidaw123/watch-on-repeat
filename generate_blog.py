@@ -1,4 +1,4 @@
-﻿import os
+import os
 import re
 
 slug = "looping-videos-for-language-learning"
@@ -73,20 +73,18 @@ with open(os.path.join("blog", "index.html"), "r", encoding="utf-8") as f:
     index_html = f.read()
 
 card_html = f"""
-        <div class="blog-card" onclick="window.location.href='/blog/{slug}.html'" style="cursor: pointer; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, border-color 0.2s;">
-          <div class="blog-tag">{tag}</div>
-          <h2 style="font-size: 1.4rem; margin-bottom: 0.75rem; color: var(--text-primary);">{title}</h2>
-          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;">{desc}</p>
-          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.85rem;">
-            <span>{date_str}</span>
-            <span style="color: var(--primary-color); font-weight: 500;">Read Article &rarr;</span>
-          </div>
+        <div class="blog-card">
+          <div class="blog-tag" style="margin-bottom: 0.5rem;">{tag}</div>
+          <div class="blog-date" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">{date_str}</div>
+          <h2><a href="../blog/{slug}">{title}</a></h2>
+          <p>{desc}</p>
+          <a href="../blog/{slug}" class="read-more">Read Article <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i></a>
         </div>
 """
 
 index_html = index_html.replace(
-    '<div class="blog-grid" style="display: grid; gap: 2rem; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">',
-    '<div class="blog-grid" style="display: grid; gap: 2rem; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">\n' + card_html
+    '<div class="blog-grid" id="blog-grid">',
+    '<div class="blog-grid" id="blog-grid">\n' + card_html
 )
 
 with open(os.path.join("blog", "index.html"), "w", encoding="utf-8") as f:
