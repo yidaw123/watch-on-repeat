@@ -82,13 +82,16 @@ card_html = f"""
         </div>
 """
 
-index_html = index_html.replace(
+new_index_html = index_html.replace(
     '<div class="blog-grid" id="blog-grid">',
     '<div class="blog-grid" id="blog-grid">\n' + card_html
 )
 
+if new_index_html == index_html:
+    raise Exception("FATAL ERROR: Failed to inject blog card into blog/index.html. The target HTML string was not found.")
+
 with open(os.path.join("blog", "index.html"), "w", encoding="utf-8") as f:
-    f.write(index_html)
+    f.write(new_index_html)
 
 with open("sitemap.xml", "r", encoding="utf-8") as f:
     sitemap = f.read()
