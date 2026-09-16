@@ -3199,10 +3199,7 @@ body.theater-mode .sidebar-column {
     width: calc(100% - 1rem);
     max-width: calc(1450px - 1rem);
     padding: 1rem 0.5rem;
-    margin-top: 1rem;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
+    margin: 1rem auto 0 auto;
   }
   body.theater-mode .sidebar-column {
     padding: 0 0.5rem;
