@@ -6012,9 +6012,11 @@ class WatchOnRepeat {
       'halfScale': '[',
       'doubleScale': ']',
       'increaseSpeed': 'arrowup',
-      'decreaseSpeed': 'arrowdown'
-    ,
-      'restartLoop': 'r'
+      'decreaseSpeed': 'arrowdown',
+      'restartLoop': 'r',
+      'theaterMode': 't',
+      'seekBackward': 'arrowleft',
+      'seekForward': 'arrowright'
     };
     
     this.state.shortcuts = { ...this.defaultShortcuts };
@@ -6044,10 +6046,10 @@ class WatchOnRepeat {
       const s = this.state.shortcuts;
       const isPremium = this.getUserTier() !== 'free';
       
-      if (key === 'arrowleft') {
+      if (key === s.seekBackward) {
         e.preventDefault();
         this.getCurrentTime().then(t => this.seekToTime(Math.max(0, t - 5)));
-      } else if (key === 'arrowright') {
+      } else if (key === s.seekForward) {
         e.preventDefault();
         this.getCurrentTime().then(t => this.seekToTime(t + 5));
       } else if (isPremium && key === s.prevLoop) {
@@ -6081,7 +6083,7 @@ class WatchOnRepeat {
         e.preventDefault();
         this.switchTab('notes');
         if (this.elements.noteInput) this.elements.noteInput.focus();
-      } else if (key === 't') {
+      } else if (key === s.theaterMode) {
         e.preventDefault();
         this.toggleTheaterMode();
       } 
@@ -6320,9 +6322,11 @@ class WatchOnRepeat {
       { id: 'halfScale', name: 'Halve Duration (1/2x)', premium: true },
       { id: 'doubleScale', name: 'Double Duration (2x)', premium: true },
       { id: 'increaseSpeed', name: 'Increase Playback Speed', premium: false },
-      { id: 'decreaseSpeed', name: 'Decrease Playback Speed', premium: false }
-    ,
-      { id: 'restartLoop', name: 'Restart Current Loop', premium: false }
+      { id: 'decreaseSpeed', name: 'Decrease Playback Speed', premium: false },
+      { id: 'restartLoop', name: 'Restart Current Loop', premium: false },
+      { id: 'theaterMode', name: 'Toggle Theater Mode', premium: false },
+      { id: 'seekBackward', name: 'Seek Backward 5s', premium: false },
+      { id: 'seekForward', name: 'Seek Forward 5s', premium: false }
     ];
     
     actions.forEach(action => {
