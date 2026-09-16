@@ -3149,6 +3149,9 @@ body.theater-mode .player-card {
   border-left: none;
   border-right: none;
   padding: 1rem 2rem;
+  width: 100%;
+  max-width: calc((100vh - 160px) * 16 / 9 + 4rem);
+  margin: 0 auto;
 }
 
 body.theater-mode .video-wrapper {
