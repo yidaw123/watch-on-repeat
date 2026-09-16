@@ -3144,7 +3144,7 @@ body.theater-mode .main-container {
   display: flex;
   flex-direction: column;
   max-width: 100%;
-  padding: 0;
+  padding: 2vh 0 0 0;
   gap: 1.5rem;
 }
 
@@ -3154,7 +3154,7 @@ body.theater-mode .player-card {
   border-right: none;
   padding: 0;
   width: 100%;
-  max-width: calc(100vh * 16 / 9);
+  max-width: calc(96vh * 16 / 9);
   margin: 0 auto;
 }
 
@@ -3162,7 +3162,10 @@ body.theater-mode .video-wrapper {
   padding-bottom: 0;
   aspect-ratio: 16 / 9;
   height: auto;
-  max-height: 100vh;
+  max-height: 96vh;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
 }
 
 body.theater-mode .video-info-bar {
