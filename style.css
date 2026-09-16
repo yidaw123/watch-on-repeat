@@ -3151,6 +3151,13 @@ body.theater-mode .player-card {
   padding: 1rem 2rem;
 }
 
+body.theater-mode .video-wrapper {
+  padding-bottom: 0;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  max-height: calc(100vh - 160px);
+}
+
 body.theater-mode #main-pro-controls {
   align-self: center !important;
 }
