@@ -3159,7 +3159,8 @@ body.theater-mode .player-card {
 }
 
 body.theater-mode .theater-controls-wrapper {
-  max-width: 1450px;
+  width: calc(100% - 4rem);
+  max-width: calc(1450px - 4rem);
   margin: 1.5rem auto 0 auto;
   padding: 1rem 2rem 1.5rem 2rem;
   background: var(--bg-card);
@@ -3195,6 +3196,8 @@ body.theater-mode .sidebar-column {
     padding: 0;
   }
   body.theater-mode .theater-controls-wrapper {
+    width: calc(100% - 1rem);
+    max-width: calc(1450px - 1rem);
     padding: 1rem 0.5rem;
     margin-top: 1rem;
     border-radius: 0;
