@@ -3150,20 +3150,26 @@ body.theater-mode .main-container {
 
 body.theater-mode .player-card {
   border-radius: 0;
-  border-left: none;
-  border-right: none;
-  padding: 0 0 1rem 0;
+  border: none;
+  padding: 0;
   width: 100%;
-  max-width: calc((100vh - 120px) * 16 / 9);
-  margin: 0 auto;
+  max-width: none;
+  background: transparent;
+  box-shadow: none;
 }
 
-body.theater-mode .player-card > *:not(.video-wrapper) {
-  padding-left: 2rem;
-  padding-right: 2rem;
+body.theater-mode .theater-controls-wrapper {
+  max-width: 1450px;
+  margin: 1.5rem auto 0 auto;
+  padding: 1rem 2rem 1.5rem 2rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
 }
 
 body.theater-mode .video-wrapper {
+  margin: 0 auto;
+  max-width: calc((100vh - 120px) * 16 / 9);
   padding-bottom: 0;
   aspect-ratio: 16 / 9;
   height: auto;
@@ -3186,11 +3192,14 @@ body.theater-mode .sidebar-column {
 
 @media (max-width: 768px) {
   body.theater-mode .player-card {
-    padding: 0 0 1rem 0;
+    padding: 0;
   }
-  body.theater-mode .player-card > *:not(.video-wrapper) {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+  body.theater-mode .theater-controls-wrapper {
+    padding: 1rem 0.5rem;
+    margin-top: 1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
   body.theater-mode .sidebar-column {
     padding: 0 0.5rem;
