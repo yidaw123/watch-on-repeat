@@ -510,6 +510,9 @@ class WatchOnRepeat {
     }
     
     await this.syncUserDataFromCloud();
+    if (typeof this.syncFromSupabase === 'function') {
+      await this.syncFromSupabase();
+    }
 
     this.updateUserUI();
     this.closeLoginModal();
