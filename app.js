@@ -1,3 +1,11 @@
+
+function safeJSONParse(str, fallback) {
+  try {
+    return JSON.parse(str);
+  } catch(e) {
+    return fallback;
+  }
+}
 class CascadingTimeInput {
   constructor(inputEl, withMillis = false, onChange = null) {
     this.inputEl = inputEl;
@@ -346,7 +354,7 @@ class WatchOnRepeat {
       }
       
       if (data && data.length > 0) {
-        let localSavedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+        let localSavedLoops = safeJSONParse(localStorage.getItem('wor_saved_loops') || '{}', {});
         let localNotes = this.getDb('notes');
         let localHistory = this.getDb('history');
         let historyChanged = false;
@@ -540,7 +548,7 @@ class WatchOnRepeat {
     // This runs once and sets a flag so it never runs again.
     if (!localStorage.getItem('wor_loops_cleaned_v1')) {
       try {
-        const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+        const savedLoops = safeJSONParse(localStorage.getItem('wor_saved_loops') || '{}', {});
         let cleaned = false;
         for (const videoId in savedLoops) {
           const loop = savedLoops[videoId];
@@ -748,13 +756,24 @@ class WatchOnRepeat {
   // ==========================================
 
   async logEvent(eventName, eventData = {}) {
-    if (!window.supabaseClient || !this.state.user) return;
+    if (!window.supabaseClient) return;
     try {
-      await window.supabaseClient.from('events').insert({
-        user_id: this.state.user.id,
+      let anonId = localStorage.getItem('anon_id');
+      if (!anonId) {
+        anonId = 'anon_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('anon_id', anonId);
+      }
+      
+      const payload = {
+        user_id: this.state.user ? this.state.user.id : null,
         event_name: eventName,
-        metadata: eventData
-      });
+        metadata: { ...eventData, anon_id: this.state.user ? undefined : anonId }
+      };
+      
+      const { error } = await window.supabaseClient.from('events').insert(payload);
+      if (error && typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
+        console.warn("Supabase logEvent error:", error);
+      }
     } catch (e) {
       if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.warn("Failed to log event:", e);
     }
@@ -1049,7 +1068,7 @@ class WatchOnRepeat {
       
       let instance = null;
       // Try local storage first
-      const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+      const localInstances = safeJSONParse(localStorage.getItem('wor_instances') || '{}', {});
       if (localInstances[uuid]) {
         instance = localInstances[uuid];
       }
@@ -1099,7 +1118,7 @@ class WatchOnRepeat {
       
       if (settings.notes && settings.notes.length > 0) {
         try {
-          const notesDb = JSON.parse(localStorage.getItem('wor_notes') || '{}');
+          const notesDb = safeJSONParse(localStorage.getItem('wor_notes') || '{}', {});
           notesDb[uuid] = settings.notes;
           localStorage.setItem('wor_notes', JSON.stringify(notesDb));
         } catch(e){}
@@ -1135,7 +1154,7 @@ class WatchOnRepeat {
 
   isForeignSession() {
     if (!this.state.currentInstanceId) return false;
-    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    const localInstances = safeJSONParse(localStorage.getItem('wor_instances') || '{}', {});
     const activeInstance = localInstances[this.state.currentInstanceId];
     const myUserId = this.state.user ? this.state.user.id : 'guest';
     if (activeInstance && activeInstance.userId && activeInstance.userId !== myUserId) {
@@ -1219,7 +1238,7 @@ class WatchOnRepeat {
         const myUserId = this.state.user ? this.state.user.id : 'guest';
         let localInstances = {};
         try {
-          localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+          localInstances = safeJSONParse(localStorage.getItem('wor_instances') || '{}', {});
         } catch (e) {
           console.warn("localStorage wor_instances is corrupted. Resetting.");
           localStorage.setItem('wor_instances', '{}');
@@ -1266,7 +1285,7 @@ class WatchOnRepeat {
     
     // Check if the current session belongs to someone else
     let isForeignSession = this.isForeignSession();
-    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    const localInstances = safeJSONParse(localStorage.getItem('wor_instances') || '{}', {});
     // Check subscription limits if creating a new session
     if (!this.state.currentInstanceId || isForeignSession || forceNewSession) {
       const userTier = this.getUserTier();
@@ -2344,7 +2363,7 @@ class WatchOnRepeat {
     }
 
     const id = this.state.currentVideo.id;
-    const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+    const savedLoops = safeJSONParse(localStorage.getItem('wor_saved_loops') || '{}', {});
     
     savedLoops[id] = {
       start: this.state.abLoop.start,
@@ -2377,7 +2396,7 @@ class WatchOnRepeat {
     const dur = this.state.currentVideoDuration || 0;
     
     if (this.state.currentInstanceId) {
-      const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+      const localInstances = safeJSONParse(localStorage.getItem('wor_instances') || '{}', {});
       const instance = localInstances[this.state.currentInstanceId];
       if (instance && instance.settings) {
         this.state.abLoop.start = instance.settings.start || 0;
@@ -2390,7 +2409,7 @@ class WatchOnRepeat {
       }
     }
 
-    const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+    const savedLoops = safeJSONParse(localStorage.getItem('wor_saved_loops') || '{}', {});
     const data = savedLoops[id];
     
     // First apply base data if available
@@ -3323,7 +3342,7 @@ class WatchOnRepeat {
       // Otherwise, we would overwrite their lifetime loops with '1' if they loop
       // before the history fetch completes.
       if (this.state.user && this.state.historyLoaded) {
-        const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
+        const savedLoops = safeJSONParse(localStorage.getItem('wor_saved_loops') || '{}', {});
         supabaseClient.rpc('increment_user_history_loops', {
           p_user_id: this.state.user.id,
           p_video_id: video.id,
@@ -6788,7 +6807,7 @@ class WatchOnRepeat {
     const emptyEl = document.getElementById('saved-sessions-empty');
     if (!listEl) return;
 
-    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    const localInstances = safeJSONParse(localStorage.getItem('wor_instances') || '{}', {});
     let sessions = Object.values(localInstances);
     
     const sortVal = document.getElementById('sessions-sort') ? document.getElementById('sessions-sort').value : 'recent_add';
@@ -6858,7 +6877,7 @@ class WatchOnRepeat {
   }
 
   async renameSavedSession(sessionId) {
-    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    const localInstances = safeJSONParse(localStorage.getItem('wor_instances') || '{}', {});
     if (!localInstances[sessionId]) return;
     
     const sess = localInstances[sessionId];
@@ -6899,7 +6918,7 @@ class WatchOnRepeat {
     });
     if (!confirmed) return;
     
-    const localInstances = JSON.parse(localStorage.getItem('wor_instances') || '{}');
+    const localInstances = safeJSONParse(localStorage.getItem('wor_instances') || '{}', {});
     if (localInstances[sessionId]) {
       delete localInstances[sessionId];
       localStorage.setItem('wor_instances', JSON.stringify(localInstances));
@@ -7237,3 +7256,23 @@ window.addEventListener('beforeinstallprompt', (e) => {
   }
 });
 
+
+
+const deadFuncs = [
+  'toggleUserMenu', 'handleLogout', 'simulateBuyPremium',
+  'openPlaylistModal', 'saveCurrentPlaylistToAccount', 'closePlaylistModal',
+  'toggleNoteMarkers', 'fineTuneLoop', 'toggleAutoTempo',
+  'toggleRecording', 'toggleRecordingPlayback', 'deleteCurrentRecording', 'setRecordingVolume',
+  'toggleMultiSegment', 'addLoopSegment', 'deleteAllSegments',
+  'showWaitlistInput', 'joinWaitlist', 'createNewPlaylistFromModal',
+  'switchAuthView', 'handleSocialLogin'
+];
+deadFuncs.forEach(func => {
+  if (typeof window.app[func] !== 'function') {
+    window.app[func] = function() {
+      if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
+         console.warn(`app.${func} is not implemented yet.`);
+      }
+    };
+  }
+});
