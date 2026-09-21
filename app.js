@@ -472,6 +472,19 @@ class WatchOnRepeat {
           });
           this.saveDb('playback_progress', progressDb);
           
+          // Sync favorites (cloud as source of truth for this user)
+          let favoritesDb = this.getDb('favorites').filter(f => f.userId !== user.id);
+          const cloudFavorites = data.filter(d => d.is_favorite).map(d => ({
+             id: 'fav_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+             userId: user.id,
+             videoId: d.video_id,
+             platform: d.platform,
+             title: d.title || '',
+             timestamp: new Date(d.last_played || Date.now()).toISOString()
+          }));
+          favoritesDb = [...cloudFavorites, ...favoritesDb];
+          this.saveDb('favorites', favoritesDb);
+          
           this.updateStatsUI();
         }
       });
