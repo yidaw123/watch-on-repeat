@@ -4362,8 +4362,30 @@ class WatchOnRepeat {
       const paginatedHistory = history.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
       
       paginatedHistory.forEach(h => {
-        const card = this.createVideoCard(h, true); // true indicates history item
-        this.elements.historyList.appendChild(card);
+        const card = this.createVideoCard(h, true, null, false); // false to hide inner delete btn
+        
+        const wrapper = document.createElement('div');
+        wrapper.style = "display: flex; align-items: center; gap: 12px;";
+        
+        card.style.flex = "1";
+        card.style.minWidth = "0";
+        
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'btn-icon-delete';
+        delBtn.innerHTML = '<i data-lucide="trash-2"></i>';
+        delBtn.style = "flex-shrink: 0;";
+        delBtn.title = "Delete from history";
+        delBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.deleteHistoryItem(h.videoId || h.id);
+        };
+        
+        wrapper.appendChild(card);
+        wrapper.appendChild(delBtn);
+        
+        this.elements.historyList.appendChild(wrapper);
       });
       
       const paginationControls = this.renderPaginationControls('history', history.length, itemsPerPage, currentPage, () => this.renderHistoryTab());
@@ -4440,30 +4462,22 @@ class WatchOnRepeat {
     // Rank prefix for leaderboard
     const rankPrefix = rank ? `<span class="badge" style="margin-right:0.25rem; background: var(--gradient-primary); color:white;">#${rank}</span>` : '';
 
-    let deleteBtn = '';
-    if (showDeleteBtn === null) showDeleteBtn = isHistory;
-    if (showDeleteBtn) {
-      deleteBtn = `<button class="btn-icon-delete" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); padding:4px;" onclick="event.stopPropagation(); app.deleteHistoryItem('${this.escapeHtml(video.videoId || video.id)}')" title="Delete from history"><i data-lucide="trash-2"></i></button>`;
-    }
-
     const progressHtml = this.getProgressBarHtml(video.videoId || video.id);
 
     const titleText = video.title || video.video_title || 'Unknown Title';
     card.title = titleText;
-    card.style.position = 'relative'; // Ensure absolute positioning of delete button works
     card.innerHTML = `
       <div style="position:relative; flex-shrink:0; overflow:hidden; border-radius:8px;">
         <img src="${this.escapeHtml(thumbUrl)}" class="video-card-thumb" style="display:block;" alt="${this.escapeHtml(titleText)}">
         ${progressHtml}
       </div>
-      <div class="video-card-details" style="padding-right: 32px;">
+      <div class="video-card-details">
         <h4 class="video-card-title">${rankPrefix}${this.escapeHtml(titleText)}</h4>
         <div class="video-card-meta">
           <span class="badge">${video.platform}</span>
           ${subMeta}
         </div>
       </div>
-      ${deleteBtn}
     `;
 
     // Lazy load thumbnail for dynamic platforms or fetch missing/placeholder titles
