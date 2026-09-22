@@ -4167,10 +4167,6 @@ class WatchOnRepeat {
       db = db.filter(f => f.userId !== this.state.user.id);
       this.saveDb('favorites', db);
       
-      if (window.supabaseClient) {
-        await supabaseClient.from('user_history').update({ is_favorite: false }).eq('user_id', this.state.user.id);
-      }
-      
       this.updateFavoriteButtonUI();
       this.showToast("All favorites removed", "trash-2");
       await this.renderFavoritesTab();
