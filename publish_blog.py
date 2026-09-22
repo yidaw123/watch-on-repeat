@@ -44,8 +44,7 @@ def main():
     html = re.sub(r'<h1>.*?</h1>', f'<h1>{title}</h1>', html, count=1)
     html = re.sub(r'<span>(January|February|March|April|May|June|July|August|September|October|November|December).*?202\d</span>', f'<span>{date_str}</span>', html, count=1)
 
-    # Replace article content robustly
-    new_html, count = re.subn(r'<div class="article-content">[\s\S]*?</div>\s*<footer class="site-footer"', f'<div class="article-content">\n{content}\n  </div>\n\n      <footer class="site-footer"', html)
+    new_html, count = re.subn(r'<div class="article-content">[\s\S]*?</div>\s*</article>\s*<footer class="site-footer"', f'<div class="article-content">\n{content}\n  </div>\n</article>\n\n      <footer class="site-footer"', html)
     if count == 0:
         new_html, count = re.subn(r'<div class="article-content">[\s\S]*?</div>\s*<div class="article-footer">', f'<div class="article-content">\n{content}\n  </div>\n  <div class="article-footer">', html)
         if count == 0:

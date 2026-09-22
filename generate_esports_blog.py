@@ -50,5 +50,9 @@ cmd = [
     date_iso
 ]
 
-result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-print(result.stdout)
+try:
+    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    print("STDOUT:", result.stdout)
+except subprocess.CalledProcessError as e:
+    print("ERROR STDERR:", e.stderr)
+    print("ERROR STDOUT:", e.stdout)
