@@ -154,6 +154,12 @@ class DatabaseMixin {
         const otherUsersHistory = existingHistory.filter(h => h.userId !== this.state.user.id);
         localStorage.setItem('wor_history', JSON.stringify([...otherUsersHistory, ...localHistory]));
         
+        // Sync playback_progress and legacy notes_data
+        let progressDb = JSON.parse(localStorage.getItem('wor_playback_progress') || '{}');
+        let localNotes = JSON.parse(localStorage.getItem('wor_notes') || '{}');
+        let progressUpdated = false;
+        let notesUpdatedFromHistory = false;
+
         // Also sync any saved_loop_data (A-B timestamps) attached to their history
         const savedLoops = JSON.parse(localStorage.getItem('wor_saved_loops') || '{}');
         let loopsUpdated = false;
@@ -162,6 +168,19 @@ class DatabaseMixin {
             savedLoops[h.video_id] = h.saved_loop_data;
             loopsUpdated = true;
           }
+          if (h.notes_data) {
+            const vId = `${h.platform}_${h.video_id}`;
+            localNotes[vId] = h.notes_data;
+            notesUpdatedFromHistory = true;
+          }
+          if (h.last_timestamp > 0 && h.duration > 0) {
+            const existing = progressDb[h.video_id];
+            const cloudTime = new Date(h.last_played || 0).getTime();
+            if (!existing || cloudTime > (existing.ts || 0)) {
+               progressDb[h.video_id] = { t: h.last_timestamp, d: h.duration, ts: cloudTime };
+               progressUpdated = true;
+            }
+          }
         });
         if (loopsUpdated) {
           localStorage.setItem('wor_saved_loops', JSON.stringify(savedLoops));
@@ -169,6 +188,12 @@ class DatabaseMixin {
           if (this.state.currentVideo && savedLoops[this.state.currentVideo.id]) {
             this.loadLoopData(this.state.currentVideo.id);
           }
+        }
+        if (progressUpdated) {
+          localStorage.setItem('wor_playback_progress', JSON.stringify(progressDb));
+        }
+        if (notesUpdatedFromHistory) {
+          localStorage.setItem('wor_notes', JSON.stringify(localNotes));
         }
 
         const localFavs = fullHistory.filter(h => h.is_favorite).map(h => ({
@@ -291,6 +316,37 @@ class DatabaseMixin {
         for (const inst of instancesToPush) {
           const { error } = await supabaseClient.from('video_instances').upsert(inst);
           if (error) console.error("Instance upsert failed:", error);
+        }
+      } else if (key === 'favorites') {
+        const userFavs = data.filter(f => !f.userId || f.userId === this.state.user.id);
+        
+        // Clean up deleted favorites (set is_favorite = false)
+        const { data: serverFavs } = await supabaseClient.from('user_history')
+          .select('video_id, platform')
+          .eq('user_id', this.state.user.id)
+          .eq('is_favorite', true);
+          
+        if (serverFavs) {
+          const localKeys = new Set(userFavs.map(f => `${f.videoId || f.id}_${f.platform}`));
+          for (const sf of serverFavs) {
+            if (!localKeys.has(`${sf.video_id}_${sf.platform}`)) {
+              await supabaseClient.from('user_history').update({ is_favorite: false })
+                .eq('user_id', this.state.user.id).eq('video_id', sf.video_id).eq('platform', sf.platform);
+            }
+          }
+        }
+
+        // Upsert active favorites
+        for (const f of userFavs) {
+          const videoId = f.videoId || f.id;
+          if (videoId.startsWith('fav_')) continue; // Should not happen, but safeguard
+          await supabaseClient.from('user_history').upsert({
+            user_id: this.state.user.id,
+            video_id: videoId,
+            platform: f.platform,
+            title: f.title || 'Unknown Video',
+            is_favorite: true
+          }, { onConflict: 'user_id, video_id, platform' });
         }
       }
     } catch (e) {

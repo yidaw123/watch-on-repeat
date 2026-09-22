@@ -339,54 +339,6 @@ class WatchOnRepeat {
     this.state.analyticsSession.startTime = Date.now();
   }
 
-  async syncUserDataFromCloud() {
-    if (!this.state.user || !window.supabaseClient) return;
-
-    try {
-      const { data, error } = await supabaseClient
-        .from('user_history')
-        .select('video_id, platform, loops_count, saved_loop_data, notes_data')
-        .eq('user_id', this.state.user.id);
-        
-      if (error) {
-        console.error("Failed to sync user data from cloud:", error);
-        return;
-      }
-      
-      if (data && data.length > 0) {
-        let localSavedLoops = safeJSONParse(localStorage.getItem('wor_saved_loops') || '{}', {});
-        let localNotes = this.getDb('notes');
-        let localHistory = this.getDb('history');
-        let historyChanged = false;
-        
-        data.forEach(row => {
-          if (row.saved_loop_data) {
-            localSavedLoops[row.video_id] = row.saved_loop_data;
-          }
-          if (row.notes_data) {
-            const vId = `${row.platform}_${row.video_id}`;
-            localNotes[vId] = row.notes_data;
-          }
-          // Sync loops_count to local history to fix the UI bug in Favorites
-          const hIdx = localHistory.findIndex(h => h.videoId === row.video_id && h.platform === row.platform && h.userId === this.state.user.id);
-          if (hIdx !== -1 && localHistory[hIdx].loopsCount !== row.loops_count) {
-            localHistory[hIdx].loopsCount = row.loops_count;
-            historyChanged = true;
-          }
-        });
-        
-        localStorage.setItem('wor_saved_loops', JSON.stringify(localSavedLoops));
-        this.saveDb('notes', localNotes);
-        if (historyChanged) {
-          this.saveDb('history', localHistory);
-          if (this.state.activeTab === 'favorites') this.renderFavoritesTab();
-        }
-      }
-    } catch(err) {
-      console.error("Sync error:", err);
-    }
-  }
-
   async setUserFromSession(session) {
     try {
     const user = session.user;
@@ -442,53 +394,7 @@ class WatchOnRepeat {
       tier = user.user_metadata?.tier || 'free';
     }
     
-    // Sync user history in background to ensure 'YOUR LOOPS FOR ALL VIDEOS' is accurate
-    if (window.supabaseClient) {
-      supabaseClient.from('user_history').select('*').eq('user_id', user.id).order('last_played', { ascending: false }).then(({ data }) => {
-        if (data) {
-          const history = data.filter(d => d.last_played).map(d => ({
-            videoId: d.video_id,
-            platform: d.platform,
-            title: d.title,
-            thumbnail: d.thumbnail || '',
-            loopsCount: d.loops_count,
-            lastPlayed: d.last_played,
-            userId: user.id,
-            timestamp: new Date(d.last_played).getTime()
-          }));
-          this.saveDb('history', history);
-          
-          // Sync playback progress
-          let progressDb = this.getDb('playback_progress');
-          data.forEach(d => {
-             if (d.last_timestamp > 0 && d.duration > 0) {
-                // Only overwrite if it's newer (or doesn't exist locally)
-                const existing = progressDb[d.video_id];
-                const cloudTime = new Date(d.last_played || 0).getTime();
-                if (!existing || cloudTime > (existing.ts || 0)) {
-                   progressDb[d.video_id] = { t: d.last_timestamp, d: d.duration, ts: cloudTime };
-                }
-             }
-          });
-          this.saveDb('playback_progress', progressDb);
-          
-          // Sync favorites (cloud as source of truth for this user)
-          let favoritesDb = this.getDb('favorites').filter(f => f.userId !== user.id);
-          const cloudFavorites = data.filter(d => d.is_favorite).map(d => ({
-             id: 'fav_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-             userId: user.id,
-             videoId: d.video_id,
-             platform: d.platform,
-             title: d.title || '',
-             timestamp: new Date(d.last_played || Date.now()).toISOString()
-          }));
-          favoritesDb = [...cloudFavorites, ...favoritesDb];
-          this.saveDb('favorites', favoritesDb);
-          
-          this.updateStatsUI();
-        }
-      });
-    }
+    // user_history sync is now fully handled in DatabaseMixin.syncFromSupabase()
     
     this.state.user = {
       id: user.id,
@@ -509,10 +415,10 @@ class WatchOnRepeat {
       this.saveDb('users', users);
     }
     
-    await this.syncUserDataFromCloud();
     if (typeof this.syncFromSupabase === 'function') {
       await this.syncFromSupabase();
     }
+    this.updateStatsUI();
 
     this.updateUserUI();
     this.closeLoginModal();
@@ -3730,12 +3636,6 @@ class WatchOnRepeat {
     if (index !== -1) {
       // Remove from favorites
       favorites.splice(index, 1);
-      if (this.state.user && window.supabaseClient) {
-          supabaseClient.from('user_history').update({ is_favorite: false })
-            .eq('user_id', this.state.user.id)
-            .eq('video_id', video.id)
-            .eq('platform', video.platform).then();
-      }
       this.showToast("Removed from favorites", "heart");
     } else {
       // Add to favorites
@@ -3747,16 +3647,6 @@ class WatchOnRepeat {
         title: video.title,
         timestamp: new Date().toISOString()
       });
-      if (this.state.user && window.supabaseClient) {
-          supabaseClient.from('user_history').upsert({
-            user_id: this.state.user.id,
-            video_id: video.id,
-            platform: video.platform,
-            title: video.title || 'Unknown Video',
-            is_favorite: true,
-            loops_count: this.state.currentLifetimeLoops || 0
-          }, { onConflict: 'user_id, video_id, platform' }).then();
-      }
       this.showToast("Added to favorites", "heart");
     }
 
@@ -4226,7 +4116,7 @@ class WatchOnRepeat {
       paginatedFavorites.forEach(f => {
         const historyItem = historyDb.find(h => h.videoId === f.videoId && h.platform === f.platform);
         f.loopsCount = historyItem ? historyItem.loopsCount : 0;
-        const card = this.createVideoCard(f, true, null, false); // true to show loopsCount, false to hide inner delete btn
+        const card = this.createVideoCard(f, true, null);
         
         const wrapper = document.createElement('div');
         wrapper.style = "display: flex; align-items: center; gap: 12px;";
@@ -4299,13 +4189,6 @@ class WatchOnRepeat {
         db.splice(index, 1);
         this.saveDb('favorites', db);
         
-        if (window.supabaseClient) {
-          await supabaseClient.from('user_history').update({ is_favorite: false })
-            .eq('user_id', this.state.user.id)
-            .eq('video_id', videoId)
-            .eq('platform', platform);
-        }
-        
         // Also update current state if the video is currently playing
         if (this.state.currentVideo && this.state.currentVideo.id === videoId) {
           this.updateFavoriteButtonUI();
@@ -4362,7 +4245,7 @@ class WatchOnRepeat {
       const paginatedHistory = history.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
       
       paginatedHistory.forEach(h => {
-        const card = this.createVideoCard(h, true, null, false); // false to hide inner delete btn
+        const card = this.createVideoCard(h, true, null);
         
         const wrapper = document.createElement('div');
         wrapper.style = "display: flex; align-items: center; gap: 12px;";
@@ -4434,7 +4317,7 @@ class WatchOnRepeat {
     return '';
   }
 
-  createVideoCard(video, isHistory = false, rank = null, showDeleteBtn = null) {
+  createVideoCard(video, isHistory = false, rank = null) {
     const card = document.createElement('a');
     card.className = 'video-card';
     card.style.textDecoration = 'none';
