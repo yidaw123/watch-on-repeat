@@ -293,6 +293,8 @@ class NotesMixin {
         note.time = Math.max(0, newTime); // ensure non-negative
       }
       
+      note.editedAt = Date.now();
+      
       // Resort notes by time after edit
       db[targetVid].sort((a, b) => a.time - b.time);
       
@@ -494,8 +496,8 @@ class NotesMixin {
       }
       
       const notes = db[key];
-      const sMaxAdd = Math.max(...notes.map(n => n.timestamp || 0));
-      const sMaxEdit = Math.max(...notes.map(n => n.editedAt || n.timestamp || 0));
+      const sMaxAdd = Math.max(...notes.map(n => parseInt(n.id) || 0));
+      const sMaxEdit = Math.max(...notes.map(n => n.editedAt || parseInt(n.id) || 0));
       
       videoGroups[baseKey].sessions.push({
         key,
