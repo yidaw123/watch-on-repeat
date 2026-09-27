@@ -4086,9 +4086,9 @@ class WatchOnRepeat {
     if (sortVal === 'alpha') {
       favorites.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
     } else if (sortVal === 'recent_edit') {
-      favorites.sort((a, b) => (b.updatedAt || b.timestamp || 0) - (a.updatedAt || a.timestamp || 0));
+      favorites.sort((a, b) => new Date(b.updatedAt || b.timestamp || 0) - new Date(a.updatedAt || a.timestamp || 0));
     } else {
-      favorites.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      favorites.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
     }
 
     if (favorites.length === 0) {
