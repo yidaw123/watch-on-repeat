@@ -1,8 +1,0 @@
-const https = require('https');
-https.get('https://soundcloud.com/oembed?format=json&url=https://soundcloud.com/skrillex/scary-monsters-and-nice-sprites', {
-  rejectUnauthorized: false
-}, (res) => {
-  let data = '';
-  res.on('data', d => data += d);
-  res.on('end', () => console.log(res.statusCode, data));
-});

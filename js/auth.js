@@ -367,12 +367,17 @@ class AuthMixin {
     });
 
     if (!isPaying && !document.getElementById('adsense-script')) {
+      // TEMPORARILY DISABLED FOR ADSENSE REVIEW:
+      // We don't want adsbygoogle.js loading on the root tool page,
+      // otherwise Googlebot might reject us for 'framed content'
+      /*
       const script = document.createElement('script');
       script.id = 'adsense-script';
       script.async = true;
       script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7515114786845929";
       script.crossOrigin = "anonymous";
       document.head.appendChild(script);
+      */
     }
   }
 
