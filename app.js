@@ -957,7 +957,12 @@ class WatchOnRepeat {
     
     // Reset title and stats for empty state
     if (this.elements.platformBadge) this.elements.platformBadge.innerHTML = '';
-    if (this.elements.videoTitle) this.elements.videoTitle.textContent = "Ready to Loop";
+    if (this.elements.videoTitle) {
+      this.elements.videoTitle.textContent = "Ready to Loop";
+      this.elements.videoTitle.removeAttribute('href');
+      this.elements.videoTitle.removeAttribute('title');
+      this.elements.videoTitle.style.pointerEvents = 'none';
+    }
     
     // Explicitly set sidebar to "Most Looped" on empty state
     const tabLabel = document.getElementById('up-next-tab-label');
@@ -1582,7 +1587,12 @@ class WatchOnRepeat {
     this.elements.playerLoaded.classList.remove('hidden');
     
     // Update the UI with file name instead of crashing
-    if (this.elements.videoTitle) this.elements.videoTitle.textContent = file.name;
+    if (this.elements.videoTitle) {
+      this.elements.videoTitle.textContent = file.name;
+      this.elements.videoTitle.removeAttribute('href');
+      this.elements.videoTitle.removeAttribute('title');
+      this.elements.videoTitle.style.pointerEvents = 'none';
+    }
     document.title = file.name + " | WatchOnRepeat";
     this.updatePlatformBadge('local');
     this.toggleLocalVideoRestrictions(true);
@@ -2056,7 +2066,18 @@ class WatchOnRepeat {
     this.state.analyticsSession.startTime = Date.now();
 
     // Update UI Elements immediately
-    if (this.elements.videoTitle) this.elements.videoTitle.textContent = videoTitle;
+    if (this.elements.videoTitle) {
+      this.elements.videoTitle.textContent = videoTitle;
+      if (platform === 'youtube' && id) {
+        this.elements.videoTitle.href = `https://www.youtube.com/watch?v=${id}`;
+        this.elements.videoTitle.title = "Open on YouTube";
+        this.elements.videoTitle.style.pointerEvents = 'auto';
+      } else {
+        this.elements.videoTitle.removeAttribute('href');
+        this.elements.videoTitle.removeAttribute('title');
+        this.elements.videoTitle.style.pointerEvents = 'none';
+      }
+    }
     
     // Always fetch fresh title and thumbnail in background
     this.fetchVideoMetadata(id, platform).then(meta => {
