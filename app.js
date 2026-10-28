@@ -259,6 +259,9 @@ class WatchOnRepeat {
       guestPromptShown: false,
       playlistQueue: [],
       currentPlaylistIndex: 0,
+      playlistShuffle: false,
+      shuffledOrder: [],
+      shuffledPosition: 0,
       analyticsSession: {
         videoId: null,
         platform: null,
@@ -973,6 +976,7 @@ class WatchOnRepeat {
     // Clean up playlist state and UI so it doesn't persist over the discover tab
     this.state.playlistQueue = [];
     if (this.state.playlistMode) this.state.playlistMode.active = false;
+    if (typeof this.updatePlaylistSkipButtons === 'function') this.updatePlaylistSkipButtons();
     const playlistContainer = document.getElementById('playlist-queue-container');
     if (playlistContainer) playlistContainer.remove();
     const upNextList = document.getElementById('up-next-list');
@@ -1721,6 +1725,9 @@ class WatchOnRepeat {
       }
       
       this.renderPlaylistUI();
+      if (this.state.playlistShuffle) {
+        this.generateShuffledOrder(this.state.playlistQueue.length, this.state.currentPlaylistIndex);
+      }
       const firstVid = this.state.playlistQueue[this.state.currentPlaylistIndex];
       this.loadVideo(firstVid.id, 'youtube');
       this.showToast(`Loaded ${this.state.playlistQueue.length} videos from playlist`, "list");
@@ -1869,8 +1876,11 @@ class WatchOnRepeat {
     this.renderPlaylistUI();
   }
 
-  playPlaylistItem(index) {
+  playPlaylistItem(index, isAutoOrSkip = false) {
     if (index >= 0 && index < this.state.playlistQueue.length) {
+      if (!isAutoOrSkip && this.state.playlistShuffle) {
+        this.generateShuffledOrder(this.state.playlistQueue.length, index);
+      }
       this.state.currentPlaylistIndex = index;
       const v = this.state.playlistQueue[index];
       
@@ -3135,9 +3145,104 @@ class WatchOnRepeat {
   // LOOP TRACKING & UPDATING
   // ==========================================
 
+  generateShuffledOrder(length, currentIdx = 0, avoidFirstIdx = -1) {
+    if (length <= 0) {
+      this.state.shuffledOrder = [];
+      this.state.shuffledPosition = 0;
+      return;
+    }
+    if (length === 1) {
+      this.state.shuffledOrder = [0];
+      this.state.shuffledPosition = 0;
+      return;
+    }
+    if (currentIdx >= 0 && currentIdx < length) {
+      const others = [];
+      for (let i = 0; i < length; i++) {
+        if (i !== currentIdx) others.push(i);
+      }
+      for (let i = others.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [others[i], others[j]] = [others[j], others[i]];
+      }
+      this.state.shuffledOrder = [currentIdx, ...others];
+      this.state.shuffledPosition = 0;
+    } else {
+      const all = [];
+      for (let i = 0; i < length; i++) all.push(i);
+      for (let i = all.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [all[i], all[j]] = [all[j], all[i]];
+      }
+      if (avoidFirstIdx >= 0 && all[0] === avoidFirstIdx && length > 1) {
+        const swapIdx = 1 + Math.floor(Math.random() * (length - 1));
+        [all[0], all[swapIdx]] = [all[swapIdx], all[0]];
+      }
+      this.state.shuffledOrder = all;
+      this.state.shuffledPosition = 0;
+    }
+  }
+
+  getNextPlaylistIndex(length, currentIdx) {
+    if (length <= 1) return 0;
+    if (this.state.playlistShuffle) {
+      if (!this.state.shuffledOrder || this.state.shuffledOrder.length !== length) {
+        this.generateShuffledOrder(length, currentIdx);
+      }
+      if (this.state.shuffledPosition + 1 < length) {
+        this.state.shuffledPosition++;
+        return this.state.shuffledOrder[this.state.shuffledPosition];
+      } else {
+        this.generateShuffledOrder(length, -1, currentIdx);
+        return this.state.shuffledOrder[0];
+      }
+    }
+    return (currentIdx + 1) % length;
+  }
+
+  getPrevPlaylistIndex(length, currentIdx) {
+    if (length <= 1) return 0;
+    if (this.state.playlistShuffle) {
+      if (!this.state.shuffledOrder || this.state.shuffledOrder.length !== length) {
+        this.generateShuffledOrder(length, currentIdx);
+      }
+      if (this.state.shuffledPosition > 0) {
+        this.state.shuffledPosition--;
+      } else {
+        this.state.shuffledPosition = length - 1;
+      }
+      return this.state.shuffledOrder[this.state.shuffledPosition];
+    }
+    return (currentIdx - 1 + length) % length;
+  }
+
+  togglePlaylistShuffle() {
+    this.state.playlistShuffle = !this.state.playlistShuffle;
+    let len = 0;
+    let cur = 0;
+    if (this.state.playlistQueue && this.state.playlistQueue.length > 0) {
+      len = this.state.playlistQueue.length;
+      cur = this.state.currentPlaylistIndex || 0;
+    } else if (this.state.playlistMode && this.state.playlistMode.active) {
+      const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
+      len = p && p.videos ? p.videos.length : 0;
+      cur = this.state.playlistMode.currentIndex || 0;
+    }
+    if (this.state.playlistShuffle) {
+      this.generateShuffledOrder(len, cur);
+      this.showToast("Shuffle enabled", "shuffle");
+    } else {
+      this.state.shuffledOrder = [];
+      this.state.shuffledPosition = 0;
+      this.showToast("Shuffle disabled", "list");
+    }
+    this.updatePlaylistSkipButtons();
+  }
+
   updatePlaylistSkipButtons() {
     const prevBtn = document.getElementById('prev-video-btn');
     const nextBtn = document.getElementById('next-video-btn');
+    const shuffleBtn = document.getElementById('shuffle-playlist-btn');
     if (!prevBtn || !nextBtn) return;
     
     let isPlaylist = false;
@@ -3146,9 +3251,16 @@ class WatchOnRepeat {
     
     if (isPlaylist) {
       prevBtn.style.display = 'inline-flex';
+      if (shuffleBtn) {
+        shuffleBtn.style.display = 'inline-flex';
+        shuffleBtn.classList.toggle('active', !!this.state.playlistShuffle);
+        shuffleBtn.classList.toggle('purple', !!this.state.playlistShuffle);
+        shuffleBtn.title = this.state.playlistShuffle ? 'Shuffle: On' : 'Shuffle: Off';
+      }
       nextBtn.style.display = 'inline-flex';
     } else {
       prevBtn.style.display = 'none';
+      if (shuffleBtn) shuffleBtn.style.display = 'none';
       nextBtn.style.display = 'none';
     }
   }
@@ -3157,8 +3269,8 @@ class WatchOnRepeat {
     if (this.state.playlistMode && this.state.playlistMode.active) {
       const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
       if (p && p.videos && p.videos.length > 0) {
-        if (this.state.playlistMode.currentIndex < p.videos.length - 1) {
-          this.state.playlistMode.currentIndex++;
+        if (p.videos.length > 0) {
+          this.state.playlistMode.currentIndex = this.getNextPlaylistIndex(p.videos.length, this.state.playlistMode.currentIndex);
           const nextV = p.videos[this.state.playlistMode.currentIndex];
           this.showToast(`Skipped to: ${this.escapeHtml(nextV.title)}`, 'play');
           this.loadVideo(nextV.videoId || nextV.id, nextV.platform);
@@ -3171,8 +3283,8 @@ class WatchOnRepeat {
     }
 
     if (this.state.playlistQueue && this.state.playlistQueue.length > 0) {
-      if (this.state.currentPlaylistIndex < this.state.playlistQueue.length - 1) {
-         this.playPlaylistItem(this.state.currentPlaylistIndex + 1);
+      if (this.state.playlistQueue.length > 0) {
+         this.playPlaylistItem(this.getNextPlaylistIndex(this.state.playlistQueue.length, this.state.currentPlaylistIndex), true);
          return true;
       } else {
          this.showToast("Already at the end of the queue", "alert-circle");
@@ -3187,8 +3299,8 @@ class WatchOnRepeat {
     if (this.state.playlistMode && this.state.playlistMode.active) {
       const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
       if (p && p.videos && p.videos.length > 0) {
-        if (this.state.playlistMode.currentIndex > 0) {
-          this.state.playlistMode.currentIndex--;
+        if (p.videos.length > 0) {
+          this.state.playlistMode.currentIndex = this.getPrevPlaylistIndex(p.videos.length, this.state.playlistMode.currentIndex);
           const prevV = p.videos[this.state.playlistMode.currentIndex];
           this.showToast(`Skipped back to: ${this.escapeHtml(prevV.title)}`, 'play');
           this.loadVideo(prevV.videoId || prevV.id, prevV.platform);
@@ -3201,8 +3313,8 @@ class WatchOnRepeat {
     }
 
     if (this.state.playlistQueue && this.state.playlistQueue.length > 0) {
-      if (this.state.currentPlaylistIndex > 0) {
-         this.playPlaylistItem(this.state.currentPlaylistIndex - 1);
+      if (this.state.playlistQueue.length > 0) {
+         this.playPlaylistItem(this.getPrevPlaylistIndex(this.state.playlistQueue.length, this.state.currentPlaylistIndex), true);
          return true;
       } else {
          this.showToast("Already at the start of the queue", "alert-circle");
@@ -3318,8 +3430,8 @@ class WatchOnRepeat {
       if (!this.state.autoplayEnabled) return false;
       const p = this.getDb('playlists').find(pl => pl.id === this.state.playlistMode.id);
       if (p && p.videos && p.videos.length > 0) {
-        if (this.state.playlistMode.currentIndex + 1 < p.videos.length) {
-          this.state.playlistMode.currentIndex++;
+        if (p.videos.length > 0) {
+          this.state.playlistMode.currentIndex = this.getNextPlaylistIndex(p.videos.length, this.state.playlistMode.currentIndex);
           const nextV = p.videos[this.state.playlistMode.currentIndex];
           this.showToast(`Up next: ${this.escapeHtml(nextV.title)}`, 'play');
           this.loadVideo(nextV.videoId || nextV.id, nextV.platform);
@@ -3335,9 +3447,9 @@ class WatchOnRepeat {
     // 2. Up Next Queue (YouTube Playlists)
     if (this.state.playlistQueue && this.state.playlistQueue.length > 0) {
       if (this.state.autoplayEnabled) {
-        if (this.state.currentPlaylistIndex < this.state.playlistQueue.length - 1) {
+        if (this.state.playlistQueue.length > 0) {
            this.elements.loopStateText.textContent = "Playing Next...";
-           this.playPlaylistItem(this.state.currentPlaylistIndex + 1);
+           this.playPlaylistItem(this.getNextPlaylistIndex(this.state.playlistQueue.length, this.state.currentPlaylistIndex), true);
            return true;
         }
       }

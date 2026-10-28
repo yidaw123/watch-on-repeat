@@ -882,6 +882,9 @@
               <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <h3 id="up-next-header-label" style="margin-left: 12px; margin-bottom: 0;">Most Looped</h3>
                 <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted);">
+                  <button id="shuffle-playlist-btn" class="btn-icon" aria-label="Shuffle Playlist" onclick="app.togglePlaylistShuffle()" title="Shuffle: Off" style="display: none; padding: 4px;">
+                    <i data-lucide="shuffle" style="width: 16px; height: 16px;"></i>
+                  </button>
                   <button id="prev-video-btn" class="btn-icon" aria-label="Previous Video" onclick="app.playPreviousVideo()" title="Previous Video" style="display: none; padding: 4px;">
                     <i data-lucide="skip-back" style="width: 16px; height: 16px;"></i>
                   </button>
@@ -1522,10 +1525,10 @@
   <script src="/js/database.js?v=81"></script>
   <script src="/js/auth.js?v=76"></script>
   <script src="/js/notes.js?v=83"></script>
-  <script src="/js/playlists.js?v=77"></script>
+  <script src="/js/playlists.js?v=78"></script>
   <script src="/js/loops.js?v=78"></script>
   <script src="/js/audioRecorder.js?v=76"></script>
-  <script src="/app.js?v=123"></script>
+  <script src="/app.js?v=124"></script>
   <!-- Share Modal -->
   <div class="modal-overlay hidden" id="share-modal" onclick="app.closeShareModal()" style="z-index: 9999;">
     <div class="modal-card" style="max-width: 450px; padding: 24px; text-align: left;" onclick="event.stopPropagation()">

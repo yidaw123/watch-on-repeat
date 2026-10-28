@@ -313,6 +313,8 @@ class PlaylistsMixin {
     }
     const v = p.videos[0];
     this.showToast(`Starting Playlist: ${this.escapeHtml(p.name)}`, 'play');
+    this.playNativePlaylist(p, 0);
+    return;
     this.loadVideo(v.videoId || v.id, v.platform);
   }
 
@@ -694,6 +696,9 @@ class PlaylistsMixin {
     app.state.playlistSearchQuery = '';
     app.state.currentPlaylistIndex = startIndex;
     app.state.playlistPage = Math.floor(startIndex / 10) + 1;
+    if (app.state.playlistShuffle && typeof app.generateShuffledOrder === 'function') {
+      app.generateShuffledOrder(app.state.playlistQueue.length, startIndex);
+    }
     
     app.renderPlaylistUI();
     app.showTab('up-next');
