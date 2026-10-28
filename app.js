@@ -1014,7 +1014,9 @@ class WatchOnRepeat {
             platform: data.platform,
             title: data.video_title,
             settings: data.settings,
-            userId: data.user_id
+            userId: data.user_id,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at || data.created_at
           };
           localInstances[uuid] = instance;
           localStorage.setItem('wor_instances', JSON.stringify(localInstances));
@@ -6880,8 +6882,23 @@ class WatchOnRepeat {
       
       let html = '';
       paginatedSessions.forEach(sess => {
-        const d = new Date(sess.updatedAt);
-        const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const rawDate = sess.updatedAt || sess.createdAt;
+        const d = rawDate ? new Date(rawDate) : new Date(NaN);
+        if (isNaN(d.getTime()) && sess.id && window.supabaseClient && !sess._fetchingDate) {
+          sess._fetchingDate = true;
+          window.supabaseClient.from('video_instances').select('created_at, updated_at').eq('id', sess.id).maybeSingle().then(({ data }) => {
+            if (data && (data.updated_at || data.created_at)) {
+              const currentLocal = safeJSONParse(localStorage.getItem('wor_instances') || '{}', {});
+              if (currentLocal[sess.id]) {
+                currentLocal[sess.id].createdAt = data.created_at;
+                currentLocal[sess.id].updatedAt = data.updated_at || data.created_at;
+                localStorage.setItem('wor_instances', JSON.stringify(currentLocal));
+                this.renderSavedSessionsTab();
+              }
+            }
+          });
+        }
+        const dateStr = !isNaN(d.getTime()) ? (d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})) : 'Saved Session';
         
         let urlParams = `?instance=${sess.id}`;
         
