@@ -313,9 +313,7 @@ class PlaylistsMixin {
     }
     const v = p.videos[0];
     this.showToast(`Starting Playlist: ${this.escapeHtml(p.name)}`, 'play');
-    this.playNativePlaylist(p, 0);
-    return;
-    this.loadVideo(v.videoId || v.id, v.platform);
+    if (v) this.playNativePlaylist(p, 0);
   }
 
   async renamePlaylist(id) {
