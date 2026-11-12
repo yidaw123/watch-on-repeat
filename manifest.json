@@ -1,30 +1,29 @@
 {
-  "name": "WatchOnRepeat - Video Practice Player",
+  "name": "WatchOnRepeat - YouTube On Repeat & Video Looper",
   "short_name": "WatchOnRepeat",
-  "description": "Loop YouTube videos, add custom timestamps, write notes, and practice offline with local videos.",
-  "start_url": "./",
+  "description": "Put YouTube on repeat, loop Twitch and Vimeo videos infinitely, set custom A/B segments, write timestamped notes, and practice offline with local videos.",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
+  "background_color": "#0f1419",
   "theme_color": "#4f46e5",
   "icons": [
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRmNDZlNSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Im0yMSAxMi00LjMtNC4zTTE2LjcgMTJsNC4zIDQuM00zIDEydDQuMyA0LjNNNy4zIDEybC00LjMtNC4zTTEyIDN2MThNMTEgMTRsMS0xIDEtMU0xMSA5bDEgMSAxIDEiLz48L3N2Zz4=",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
+      "src": "/favicon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRmNDZlNSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Im0yMSAxMi00LjMtNC4zTTE2LjcgMTJsNC4zIDQuM00zIDEydDQuMyA0LjNNNy4zIDEybC00LjMtNC4zTTEyIDN2MThNMTEgMTRsMS0xIDEtMU0xMSA5bDEgMSAxIDEiLz48L3N2Zz4=",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
+      "src": "/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
     },
     {
-      "src": "exact_brand_icon.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
     },
     {
-      "src": "exact_brand_icon.png",
+      "src": "/exact_brand_icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

@@ -20,10 +20,13 @@
   <meta name="description" content="WatchOnRepeat allows you to put YouTube on repeat and loop Twitch and Vimeo videos infinitely. The best video looper to listen on repeat, change speed, and practice.">
   <meta name="keywords" content="watch on repeat, watchonrepeat, listen on repeat, listenonrepeat, youtube repeat, youtube loop, youtube looper, loop, repeat, youtube, video, video looper, a-b loop, practice tool, youtube repeater, auto replay youtube, loop part of youtube video, youtube ab looper, music looper, guitar practice looper, instrument practice looper, dance practice looper, twitch looper, facebook looper, dailymotion looper, vimeo looper, mixcloud looper, loom looper, wistia looper, loop twitch vods">
   <link rel="canonical" href="https://watchonrepeat.com/">
-  <link rel="icon" type="image/svg+xml" href="/logo.svg">
-  <link rel="alternate icon" href="/logo.svg">
-  <link rel="mask-icon" href="/logo.svg" color="#000000">
-  <link rel="apple-touch-icon" href="/logo.svg">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/exact_brand_icon.png">
+  <link rel="mask-icon" href="/logo.svg" color="#8b5cf6">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta property="og:site_name" content="WatchOnRepeat">
   <!-- Open Graph / Social Media -->
   <meta property="og:title" content="WatchOnRepeat - YouTube On Repeat & Video Looper">
   <meta property="og:description" content="WatchOnRepeat allows you to put YouTube on repeat and loop Twitch and Vimeo videos infinitely. The best video looper to listen on repeat, change speed, and practice.">
@@ -34,7 +37,7 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="WatchOnRepeat - YouTube On Repeat & Video Looper">
-  <meta name="twitter:description" content="Watch on repeat allows you to put YouTube on repeat and loop Twitch and Vimeo videos infinitely. The best video looper to listen on repeat, change speed, and practice.">
+  <meta name="twitter:description" content="WatchOnRepeat allows you to put YouTube on repeat and loop Twitch and Vimeo videos infinitely. The best video looper to listen on repeat, change speed, and practice.">
   <meta name="twitter:image" content="https://watchonrepeat.com/og-image.png">
 
   <!-- Structured Data (JSON-LD) -->
@@ -43,9 +46,27 @@
     "@context": "https://schema.org",
     "@graph": [
       {
+        "@type": "Organization",
+        "name": "WatchOnRepeat",
+        "url": "https://watchonrepeat.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://watchonrepeat.com/exact_brand_icon.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      {
+        "@type": "WebSite",
+        "name": "WatchOnRepeat",
+        "alternateName": ["Watch On Repeat", "YouTube On Repeat"],
+        "url": "https://watchonrepeat.com/"
+      },
+      {
         "@type": "WebApplication",
         "name": "WatchOnRepeat",
-        "alternateName": "WatchOnRepeat",
+        "alternateName": ["Watch On Repeat", "YouTube On Repeat", "WatchOnRepeat Video Looper"],
+        "image": "https://watchonrepeat.com/exact_brand_icon.png",
         "url": "https://watchonrepeat.com",
         "applicationCategory": "MultimediaApplication",
         "operatingSystem": "All",
@@ -278,7 +299,7 @@
 
       <!-- Main Content Area -->
       <main class="main-container">
-        <h1 class="sr-only">WatchOnRepeat – Free Online Video Looper & YouTube Repeat Tool</h1>
+        <h1 class="sr-only">WatchOnRepeat – Put YouTube On Repeat &amp; Free Online Video Looper</h1>
         <!-- Video Player Column -->
         <section class="player-column">
 
