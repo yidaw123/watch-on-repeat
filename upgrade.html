@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E9NYZYJL0D"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E9NYZYJL0D');
+  </script>
+
+  <meta name="google" content="notranslate">
+  <title>Upgrade &amp; Pricing - WatchOnRepeat</title>
+  <meta name="description" content="Compare WatchOnRepeat Free, Premium, and Pro plans. Unlock an ad-free workspace, millisecond A/B multi-segment looping, customizable hotkeys, local file uploads, and extended audio recording.">
+  <link rel="canonical" href="https://watchonrepeat.com/upgrade">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/exact_brand_icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:site_name" content="WatchOnRepeat">
+  <meta property="og:title" content="Upgrade &amp; Pricing | WatchOnRepeat">
+  <meta property="og:description" content="Compare WatchOnRepeat Free, Premium, and Pro plans. Start looping free forever or upgrade for ad-free practice, millisecond multi-segment loops, and extended audio recording.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://watchonrepeat.com/upgrade">
+  <meta property="og:image" content="https://watchonrepeat.com/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Upgrade &amp; Pricing | WatchOnRepeat">
+  <meta name="twitter:description" content="Compare WatchOnRepeat Free, Premium, and Pro plans. Start looping free forever or upgrade for ad-free practice, millisecond multi-segment loops, and extended audio recording.">
+  <meta name="twitter:image" content="https://watchonrepeat.com/og-image.png">
+
+  <!-- JSON-LD Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "WatchOnRepeat",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web",
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Free",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      {
+        "@type": "Offer",
+        "name": "Premium",
+        "price": "5.99",
+        "priceCurrency": "USD"
+      },
+      {
+        "@type": "Offer",
+        "name": "Pro",
+        "price": "9.99",
+        "priceCurrency": "USD"
+      }
+    ]
+  }
+  </script>
+
+  <link href="/style.css?v=36" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#4f46e5">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --bg-surface: rgba(17, 24, 39, 0.72);
+      --bg-card: rgba(22, 28, 45, 0.65);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --primary-color: #8b5cf6;
+      --premium-color: #fbbf24;
+      --pro-color: #8b5cf6;
+    }
+    body { padding-top: 80px; overflow-y: auto; }
+    .upgrade-container {
+      max-width: 1080px;
+      margin: 1rem auto 4rem auto;
+      padding: 2.25rem;
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+    }
+    .breadcrumb { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .breadcrumb a { color: var(--primary-color); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .upgrade-hero { text-align: center; max-width: 720px; margin: 0 auto 2.5rem auto; }
+    .upgrade-hero h1 { font-family: 'Orbitron', sans-serif; font-size: 2.4rem; margin-bottom: 0.9rem; color: var(--text-primary); line-height: 1.2; }
+    .upgrade-hero p { font-size: 1.1rem; line-height: 1.6; color: var(--text-secondary); }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+      margin-bottom: 3.5rem;
+      align-items: stretch;
+    }
+    .pricing-card {
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: center;
+      position: relative;
+      background: rgba(255, 255, 255, 0.02);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .pricing-card:hover { transform: translateY(-3px); }
+    .pricing-card.premium-card {
+      border-color: rgba(251, 191, 36, 0.4);
+      box-shadow: 0 10px 30px rgba(251, 191, 36, 0.08);
+    }
+    .pricing-card.pro-card {
+      border-color: rgba(139, 92, 246, 0.55);
+      background: rgba(139, 92, 246, 0.05);
+      box-shadow: 0 12px 34px rgba(139, 92, 246, 0.14);
+    }
+    .tier-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .tier-badge.premium { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+    .tier-badge.pro { background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #fff; }
+    .tier-icon { display: flex; justify-content: center; margin-bottom: 14px; }
+    .pricing-card h2.tier-name { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); }
+    .price { font-size: 2.75rem; font-weight: 800; line-height: 1; color: var(--text-primary); margin-bottom: 0.45rem; }
+    .price-unit { font-size: 1.1rem; font-weight: 400; color: var(--text-secondary); }
+    .yearly-price { font-size: 1rem; color: var(--text-secondary); margin-bottom: 1.5rem; font-weight: 500; min-height: 1.5rem; }
+    .save-tag { color: #10B981; font-weight: 700; margin-left: 4px; }
+    .features-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 1.75rem 0;
+      text-align: left;
+      font-size: 0.95rem;
+      color: #d1d5db;
+    }
+    .features-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 0.85rem;
+      line-height: 1.45;
+    }
+    .features-list li i, .features-list li svg {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      margin-top: 3px;
+    }
+    .w-full { width: 100%; }
+    .waitlist-input-row { display: flex; gap: 8px; }
+    .waitlist-email-input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.7rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.06);
+      color: white;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .waitlist-email-input:focus { border-color: var(--primary-color); }
+    .waitlist-feedback {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      text-align: left;
+    }
+    .waitlist-feedback.success {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+    .waitlist-feedback.error {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+    .comparison-section-heading {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      margin-top: 1rem;
+      margin-bottom: 0.6rem;
+      color: var(--text-primary);
+      text-align: center;
+    }
+    .comparison-section-sub {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      margin-bottom: 1.5rem;
+    }
+    .table-scroll { overflow-x: auto; }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 2rem 0;
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 0.85rem 0.65rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+    }
+    .comparison-table th {
+      background: rgba(255, 255, 255, 0.05);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      color: var(--text-primary);
+      padding: 1rem 0.65rem;
+    }
+    .comparison-table th:first-child, .comparison-table td:first-child {
+      text-align: left;
+      padding-left: 1rem;
+    }
+    .comparison-table td { color: var(--text-secondary); }
+    .check-icon { color: #10b981; }
+    @media (max-width: 900px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+      .upgrade-container { padding: 1.5rem 1rem; margin: 0.75rem auto 3rem auto; }
+      .upgrade-hero h1 { font-size: 1.85rem; }
+    }
+  </style>
+
+  <!-- Google AdSense -->
+  <meta name="google-adsense-account" content="ca-pub-7515114786845929">
+</head>
+<body>
+  <div class="glow-bg">
+    <div class="blob blob-purple"></div>
+    <div class="blob blob-blue"></div>
+  </div>
+
+  <div id="app-shell">
+    <header class="navbar">
+      <div class="navbar-top" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a href="/" class="brand" id="brand-logo" style="text-decoration: none; display: flex; align-items: center; gap: 0.75rem;">
+          <img src="/logo.svg" alt="WatchOnRepeat Logo" class="brand-icon" style="background: none; object-fit: cover; border-radius: var(--radius-md); width: 32px; height: 32px;">
+          <span class="brand-name" style="font-size: 1.25rem;">Watch<span>On</span>Repeat</span>
+        </a>
+        <a href="/" class="btn btn-primary" style="text-decoration: none; padding: 0.5rem 1.25rem; font-weight: 600; font-size: 0.9rem; white-space: nowrap;">Launch App</a>
+      </div>
+    </header>
+
+    <main class="main-content" style="padding-top: 2rem;">
+      <div class="upgrade-container">
+        <div class="breadcrumb">
+          <a href="/">Home</a> &gt; Upgrade &amp; Pricing
+        </div>
+
+        <div class="upgrade-hero">
+          <h1>Choose Your Practice Plan</h1>
+          <p>Loop videos free forever with zero account required, or join the VIP waitlist for Premium or Pro to get <strong>50% off</strong> when paid tiers launch.</p>
+        </div>
+
+        <section aria-label="Pricing Plans" class="pricing-grid">
+          <!-- Free Tier -->
+          <div class="pricing-card">
+            <div>
+              <div class="tier-icon"><i data-lucide="play-circle" style="color: #60a5fa; width: 44px; height: 44px;"></i></div>
+              <h2 class="tier-name">Free</h2>
+              <div class="price">$0<span class="price-unit">/mo</span></div>
+              <div class="yearly-price">Free forever, no credit card needed</div>
+              <ul class="features-list">
+                <li><i data-lucide="check" style="color: #10B981;"></i> <span>Infinite full-video &amp; playlist looping</span></li>
+                <li><i data-lucide="check" style="color: #10B981;"></i> <span>Precision A/B looping (Seconds)</span></li>
+                <li><i data-lucide="check" style="color: #10B981;"></i> <span>Playback speed control (0.25x &ndash; 2x)</span></li>
+                <li><i data-lucide="check" style="color: #10B981;"></i> <span>Audio Recording Studio (30 seconds)</span></li>
+                <li><i data-lucide="check" style="color: #10B981;"></i> <span>Up to 5 playlists (50 vids/playlist)</span></li>
+                <li><i data-lucide="check" style="color: #10B981;"></i> <span>Notes on 5 videos, 50 history &amp; 100 favorites</span></li>
+              </ul>
+            </div>
+            <div>
+              <a href="/" class="btn btn-outline w-full" style="justify-content: center; font-weight: bold; letter-spacing: 0.5px;">Start Looping Free</a>
+            </div>
+          </div>
+
+          <!-- Premium Tier -->
+          <div class="pricing-card premium-card">
+            <span class="tier-badge premium">Popular Upgrade</span>
+            <div>
+              <div class="tier-icon"><i data-lucide="crown" style="color: #FBBF24; width: 44px; height: 44px;"></i></div>
+              <h2 class="tier-name">Premium</h2>
+              <div class="price">$5.99<span class="price-unit">/mo</span></div>
+              <div class="yearly-price">or $59.99/year <span class="save-tag">(Save 16%)</span></div>
+              <ul class="features-list">
+                <li><i data-lucide="check" style="color: #FBBF24;"></i> <span>Ad-free distraction-free workspace</span></li>
+                <li><i data-lucide="check" style="color: #FBBF24;"></i> <span>Millisecond A/B &amp; up to 7 multi-segments</span></li>
+                <li><i data-lucide="check" style="color: #FBBF24;"></i> <span>Unlimited playlists, history &amp; favorites</span></li>
+                <li><i data-lucide="check" style="color: #FBBF24;"></i> <span>Upload local video/audio files</span></li>
+                <li><i data-lucide="check" style="color: #FBBF24;"></i> <span>Advanced + Customizable Hotkeys</span></li>
+                <li><i data-lucide="check" style="color: #FBBF24;"></i> <span>Audio Recording (15 slots, 5min)</span></li>
+              </ul>
+            </div>
+            <div>
+              <div id="waitlist-container-Premium">
+                <button type="button" class="btn btn-outline w-full" onclick="showWaitlistInput('Premium')" style="justify-content: center; font-weight: bold; letter-spacing: 0.5px; border-color: rgba(251, 191, 36, 0.55); color: #fde68a;">Upgrade to Premium</button>
+              </div>
+              <div id="waitlist-form-Premium" class="hidden" style="text-align: left;">
+                <label for="waitlist-email-Premium" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; display: block;">Join the VIP waitlist for 50% off:</label>
+                <div class="waitlist-input-row">
+                  <input type="email" id="waitlist-email-Premium" placeholder="Enter your email" class="waitlist-email-input" onkeydown="if(event.key==='Enter') joinWaitlist('Premium')">
+                  <button type="button" id="waitlist-submit-Premium" class="btn btn-primary" onclick="joinWaitlist('Premium')">Join</button>
+                </div>
+              </div>
+              <div id="waitlist-feedback-Premium" class="waitlist-feedback hidden" role="status" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <!-- Pro Tier -->
+          <div class="pricing-card pro-card">
+            <span class="tier-badge pro">Most Complete</span>
+            <div>
+              <div class="tier-icon"><i data-lucide="graduation-cap" style="color: #ec4899; width: 44px; height: 44px;"></i></div>
+              <h2 class="tier-name">Pro</h2>
+              <div class="price">$9.99<span class="price-unit">/mo</span></div>
+              <div class="yearly-price">or $99.99/year <span class="save-tag">(Save 16%)</span></div>
+              <ul class="features-list">
+                <li><i data-lucide="check" style="color: #ec4899;"></i> <span>Everything in Premium</span></li>
+                <li><i data-lucide="check" style="color: #ec4899;"></i> <span>Up to 10 multi-segment loops per video</span></li>
+                <li><i data-lucide="check" style="color: #ec4899;"></i> <span>Audio Recording (15 slots, 10min)</span></li>
+                <li><i data-lucide="check" style="color: #ec4899;"></i> <span>Notes on 20 vids (15/vid) &amp; 15 shareable sessions</span></li>
+                <li><i data-lucide="check" style="color: #ec4899;"></i> <span>Advanced Practice Analytics</span></li>
+                <li><i data-lucide="check" style="color: #ec4899;"></i> <span>Team, Classroom &amp; API Data Export</span></li>
+              </ul>
+            </div>
+            <div>
+              <div id="waitlist-container-Pro">
+                <button type="button" class="btn btn-primary w-full" onclick="showWaitlistInput('Pro')" style="justify-content: center; font-weight: bold; letter-spacing: 0.5px;">Upgrade to Pro</button>
+              </div>
+              <div id="waitlist-form-Pro" class="hidden" style="text-align: left;">
+                <label for="waitlist-email-Pro" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; display: block;">Join the VIP waitlist for 50% off:</label>
+                <div class="waitlist-input-row">
+                  <input type="email" id="waitlist-email-Pro" placeholder="Enter your email" class="waitlist-email-input" onkeydown="if(event.key==='Enter') joinWaitlist('Pro')">
+                  <button type="button" id="waitlist-submit-Pro" class="btn btn-primary" onclick="joinWaitlist('Pro')">Join</button>
+                </div>
+              </div>
+              <div id="waitlist-feedback-Pro" class="waitlist-feedback hidden" role="status" aria-live="polite"></div>
+            </div>
+          </div>
+        </section>
+
+        <section aria-label="Detailed Plan Comparison">
+          <h2 class="comparison-section-heading">Compare Plans &amp; Features</h2>
+          <p class="comparison-section-sub">See exact limits and capabilities across Free, Premium, and Pro tiers.</p>
+
+          <div class="table-scroll">
+            <table class="comparison-table">
+              <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                  <th style="padding: 12px;">Feature</th>
+                  <th style="padding: 12px; text-align: center;">Free</th>
+                  <th style="padding: 12px; text-align: center; color: var(--premium-color, #fbbf24);">Premium</th>
+                  <th style="padding: 12px; text-align: center; color: var(--pro-color, #8b5cf6);">Pro</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Infinite Video Looping</td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon"></i></td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Precision A/B Segment Looping</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">Seconds</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--premium-color, #fbbf24);">Millisecond</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--pro-color, #8b5cf6);">Millisecond</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Timestamped Notes</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">Up to 5 Vids (3/vid)</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--premium-color, #fbbf24);">Up to 15 Vids (10/vid)</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--pro-color, #8b5cf6);">Up to 20 Vids (15/vid)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Supports YouTube, Twitch, Facebook, Dailymotion, Vimeo, Mixcloud, Loom, Wistia, SoundCloud</td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon"></i></td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Global Playback Speed Control</td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon"></i></td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Advanced Multi-Segment Looping</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">1 Segment</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--premium-color, #fbbf24);">Up to 7</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--pro-color, #8b5cf6);">Up to 10</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Saved Playlists</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">Up to 5 (50 vids/playlist)</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--premium-color, #fbbf24);">Unlimited</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--pro-color, #8b5cf6);">Unlimited</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Saved History</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">50 Videos</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--premium-color, #fbbf24);">Unlimited</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--pro-color, #8b5cf6);">Unlimited</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Saved Favorites</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">100 Videos</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--premium-color, #fbbf24);">Unlimited</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--pro-color, #8b5cf6);">Unlimited</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Distraction-Free Workspace (Ad-Free)</td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="minus" style="width:16px; opacity:0.3;"></i></td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Upload local video/audio files</td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="minus" style="width:16px; opacity:0.3;"></i></td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--premium-color, #fbbf24);"></i></td>
+                  <td style="padding: 12px; text-align: center;"><i data-lucide="check" class="check-icon" style="color:var(--pro-color, #8b5cf6);"></i></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Audio Recording Studio</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">30 Seconds</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--premium-color, #fbbf24);">5 Minutes</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--pro-color, #8b5cf6);">10 Minutes</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Hotkeys Access</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">Basic</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--premium-color, #fbbf24);">Advanced + Customizable</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--pro-color, #8b5cf6);">Advanced + Customizable</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 12px;">Saved Shareable Sessions (with loops, notes, and settings)</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #aaa;">Up to 3</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--premium-color, #fbbf24);">Up to 10</td>
+                  <td style="padding: 12px; text-align: center; font-size: 0.9em; color: var(--pro-color, #8b5cf6);">Up to 15</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div style="text-align: center; margin-top: 3rem;">
+          <div style="padding: 2rem; background: rgba(255, 255, 255, 0.02); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <h3 style="margin-top: 0; margin-bottom: 0.5rem; font-size: 1.2rem; font-family: 'Outfit', sans-serif;">Love the site but don't need to upgrade?</h3>
+            <p style="font-size: 1rem; color: var(--text-muted); max-width: 520px; margin: 0 auto 1.5rem auto; line-height: 1.5;">You can still support WatchOnRepeat even if you're not subscribed to an upgraded tier. To help keep the site running, we greatly appreciate any donations!</p>
+            <a href="https://buymeacoffee.com/watchonrepeat" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #FFDD00; color: #000000; font-weight: 600; font-family: 'Outfit', sans-serif; text-decoration: none; padding: 12px 24px; border-radius: 50px; font-size: 1.1rem; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(255, 221, 0, 0.3);">
+              <i data-lucide="coffee" style="width: 20px; height: 20px;"></i> Buy me a coffee
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer" style="padding: 2rem; background: var(--bg-surface); border-top: 1px solid var(--border-color); text-align: center;">
+      <div class="footer-seo-links" style="font-size: 0.9em; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.5rem; line-height: 1.8;">
+        <strong>Guides &amp; Use Cases:</strong>
+        <a href="/top-loops.html" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none; font-weight: bold;">Example Loops</a> <span style="opacity:0.3">|</span>
+        <a href="/guide" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none; font-weight: bold;">Step-by-Step Guide</a> <span style="opacity:0.3">|</span>
+        <a href="/music-practice" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Music Practice</a> <span style="opacity:0.3">|</span>
+        <a href="/language-learning" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Language Learning</a> <span style="opacity:0.3">|</span>
+        <a href="/youtube-study-tool" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Video Study Tool</a> <span style="opacity:0.3">|</span>
+        <a href="/listenonrepeat-alternative" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">ListenOnRepeat Alternative</a> <span style="opacity:0.3">|</span>
+        <a href="/blog/" style="margin: 0 0.5rem; color: var(--text-secondary); text-decoration: none;">Blogs</a>
+      </div>
+      <div class="footer-links" style="font-size: 0.85em; opacity: 0.9; margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+        <a href="/upgrade" style="background: var(--gradient-primary, linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)); color: white; padding: 5px 14px; border-radius: 9999px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); transition: transform 0.2s;"><i data-lucide="crown" style="width: 14px; height: 14px;"></i> Upgrade</a>
+        <a href="https://buymeacoffee.com/watchonrepeat" target="_blank" style="background: rgba(255,255,255,0.05); color: #e2e8f0; padding: 5px 14px; border-radius: 9999px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,0.1); transition: background 0.2s;"><i data-lucide="heart" style="width: 14px; height: 14px; color: #fb7185;"></i> Donate</a>
+        <span style="opacity: 0.3; margin: 0 -0.5rem;">|</span>
+        <a href="/about" style="color: #94a3b8; text-decoration: none;">About Us</a>
+        <a href="/privacy" target="_blank" style="color: #94a3b8; text-decoration: none;">Privacy</a>
+        <a href="/terms" target="_blank" style="color: #94a3b8; text-decoration: none;">Terms</a>
+        <a href="/contact" style="color: #94a3b8; text-decoration: none;">Contact Us</a>
+        <a href="mailto:ads@watchonrepeat.com" style="color: #60a5fa; text-decoration: none; font-weight: 500;">Advertise with Us</a>
+      </div>
+      <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 WatchOnRepeat. All rights reserved.</p>
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const currentPath = window.location.pathname.replace(/\/$/, '').replace(/\.html$/, '') || '/';
+          document.querySelectorAll('.footer-seo-links a').forEach(link => {
+            let href = link.getAttribute('href');
+            if (href) {
+              href = href.replace(/\/$/, '').replace(/\.html$/, '') || '/';
+              if (currentPath === href || (currentPath === '/' && href === '/index')) {
+                link.style.color = 'var(--primary-color, #a855f7)';
+                link.style.fontWeight = 'bold';
+              }
+            }
+          });
+        });
+      </script>
+    </footer>
+  </div>
+
+  <script>
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+
+    const SUPABASE_URL = 'https://golkbcdlxpojjwqtyuzn.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_e1gQuU0n8FofmTkitqTEQQ_pi1g8fqD';
+    let supabaseClient = null;
+    try {
+      if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (e) {}
+
+    function showWaitlistFeedback(tier, message, type) {
+      const box = document.getElementById(`waitlist-feedback-${tier}`);
+      if (!box) return;
+      box.textContent = message;
+      box.className = `waitlist-feedback ${type}`;
+    }
+
+    function showWaitlistInput(tier) {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'upgrade_button_click', { tier: tier });
+      }
+      const container = document.getElementById(`waitlist-container-${tier}`);
+      const form = document.getElementById(`waitlist-form-${tier}`);
+      const feedback = document.getElementById(`waitlist-feedback-${tier}`);
+      if (container) container.classList.add('hidden');
+      if (form) form.classList.remove('hidden');
+      if (feedback) feedback.classList.add('hidden');
+      const input = document.getElementById(`waitlist-email-${tier}`);
+      if (input) input.focus();
+    }
+
+    async function joinWaitlist(tier) {
+      const emailInput = document.getElementById(`waitlist-email-${tier}`);
+      const submitBtn = document.getElementById(`waitlist-submit-${tier}`);
+      const email = emailInput ? emailInput.value.trim() : '';
+
+      if (!email || (emailInput && !emailInput.checkValidity())) {
+        showWaitlistFeedback(tier, 'Please enter a valid email address.', 'error');
+        return;
+      }
+
+      if (!supabaseClient) {
+        showWaitlistFeedback(tier, 'Unable to reach signup service right now. Please try again later.', 'error');
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Joining...';
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from('waitlist')
+          .insert([{ email, tier }]);
+
+        if (error) throw error;
+
+        if (typeof window.gtag === 'function') {
+          window.gtag('event', 'waitlist_joined', { tier: tier });
+        }
+
+        showWaitlistFeedback(tier, `Awesome! You're on the VIP waitlist for ${tier}. We'll email you when it's live!`, 'success');
+        document.getElementById(`waitlist-container-${tier}`).classList.remove('hidden');
+        document.getElementById(`waitlist-form-${tier}`).classList.add('hidden');
+        emailInput.value = '';
+      } catch (err) {
+        console.error('Waitlist error:', err);
+        showWaitlistFeedback(tier, 'Something went wrong. Please try again later.', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Join';
+        }
+      }
+    }
+  </script>
+</body>
+</html>
