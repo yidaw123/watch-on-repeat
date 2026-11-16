@@ -3350,13 +3350,6 @@ class WatchOnRepeat {
     // Increment session total loops (all videos)
     this.state.sessionTotalLoops++;
 
-    if (typeof window.gtag === 'function' && (!this.lastGaLoopEventTime || now - this.lastGaLoopEventTime >= 60000)) {
-      this.lastGaLoopEventTime = now;
-      window.gtag('event', 'loop_completed', {
-        platform: video.platform || 'unknown'
-      });
-    }
-
     // Remind free/guest users to sign up every 50 loops
     if (!this.state.user && this.state.sessionTotalLoops > 0 && this.state.sessionTotalLoops % 50 === 0) {
       this.showToast("Loving the features? Create a free account to save your loops, notes, and playlists so you never lose them!", "heart");
@@ -3562,7 +3555,7 @@ class WatchOnRepeat {
         this.elements.loopTimer.textContent = `Session time: ${timeStr}`;
       }
       this.updateAnalyticsTime();
-      if (this.state.loopSeconds > 0 && this.state.loopSeconds % 300 === 0 && typeof window.gtag === 'function') {
+      if (this.state.loopSeconds > 0 && this.state.loopSeconds % 60 === 0 && typeof window.gtag === 'function') {
         window.gtag('event', 'active_playback_heartbeat', {
           platform: this.state.currentPlatform || 'unknown',
           loop_seconds: this.state.loopSeconds
