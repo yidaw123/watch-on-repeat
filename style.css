@@ -768,6 +768,8 @@ h1, h2, h3, h4, .brand-name {
   line-height: 1.4;
   color: var(--text-primary);
   overflow-wrap: anywhere;
+  -webkit-user-drag: none;
+  user-select: text;
   word-break: break-word;
 }
 

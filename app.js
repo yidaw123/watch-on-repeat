@@ -964,7 +964,7 @@ class WatchOnRepeat {
       this.elements.videoTitle.textContent = "Ready to Loop";
       this.elements.videoTitle.removeAttribute('href');
       this.elements.videoTitle.removeAttribute('title');
-      this.elements.videoTitle.style.pointerEvents = 'none';
+      this.elements.videoTitle.style.pointerEvents = 'auto';
     }
     
     // Explicitly set sidebar to "Most Looped" on empty state
@@ -1597,7 +1597,7 @@ class WatchOnRepeat {
       this.elements.videoTitle.textContent = file.name;
       this.elements.videoTitle.removeAttribute('href');
       this.elements.videoTitle.removeAttribute('title');
-      this.elements.videoTitle.style.pointerEvents = 'none';
+      this.elements.videoTitle.style.pointerEvents = 'auto';
     }
     document.title = file.name + " | WatchOnRepeat";
     this.updatePlatformBadge('local');
@@ -2087,7 +2087,7 @@ class WatchOnRepeat {
       } else {
         this.elements.videoTitle.removeAttribute('href');
         this.elements.videoTitle.removeAttribute('title');
-        this.elements.videoTitle.style.pointerEvents = 'none';
+        this.elements.videoTitle.style.pointerEvents = 'auto';
       }
     }
     
